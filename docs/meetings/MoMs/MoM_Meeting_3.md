@@ -83,6 +83,10 @@
 - Each personal push must be done in our own branches
 - Each main push must be done with the group present or with a pull request.
 
+### Base :
+
+A Base project is being developped on which we could start the development of all other modules.
+
 ## Action Items :
 - 
 
