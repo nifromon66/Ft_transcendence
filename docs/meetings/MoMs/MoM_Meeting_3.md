@@ -28,7 +28,7 @@
 	- container_name
 	- restart: unless-stopped
 	- env_file / volumes / expose / ports / networks :
-		-
+		- <element>
 - Docker volumes:
 	- volume:
 		- driver: local
