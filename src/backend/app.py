@@ -3,12 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import select
-from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import os
 
 app = Flask(__name__)
-_ = CORS(app)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
