@@ -19,8 +19,7 @@ services:
     build:
       context: ./src/backend
       dockerfile: ../../docker/backend/Dockerfile
-    ports:
-      - "5000:5000"
+    
     depends_on:
       db:
         condition: service_healthy
@@ -34,13 +33,23 @@ services:
     build:
       context: ./src/frontend
       dockerfile: ../../docker/frontend/Dockerfile
-    ports:
-      - "5173:5173"
+    
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
     depends_on:
       - backend
+  
+  nginx:
+    build:
+      context: ./src/nginx
+      dockerfile: ../../docker/nginx/Dockerfile
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   db_data:
