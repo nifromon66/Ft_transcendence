@@ -14,7 +14,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Mapped, mapped_column
 
 app = Flask(__name__)
-_ = CORS(app)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
