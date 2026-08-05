@@ -4,12 +4,12 @@ import { ref, onMounted } from 'vue'
 const users = ref([])
 
 async function fetchUsers() {
-  const response = await fetch('http://localhost:5000/users')
+  const response = await fetch('/api/users')
   users.value = await response.json()
 }
 
 async function deleteUser(userId) {
-  await fetch(`http://localhost:5000/users/${userId}`, {
+  await fetch(`/api/users/${userId}`, {
     method: 'DELETE'
   })
   await fetchUsers()

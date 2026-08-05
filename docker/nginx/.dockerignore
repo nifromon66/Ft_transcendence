@@ -1,0 +1,16 @@
+# Docker files
+Dockerfile
+.dockerignore
+
+# env files
+.env
+.env*
+*.env
+
+# git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
