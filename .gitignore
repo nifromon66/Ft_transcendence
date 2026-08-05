@@ -1,8 +1,49 @@
+# env files
+.env
+.env*
+!.env.example
+
+# ssl certificates
+*.crt
+*.key
+certs/
+
+# database folders
+postgres_data/
+db_data/
+data/
+
+# frontend unnecessary 
+node_modules/
+dist/
+build/
+
+# frontend logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# virtual local environments
 venv/
+.venv/
+env/
+
+# Python cache and compilation files
 __pycache__/
 *.pyc
-node_modules/
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# IDE files
 .vscode/
-.env
-open-editor.sh
+.idea/
+
+# local Docker overrides
+docker-compose.override.yml
 docker-compose.override.yaml
+
+# local utility script
+open-editor.sh
