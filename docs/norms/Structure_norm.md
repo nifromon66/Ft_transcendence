@@ -1,0 +1,19 @@
+# Structure :
+- One Directory per modules || functionalities || services
+- Each Directory / File must have a name adapted to it's content.
+- Tree :
+	- src/, core/, main/
+	- assets/
+	- docker/
+	- docs/
+		- meetings/
+		- architecture.md
+		- api.md
+		- cpi.md
+		- setup.md
+		- security.md
+	- tests/
+	- Makefile
+	- Readme.md
+	- docker-compose
+	- .gitignore
