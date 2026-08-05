@@ -1,10 +1,16 @@
-venv/
-__pycache__/
-*.pyc
-.vscode/
-.env
-.git/
-.gitignore
+# Docker files
 Dockerfile
 .dockerignore
-*.log
+
+# env files
+.env
+.env*
+*.env
+
+# git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
