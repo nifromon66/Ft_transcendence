@@ -20,11 +20,16 @@ else
 fi
 
 ENV_VARS='\
+<<<<<<< HEAD
     $(SERVER_NAME) \
     ${PORT_REDIRECT} \
     ${PORT_REVERSE_PROXY} \
     ${API_PROXY_PASS} \
     ${ROOT_UPSTREAM_FRONT} \
+=======
+    ${PORT_REDIRECT} \
+    ${PORT_REVERSE_PROXY} \
+>>>>>>> f6cafbb (refactor(nginx):convert .conf to template for .env)
     ${SSL_CERTIFICATE_PATH} \
     ${SSL_CERTIFICATE_KEY_PATH} \
     ${CLIENT_MAX_BODY_SIZE}'

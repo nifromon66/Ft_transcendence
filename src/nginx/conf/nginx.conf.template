@@ -1,6 +1,11 @@
 server {
     listen ${PORT_REDIRECT};
+<<<<<<< HEAD
     server_name ${SERVER_NAME};
+=======
+    # listen 80;
+    server_name localhost;
+>>>>>>> f6cafbb (refactor(nginx):convert .conf to template for .env)
     return 301 https://$host$request_uri;
 }
 
