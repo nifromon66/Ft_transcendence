@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16
     env_file:
-      - .envs/.env.db
+      - .envs/.env.db.example
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -22,8 +22,8 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .envs/.env.db
-      - .envs/.env.backend
+      - .envs/.env.db.example
+      - .envs/.env.backend.example
     networks:
       - backend_db_network
       - nginx_backend_network
@@ -48,7 +48,7 @@ services:
       context: ./src/nginx
       dockerfile: ../../docker/nginx/Dockerfile
     env_file:
-      - .envs/.env.nginx
+      - .envs/.env.nginx.example
     networks:
       - nginx_frontend_network
       - nginx_backend_network

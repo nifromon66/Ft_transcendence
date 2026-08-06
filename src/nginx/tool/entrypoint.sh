@@ -19,4 +19,15 @@ else
     echo "Certificat déjà présent, pas de régénération."
 fi
 
+ENV_VARS='\
+    ${PORT_REDIRECT} \
+    ${PORT_REVERSE_PROXY} \
+    ${SSL_CERTIFICATE_PATH} \
+    ${SSL_CERTIFICATE_KEY_PATH} \
+    ${CLIENT_MAX_BODY_SIZE}'
+
+envsubst "$ENV_VARS" \
+ < /etc/nginx/templates/default.conf.template \
+ > /etc/nginx/conf.d/default.conf
+
 exec nginx -g "daemon off;"
