@@ -1,78 +1,46 @@
 from datetime import datetime
-
-from sqlalchemy import String, DateTime, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from extensions import db, bcrypt
 from typing import TYPE_CHECKING
+
+from extensions import bcrypt, db
+from sqlalchemy import DateTime, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from .association import UserBadge
-    from .recipe import Recipe
     from .comment import Comment
     from .favorite import Favorite
     from .rating import Rating
+    from .recipe import Recipe
+
 
 class User(db.Model):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-        autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    username: Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    username: Mapped[str] = mapped_column(String, nullable=False)
 
-    email: Mapped[str] = mapped_column(
-        String,
-        unique=True,
-        nullable=False
-    )
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    password_hash: Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
-    avatar_url: Mapped[str | None] = mapped_column(
-        String
-    )
+    avatar_url: Mapped[str | None] = mapped_column(String)
 
-    created_at: Mapped[datetime | None] = mapped_column(
-        DateTime
-    )
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    xp: Mapped[int | None] = mapped_column(
-        Integer
-    )
+    xp: Mapped[int | None] = mapped_column(Integer)
 
+    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
 
-    recipes: Mapped[list["Recipe"]] = relationship(
-        back_populates="user"
-    )
+    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
 
-    comments: Mapped[list["Comment"]] = relationship(
-        back_populates="user"
-    )
+    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(
-        back_populates="user"
-    )
+    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(
-    back_populates="user"
-    )
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
 
-    favorites: Mapped[list["Favorite"]] = relationship(
-    back_populates="user"
-    )
-
-    ratings: Mapped[list["Rating"]] = relationship(
-    back_populates="user"
-    )
+    ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
 
     def __init__(self, username: str, email: str, password: str):
         self.username = username
