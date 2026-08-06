@@ -1,5 +1,6 @@
 server {
     listen ${PORT_REDIRECT};
+    # listen 80;
     server_name localhost;
     return 301 https://$host$request_uri;
 }
@@ -17,7 +18,7 @@ server {
 
     resolver 127.0.0.11 valid=30s;
 
-    ${CLIENT_MAX_BODY_SIZE};
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
 
     location /api/ {
         rewrite ^/api/(.*) /$1 break;
