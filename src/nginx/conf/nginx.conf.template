@@ -1,13 +1,12 @@
 server {
     listen ${PORT_REDIRECT};
-    # listen 80;
-    server_name localhost;
+    server_name ${SERVER_NAME};
     return 301 https://$host$request_uri;
 }
 
 server {
     listen ${PORT_REVERSE_PROXY} ssl;
-    server_name localhost;
+    server_name ${SERVER_NAME};
 
     ssl_certificate     ${SSL_CERTIFICATE_PATH};
     ssl_certificate_key ${SSL_CERTIFICATE_KEY_PATH};
@@ -22,14 +21,14 @@ server {
 
     location /api/ {
         rewrite ^/api/(.*) /$1 break;
-        proxy_pass http://backend:5000;
+        proxy_pass ${API_PROXY_PASS};
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     location / {
-        set $upstream_front http://frontend:5173;
+        set $upstream_front ${ROOT_UPSTREAM_FRONT};
         proxy_pass $upstream_front;
 
         proxy_set_header Host $host;
