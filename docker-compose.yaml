@@ -52,13 +52,27 @@ services:
     networks:
       - nginx_frontend_network
       - nginx_backend_network
-
-    ports:
+    expose:
       - "443:443"
       - "80:80"
     depends_on:
       - backend
       - frontend
+
+  modsecurity:
+    build:
+      context: ./src/modsecurity
+      dockerfile: ../../docker/modsecurity/Dockerfile
+    container_name: modsecurity
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      - nginx
+    networks:
+      - nginx_backend_network
+      - nginx_frontend_network
 
 volumes:
   db_data:
