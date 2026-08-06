@@ -4,7 +4,7 @@ from .constants import UPLOAD_FOLDER
 
 
 def save_raw_file(file) -> str:
-    """Version 1: Raw save of the file with its original name.
+    """Version 2: Raw save of the file with its original name.
     No validation or name modification.
     """
 
