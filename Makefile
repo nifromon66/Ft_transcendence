@@ -1,3 +1,7 @@
+COMPOSE_ENV_FILES := .envs/.env.compose
+
+export COMPOSE_ENV_FILES
+
 up:
 	docker compose up --build
 
