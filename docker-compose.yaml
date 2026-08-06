@@ -1,10 +1,8 @@
 services:
   db:
     image: postgres:16
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .envs/.env.db
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -20,13 +18,12 @@ services:
     build:
       context: ./src/backend
       dockerfile: ../../docker/backend/Dockerfile
-
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    env_file:
+      - .envs/.env.db
+      - .envs/.env.backend
     networks:
       - backend_db_network
       - nginx_backend_network
@@ -50,7 +47,8 @@ services:
     build:
       context: ./src/nginx
       dockerfile: ../../docker/nginx/Dockerfile
-
+    env_file:
+      - .envs/.env.nginx
     networks:
       - nginx_frontend_network
       - nginx_backend_network

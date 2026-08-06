@@ -1,6 +1,7 @@
 # env files
 .env
 .env*
+!.envs
 !.env.*.example
 
 # ssl certificates
