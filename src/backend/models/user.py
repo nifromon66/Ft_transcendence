@@ -36,8 +36,6 @@ class User(db.Model):
 
     badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
-
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
 
     ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
