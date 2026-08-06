@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 
 from .constants import MAX_UPLOAD_SIZE
 from .services import save_raw_file
@@ -7,10 +8,11 @@ upload_bp = Blueprint("upload", __name__)
 
 
 @upload_bp.route("/upload", methods=["POST"])
+@jwt_required()
 def upload_file():
     """
     Endpoint to upload a file.
-    Version 1: Basic HTTP validation and raw saving.
+    Version 2: Protected by JWT authentication and raw saving.
     """
 
     # Check if the request size is not too large
