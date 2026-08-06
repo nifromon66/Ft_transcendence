@@ -1,16 +1,15 @@
 import os
 
 from flask import Flask, jsonify, request
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (
-    JWTManager,
     create_access_token,
     get_jwt_identity,
     jwt_required,
 )
-from flask_sqlalchemy import SQLAlchemy
+
 from sqlalchemy import select
-from sqlalchemy.orm import Mapped, mapped_column
+from extensions import jwt, db, bcrypt
+from models import User
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
@@ -18,28 +17,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 
-jwt = JWTManager(app)
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-
-
-class User(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(nullable=False)
-
-    def __init__(self, username: str, email: str, password: str):
-        self.username = username
-        self.email = email
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-
-    def check_password(self, password: str) -> bool:
-        return bcrypt.check_password_hash(self.password_hash, password)
-
-    def to_dict(self) -> dict[str, int | str]:
-        return {"id": self.id, "username": self.username, "email": self.email}
-
+jwt.init_app(app)
+db.init_app(app)
+bcrypt.init_app(app)
 
 # R - Read : récupérer tous les utilisateurs
 @app.route("/users", methods=["GET"])
