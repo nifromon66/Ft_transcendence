@@ -22,15 +22,42 @@
 * **`201 Created`**: File successfully uploaded and saved on disk.
   ```json
   {
-    "message": "File uploaded successfully (V2)",
+    "message": "File uploaded successfully",
     "filename": "test.txt"
   }
 
-* **`400 Bad Request`**: Missing file part in the request or empty filename submitted.
+* **`400 Bad Request`**: Missing file part in the request, empty filename submitted, invalid extension or forbidden MIME type.
+```json
+  {
+    "error": "No file part in the request"
+  }
   ```json
   {
-  "error": "No file part in the request"
+    "error": "No selected file"
   }
+  ```json
+  {
+    "error": "File extension not allowed",
+    "allowed extensions": [
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "webp"
+    ]
+  }
+  {
+    "error": "File content type not allowed",
+    "allowed mimetypes": [
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp"
+    ]
+  }
+
+
+
 
 * **`401 Unauthorized`**: Missing, invalid, or expired JWT token.
 

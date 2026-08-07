@@ -1,7 +1,8 @@
+import magic
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from .constants import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE
+from .constants import ALLOWED_EXTENSIONS, ALLOWED_MIMETYPES, MAX_UPLOAD_SIZE
 from .services import save_raw_file
 
 upload_bp = Blueprint("upload", __name__)
@@ -37,6 +38,19 @@ def upload_file():
             }
         ), 400
 
+    # Check if the MIME type of the file is allowed
+    file_header = file.read(2048)
+    file.seek(0)
+
+    file_mimetype = magic.from_buffer(file_header, mime=True)
+    if file_mimetype not in ALLOWED_MIMETYPES:
+        return jsonify(
+            {
+                "error": "File content not allowed",
+                "allowed mimetypes": list(ALLOWED_MIMETYPES),
+            }
+        ), 400
+
     file_extension = file.filename.rsplit(".", 1)[1].lower()
 
     try:
@@ -48,6 +62,7 @@ def upload_file():
                 "message": "File uploaded successfully",
                 "filename": saved_filename,
                 "extension": file_extension,
+                "mime type": file_mimetype,
             }
         ), 201
 

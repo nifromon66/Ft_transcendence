@@ -18,10 +18,10 @@ If any of these fields (`username`, `email`, or `password`) are missing, or if t
 #### Example Request (cURL)
 
 ```bash
-curl -k -X POST https://localhost/users \
+curl -k -X POST https://localhost/api/users \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "julien",
-    "email": "julien.ducharlet@gmail.com",
+    "username": "test",
+    "email": "test@gmail.com",
     "password": "test1234"
   }'
