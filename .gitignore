@@ -30,6 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# modsecurity-crs-nginx logs
+access.log
+error.log
+audit.log
+
 # virtual local environments
 venv/
 .venv/

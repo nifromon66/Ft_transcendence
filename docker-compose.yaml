@@ -11,21 +11,72 @@ services:
     volumes:
       - "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
       - "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
+    depends_on:
+      - frontend
+      - backend
     ports:
       - "${WAF_PORT_HTTPS}:${WAF_PORT_HTTPS_HIGH}"
       - "${WAF_PORT_HTTP}:${WAF_PORT_HTTP_HIGH}"
     networks:
       - ${WAF_NETWORK}
 
-  backend:
-    image: hashicorp/http-echo
-    container_name: backend
-    command:
-      - "-text=Backend OK"
+  frontend:
+    build:
+      context: ${FRONTEND_BUILD_CONTEXT_PATH}
+      dockerfile: ${FRONTEND_BUILD_DOCKERFILE_PATH}
+    image: ${FRONTEND_CONTAINER_NAME}:${FRONTEND_AUTHOR}
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    restart: unless-stopped
+    volumes:
+      - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
+      - /app/node_modules
+    depends_on:
+      - backend
     expose:
-      - "3000"
+      - "${FRONTEND_EXPOSE_PORT}"
     networks:
-      - ${WAF_NETWORK}
+      - ${FRONTEND_NETWORK}
+
+  backend:
+    build:
+      context: ${BACKEND_BUILD_CONTEXT_PATH}
+      dockerfile: ${BACKEND_BUILD_DOCKERFILE_PATH}
+    image: ${BACKEND_CONTAINER_NAME}:${BACKEND_AUTHOR}
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${BACKEND_ENV_FILE_BACKEND_PATH}
+      - ${BACKEND_ENV_FILE_DB_PATH}
+    volumes:
+      - ${BACKEND_VOLUME_APP_IN}:${BACKEND_VOLUME_APP_OUT}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "${BACKEND_EXPOSE_PORT}"
+    networks:
+      - ${BACKEND_NETWORK}
+
+  db:
+    image: ${DB_IMAGE}
+    container_name: ${DB_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${DB_ENV_FILE_PATH}
+    volumes:
+      - ${DB_VOLUME_DATA_IN}:${DB_VOLUME_DATA_OUT}
+    expose:
+      - "${DB_EXPOSE_PORT}"
+    networks:
+      - ${DB_NETWORK}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_HEALTHCHECK_POSTGRES_USER} -d ${DB_HEALTHCHECK_POSTGRES_DB}" ]
+      interval: ${DB_HEALTHCHECK_INTERVAL}
+      timeout: ${DB_HEALTHCHECK_TIMEOUT}
+      retries: ${DB_HEALTHCHECK_RETRIES}
+
+volumes:
+  db_data:
 
 networks:
   transcendence:
