@@ -1,3 +1,7 @@
+# Docker
+**/.DS_Store
+**/*.log
+
 # env files
 .env
 .env*
@@ -7,6 +11,7 @@
 # ssl certificates
 *.crt
 *.key
+*.pem
 certs/
 
 # database folders

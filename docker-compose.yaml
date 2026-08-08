@@ -1,83 +1,32 @@
 services:
-  db:
-    image: postgres:16
+  modsecurity-crs-nginx:
+    build:
+      context: ${WAF_BUILD_CONTEXT_PATH}
+      dockerfile: ${WAF_BUILD_DOCKERFILE_PATH}
+    image: ${WAF_CONTAINER_NAME}:${WAF_AUTHOR}
+    container_name: ${WAF_CONTAINER_NAME}
+    restart: unless-stopped
     env_file:
-      - .envs/.env.db
+      - ${WAF_ENV_FILE_PATH}
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
+      - "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
+    ports:
+      - "${WAF_PORT_HTTPS}:${WAF_PORT_HTTPS_HIGH}"
+      - "${WAF_PORT_HTTP}:${WAF_PORT_HTTP_HIGH}"
     networks:
-      - backend_db_network
-
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-      interval: 2s
-      timeout: 5s
-      retries: 10
+      - ${WAF_NETWORK}
 
   backend:
-    build:
-      context: ./src/backend
-      dockerfile: ../../docker/backend/Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - .envs/.env.db
-      - .envs/.env.backend
-    networks:
-      - backend_db_network
-      - nginx_backend_network
-
-    volumes:
-      - ./src/backend:/app
-
-  frontend:
-    build:
-      context: ./src/frontend
-      dockerfile: ../../docker/frontend/Dockerfile
-    networks:
-      - nginx_frontend_network
-    volumes:
-      - ./src/frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-
-  nginx:
-    build:
-      context: ./src/nginx
-      dockerfile: ../../docker/nginx/Dockerfile
-    env_file:
-      - .envs/.env.nginx
-    networks:
-      - nginx_frontend_network
-      - nginx_backend_network
+    image: hashicorp/http-echo
+    container_name: backend
+    command:
+      - "-text=Backend OK"
     expose:
-      - "443:443"
-      - "80:80"
-    depends_on:
-      - backend
-      - frontend
-
-  modsecurity:
-    build:
-      context: ./src/modsecurity
-      dockerfile: ../../docker/modsecurity/Dockerfile
-    container_name: modsecurity
-    restart: unless-stopped
-    ports:
-      - "443:443"
-      - "80:80"
-    depends_on:
-      - nginx
+      - "3000"
     networks:
-      - nginx_backend_network
-      - nginx_frontend_network
-
-volumes:
-  db_data:
+      - ${WAF_NETWORK}
 
 networks:
-  backend_db_network:
-  nginx_frontend_network:
-  nginx_backend_network:
+  transcendence:
+    driver: bridge
