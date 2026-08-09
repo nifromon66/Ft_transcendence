@@ -1,17 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from extensions import db
-from sqlalchemy import DateTime, ForeignKey, PrimaryKeyConstraint, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from .badge import Badge
     from .ingredient import Ingredient
     from .recipe import Recipe
-    from .tag import Tag
     from .user import User
-    from .utensil import Utensil
 
 
 class UserBadge(db.Model):
@@ -21,13 +19,31 @@ class UserBadge(db.Model):
 
     badge_id: Mapped[int] = mapped_column(ForeignKey("badges.id"), primary_key=True)
 
-    date_get: Mapped[datetime | None] = mapped_column(
-        DateTime,
-    )
+    date_get: Mapped[datetime] = mapped_column(DateTime)
 
     user: Mapped["User"] = relationship(back_populates="badges")
 
     badge: Mapped["Badge"] = relationship(back_populates="users")
+
+    def __init__(self, *,
+            user_id: int | None = None, user: "User | None" = None,
+            badge_id: int | None = None, badge: "Badge | None" = None):
+
+        if user is not None:
+            self.user = user
+        elif user_id is not None:
+            self.user_id = user_id
+        else:
+            raise ValueError("Init UserBadge: value must be provided")
+
+        if badge is not None:
+            self.badge = badge
+        elif badge_id is not None:
+            self.badge_id = badge_id
+        else:
+            raise ValueError("Init UserBadge: value must be provided")
+
+        self.date_get = datetime.now(timezone.utc)
 
 
 class RecipeIngredient(db.Model):
@@ -45,26 +61,12 @@ class RecipeIngredient(db.Model):
 
     ingredient: Mapped["Ingredient"] = relationship(back_populates="recipes")
 
-
-class RecipeUtensil(db.Model):
-    __tablename__ = "recipe_utensils"
-
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), primary_key=True)
-
-    utensil_id: Mapped[int] = mapped_column(ForeignKey("utensils.id"), primary_key=True)
-
-    recipe: Mapped["Recipe"] = relationship(back_populates="utensils")
-
-    utensil: Mapped["Utensil"] = relationship(back_populates="recipes")
+recipe_utensil = Table(
+    "recipe_utensil", db.metadata,
+    Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
+    Column("utensil_id", ForeignKey("utensil.id"), primary_key=True))
 
 
-class RecipeTag(db.Model):
-    __tablename__ = "recipe_tags"
-
-    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), primary_key=True)
-
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
-
-    recipe: Mapped["Recipe"] = relationship(back_populates="tags")
-
-    tag: Mapped["Tag"] = relationship(back_populates="recipes")
+recipe_tag = Table("recipe_tag", db.metadata,
+    Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
+    Column("tag_id", ForeignKey("tags.id"), primary_key=True))
