@@ -49,4 +49,9 @@ class User(db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str]:
-        return {"id": self.id, "username": self.username, "email": self.email}
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "avatar_url": self.avatar_url,
+        }

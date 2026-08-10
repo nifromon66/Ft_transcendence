@@ -1,8 +1,10 @@
 import uuid
 
 import magic
+from extensions import db
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from models import User
 from werkzeug.utils import secure_filename
 
 from .constants import ALLOWED_EXTENSIONS, ALLOWED_MIMETYPES, MAX_UPLOAD_SIZE
@@ -68,6 +70,13 @@ def upload_file():
 
     try:
         saved_filename = save_raw_file(file)
+
+        user_id = get_jwt_identity()
+        user = db.session.get(User, int(user_id))
+
+        if user:
+            user.avatar_url = saved_filename
+            db.session.commit()
 
         return jsonify(
             {

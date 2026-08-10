@@ -34,12 +34,14 @@ def get_users():
 def create_user():
     data = request.get_json()
 
-    if (
-        not data
-        or "username" not in data
-        or "email" not in data
-        or "password" not in data
-    ):
+    if not data:
+        return jsonify({"error": "Aucune donnée fournie"}), 400
+
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not email or not password:
         return jsonify({"error": "username, email et password requis"}), 400
 
     new_user = User(
@@ -85,6 +87,12 @@ def login():
     data = request.get_json()
 
     if not data or "email" not in data or "password" not in data:
+        return jsonify({"error": "email et password requis"}), 400
+
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+
+    if not email or not password:
         return jsonify({"error": "email et password requis"}), 400
 
     user = db.session.execute(
