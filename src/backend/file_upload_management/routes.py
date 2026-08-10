@@ -1,3 +1,5 @@
+import uuid
+
 import magic
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
@@ -54,12 +56,17 @@ def upload_file():
 
     file_extension = file.filename.rsplit(".", 1)[1].lower()
 
+    # Sanitize the filename to prevent path traversal attacks
     safe_filename = secure_filename(file.filename)
 
-    file.filename = safe_filename
+    # Generate a unique UUID to prevent file overwriting
+    unique_id = uuid.uuid4().hex
+    new_filename = f"{unique_id}_{safe_filename}"
+
+    # Override the original filename with the secured and unique one
+    file.filename = new_filename
 
     try:
-        # Call save_raw_file to save the file and return its name
         saved_filename = save_raw_file(file)
 
         return jsonify(
