@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from extensions import db
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .recipe import Recipe
-from .user import User
+if TYPE_CHECKING:
+    from .recipe import Recipe
+    from .user import User
 
 
 class Rating(db.Model):
@@ -54,8 +58,8 @@ class Rating(db.Model):
         self.created_at = datetime.now(timezone.utc)
 
 
-        def update_score(self, score: int) -> None:
-            if not 1 <= score <= 5:
-                raise ValueError("Rating: score must be between 1 and 5")
-            self.score = score
-            self.created_at = datetime.now(timezone.utc)
+    def update_score(self, score: int) -> None:
+        if not 1 <= score <= 5:
+            raise ValueError("Rating: score must be between 1 and 5")
+        self.score = score
+        self.created_at = datetime.now(timezone.utc)

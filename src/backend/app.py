@@ -1,15 +1,14 @@
 import os
 
+from extensions import bcrypt, db, jwt
 from flask import Flask, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
     jwt_required,
 )
-
-from sqlalchemy import select
-from extensions import jwt, db, bcrypt
 from models import User
+from sqlalchemy import select
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]

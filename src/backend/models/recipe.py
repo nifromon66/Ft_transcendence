@@ -1,17 +1,21 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from extensions import db
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .association import RecipeIngredient, recipe_tag, recipe_utensil
-from .category import Category
-from .comment import Comment
-from .favorite import Favorite
-from .rating import Rating
-from .tag import Tag
-from .user import User
-from .utensil import Utensil
+if TYPE_CHECKING:
+    from .association import RecipeIngredient, recipe_tag, recipe_utensil
+    from .category import Category
+    from .comment import Comment
+    from .favorite import Favorite
+    from .rating import Rating
+    from .tag import Tag
+    from .user import User
+    from .utensil import Utensil
 
 
 class Recipe(db.Model):
@@ -47,12 +51,11 @@ class Recipe(db.Model):
 
     comments: Mapped[list[Comment]] = relationship(back_populates="recipe")
 
-    ingredients: Mapped[list[RecipeIngredient]] = relationship(
-        back_populates="recipe")
+    ingredients: Mapped[list[RecipeIngredient]] = relationship(back_populates="recipe")
 
-    utensils: Mapped[list[Utensil]] = relationship(secondary=recipe_utensil, back_populates="recipes")
+    utensils: Mapped[list[Utensil]] = relationship(secondary="recipe_utensil", back_populates="recipes")
 
-    tags: Mapped[list[Tag]] = relationship(secondary=recipe_tag, back_populates="recipes")
+    tags: Mapped[list[Tag]] = relationship(secondary="recipe_tag", back_populates="recipes")
 
     favorites: Mapped[list[Favorite]] = relationship(back_populates="recipe")
 

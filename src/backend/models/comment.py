@@ -46,14 +46,14 @@ class Comment(db.Model):
         elif user is not None:
             self.user = user
         else:
-            raise ValueError("Db value must be provided")
+            raise ValueError("Init Comment: Db value must be provided")
 
         if recipe_id is not None:
             self.recipe_id = recipe_id
         elif recipe is not None:
             self.recipe = recipe
         else:
-            raise ValueError("Db value must be provided")
+            raise ValueError("Init Comment: Db value must be provided")
     
         self.content = content
         if parent_id is not None:

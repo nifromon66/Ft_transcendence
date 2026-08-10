@@ -1,6 +1,6 @@
 from extensions import db
 
-from .association import RecipeIngredient, recipe_tag, recipe_utensil
+from .association import RecipeIngredient, UserBadge, recipe_tag, recipe_utensil
 from .badge import Badge
 from .category import Category
 from .comment import Comment
@@ -23,8 +23,9 @@ __all__ = [
     "RecipeIngredient",
     "Tag",
     "User",
+    "UserBadge",
     "Utensil",
     "db",
     "recipe_tag",
-    "recipe_utensil"
+    "recipe_utensil",
 ]

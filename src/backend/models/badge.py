@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from extensions import db
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .association import UserBadge
+if TYPE_CHECKING:
+    from .association import UserBadge
 
 
 class Badge(db.Model):
@@ -16,6 +21,6 @@ class Badge(db.Model):
 
     users: Mapped[list[UserBadge]] = relationship(back_populates="badge")
 
-    def __init__(self, *,  name: str, description: str | None = None):
+    def __init__(self, *, name: str, description: str | None = None):
             self.name = name
             self.description = description

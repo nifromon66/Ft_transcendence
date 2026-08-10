@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -21,13 +23,13 @@ class UserBadge(db.Model):
 
     date_get: Mapped[datetime] = mapped_column(DateTime)
 
-    user: Mapped["User"] = relationship(back_populates="badges")
+    user: Mapped[User] = relationship(back_populates="badges")
 
-    badge: Mapped["Badge"] = relationship(back_populates="users")
+    badge: Mapped[Badge] = relationship(back_populates="users")
 
     def __init__(self, *,
-            user_id: int | None = None, user: "User | None" = None,
-            badge_id: int | None = None, badge: "Badge | None" = None):
+            user_id: int | None = None, user: User | None = None,
+            badge_id: int | None = None, badge: Badge | None = None):
 
         if user is not None:
             self.user = user
@@ -57,14 +59,35 @@ class RecipeIngredient(db.Model):
 
     quantity: Mapped[str | None] = mapped_column(String)
 
-    recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
+    recipe: Mapped[Recipe] = relationship(back_populates="ingredients")
 
-    ingredient: Mapped["Ingredient"] = relationship(back_populates="recipes")
+    ingredient: Mapped[Ingredient] = relationship(back_populates="recipes")
+
+    def __init__(self, *,
+                 recipe: Recipe | None = None, recipe_id: int | None = None,
+                 ingredient: Ingredient | None = None, ingredient_id: int | None = None,
+                 quantity: str | None = None):
+        if recipe is not None:
+            self.recipe = recipe
+        elif recipe_id is not None:
+            self.recipe_id = recipe_id
+        else:
+            raise ValueError("Init RecipeIngredient: Db value must be provided")
+
+        if ingredient is not None:
+            self.ingredient = ingredient
+        elif ingredient_id is not None:
+            self.ingredient_id = ingredient_id
+        else:
+            raise ValueError("Init RecipeIngredient: Db value must be provided")
+
+        self.quantity = quantity
+
 
 recipe_utensil = Table(
     "recipe_utensil", db.metadata,
     Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
-    Column("utensil_id", ForeignKey("utensil.id"), primary_key=True))
+    Column("utensil_id", ForeignKey("utensils.id"), primary_key=True))
 
 
 recipe_tag = Table("recipe_tag", db.metadata,
