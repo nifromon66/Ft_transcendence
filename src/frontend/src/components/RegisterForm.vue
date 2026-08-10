@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import  ImageDropZone from './ImageDropZone.vue'
+import { validateAvatar } from '@/utils/fileValidators'
 
 const router = useRouter()
 
@@ -10,45 +12,17 @@ const password = ref('')
 const errorMessage = ref('')
 const avatarFile = ref(null)
 
-const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
-const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp']
-const ALLOWED_MIMETYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+const processFile = (rawFile) => {
+  const {isValid, error } = validateAvatar(rawFile)
 
-const onFileSelected = (event) => {
+  if (!isValid) {
+    errorMessage.value = error
+    avatarFile.value = null
+    return
+  }
+
   errorMessage.value = ''
-  const file = event.target.files[0]
-
-  if (!file) {
-    avatarFile.value = null
-    return
-  }
-
-  const fileName = file.name
-  const hasExtension = fileName.includes('.')
-  const fileExtension = hasExtension ? fileName.split('.').pop().toLowerCase() : ''
-
-  if (!hasExtension || !ALLOWED_EXTENSIONS.includes(fileExtension)) {
-    errorMessage.value = "L'extension du fichier n'est pas autorisée (.png, .jpg, .jpeg, .gif, ou .webp uniquement)."
-    event.target.value = ''
-    avatarFile.value = null
-    return
-  }
-
-  if (!ALLOWED_MIMETYPES.includes(file.type)) {
-    errorMessage.value = "Le format du fichier n'est pas reconnu comme une image valide."
-    event.target.value = ''
-    avatarFile.value = null
-    return
-  }
-
-  if (file.size > MAX_UPLOAD_SIZE) {
-    errorMessage.value = "Le fichier dépasse la taille autorisée (10 Mo max)."
-    event.target.value = ''
-    avatarFile.value = null
-    return
-  }
-
-  avatarFile.value = file
+  avatarFile.value = rawFile
 }
 
 async function register() {
@@ -145,13 +119,10 @@ async function register() {
       
       <div style="margin: 15px 0;">
         <label for="avatar">Photo de profil (optionnel)</label>
-        <br>
-        <input
-          id="avatar"
-          type="file"
-          accept=".png, .jpg, .jpeg, .gif, .webp"
-          @change="onFileSelected"
-        />
+        <ImageDropZone @file-dropped="processFile" />
+        <p v-if="avatarFile" class="text-sm text-green-600 mt-2 font-medium">
+          {{ avatarFile.name }}
+        </p>
       </div>
       <button type="submit">S'inscrire</button>
     </form>
