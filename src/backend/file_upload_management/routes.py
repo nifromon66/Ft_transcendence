@@ -1,6 +1,7 @@
 import magic
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from werkzeug.utils import secure_filename
 
 from .constants import ALLOWED_EXTENSIONS, ALLOWED_MIMETYPES, MAX_UPLOAD_SIZE
 from .services import save_raw_file
@@ -52,6 +53,10 @@ def upload_file():
         ), 400
 
     file_extension = file.filename.rsplit(".", 1)[1].lower()
+
+    safe_filename = secure_filename(file.filename)
+
+    file.filename = safe_filename
 
     try:
         # Call save_raw_file to save the file and return its name
