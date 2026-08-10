@@ -39,10 +39,17 @@ def create_user():
 
     username = data.get("username", "").strip()
     email = data.get("email", "").strip()
-    password = data.get("password", "").strip()
+    password = data.get("password", "")
 
     if not username or not email or not password:
         return jsonify({"error": "username, email et password requis"}), 400
+
+    existing_user = db.session.execute(
+        select(User).where(User.email == email)
+    ).scalar_one_or_none()
+
+    if existing_user:
+        return jsonify({"error": "Cet email est déjà utilisé."}), 409
 
     new_user = User(
         username=data["username"], email=data["email"], password=data["password"]
