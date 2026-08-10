@@ -1,6 +1,7 @@
 import os
 
 from extensions import bcrypt, db, jwt
+from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
@@ -113,6 +114,7 @@ def me():
 with app.app_context():
     db.create_all()
 
+app.register_blueprint(upload_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
