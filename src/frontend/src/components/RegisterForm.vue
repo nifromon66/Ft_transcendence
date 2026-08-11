@@ -4,6 +4,10 @@ import { useRouter } from 'vue-router'
 import  ImageDropZone from './ImageDropZone.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
+import { formatFileSize } from '@/utils/formatters'
+import { registerUser } from '@/services/userService'
+import { loginUser } from '@/services/authService'
+import { uploadAvatar } from '@/services/uploadService'
 
 const router = useRouter()
 
@@ -15,17 +19,6 @@ const avatarFile = ref(null)
 
 const uploadProgress = ref(0)
 const isUploading = ref(false)
-
-const formatFileSize = (bytes) => {
-  if (bytes === 0) {
-    return '0 Octets'
-  }
-  
-  const k = 1024
-  const sizes = ['Octets', 'Ko', 'Mo']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
 
 const processFile = (rawFile) => {
   const {isValid, error } = validateAvatar(rawFile)
@@ -47,95 +40,30 @@ async function register() {
 
   errorMessage.value = ''
 
-  
-
   try {
-    const registerRes = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
+    await registerUser({
+      username: username.value,
+      email: email.value,
+      password: password.value
+    })
+
+    if (avatarFile.value) {
+      const token = await loginUser({
         email: email.value,
         password: password.value
       })
-    })
-
-    if (registerRes.status >= 500) {
-      errorMessage.value = "Erreur interne du serveur. Veuillez réessayer."
-      return
-    }
-
-    const data = await registerRes.json()
-
-    if (!registerRes.ok) {
-      errorMessage.value = data.error || 'Erreur lors de l\'inscription'
-      return
-    }
-
-    if (avatarFile.value)
-    {
-      const loginRes = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.value,
-          password: password.value
-        })
-      })
-
-      if (loginRes.status >= 500) {
-        errorMessage.value = "Erreur interne du serveur. Veuillez réessayer."
-        return
-      }
-
-      if (!loginRes.ok) {
-        errorMessage.value = "Votre compte a été créé avec succès. Cependant, une erreur réseau a empêché l'ajout de la photo de profil."
-          return
-      }
-
-      const loginData = await loginRes.json()
-      const token = loginData.access_token
-
-      const formData = new FormData()
-      formData.append('file', avatarFile.value)
 
       isUploading.value = true
       uploadProgress.value = 0
 
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-
-        xhr.open('POST', '/api/upload')
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            uploadProgress.value = Math.round((event.loaded / event.total) * 100)
-          }
-        }
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve()
-          } else {
-            let errorMsg = "Une erreur est survenue lors du transfert de l'image."
-            try {
-              const uploadError = JSON.parse(xhr.responseText)
-              errorMsg = uploadError.error || errorMsg
-            } catch (e) {}
-            reject(new Error(errorMsg))
-          }
-        }
-
-        xhr.onerror = () => reject(new Error("Erreur réseau lors du transfert de l'image."))
-
-        xhr.send(formData)
+      await uploadAvatar(token, avatarFile.value, (progress) => {
+        uploadProgress.value = progress
       })
     }
 
     router.push('/login')
   } catch (error) {
-    errorMessage.value = "Une erreur réseau est survenue. Veuillez vérifier votre connexion."
+    errorMessage.value = error.message || "Une erreur inattendue est survenue."
   } finally {
     isUploading.value = false
   }
@@ -158,7 +86,7 @@ async function register() {
           :disabled="isUploading"
         />
 
-        <p v-if="avatarFile" class="text-sm text-green-600 mt-2 font-medium">
+        <p v-if="avatarFile && !isUploading" class="text-sm text-green-600 mt-2 font-medium">
           <span>{{ avatarFile.name }}</span>
           <span class="text-xs text-gray-400">({{ formatFileSize(avatarFile.size) }})</span>
         </p>

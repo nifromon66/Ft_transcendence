@@ -2,17 +2,17 @@
 
 import { ref } from 'vue'
 
-const   emit = defineEmits(['file-dropped'])
+const emit = defineEmits(['file-dropped'])
 
-const   props = defineProps({
+const props = defineProps({
     disabled: {
         type: Boolean,
         default: false
     }
 })
 
-const   isDragging = ref(false)
-const   fileInput = ref(null)
+const isDragging = ref(false)
+const fileInput = ref(null)
 
 const triggerFileInput = () => {
     if (!props.disabled) {
