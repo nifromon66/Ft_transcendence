@@ -19,4 +19,4 @@ clean:
 
 re: clean up
 
-.PHONY: up down logs restart clean re
+.PHONY: up down test-waf logs restart clean re

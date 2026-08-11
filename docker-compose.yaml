@@ -1,5 +1,48 @@
+##########################################
+# Docker Compose                         #
+##########################################
+name: ${PROJECT_NAME}
+
+##########################################
+# Services                               #
+##########################################
 services:
-  modsecurity-crs-nginx:
+  ####################################################
+  # Vault : HashiCorp Vault Hardened + Raft database #
+  ####################################################
+  vault:
+    build:
+      context: ${VAULT_BUILD_CONTEXT_PATH}
+      dockerfile: ${VAULT_BUILD_DOCKERFILE_PATH}
+    image: ${VAULT_CONTAINER_NAME}:${VAULT_AUTHOR}
+    container_name: ${VAULT_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${VAULT_ENV_FILE_PATH}
+      - ${VAULT_ENV_FILE_SECRETS_PATH}
+    cap_add:
+      - ${VAULT_CAP_ADD_IPC_LOCK}
+    tmpfs:
+      - ${VAULT_TMPFS_TMP_PATH}
+      - ${VAULT_TMPFS_RUN_PATH}
+    volumes:
+      - ${VAULT_VOLUME_INIT_IN}:${VAULT_VOLUME_INIT_OUT}
+      - ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
+      - ${VAULT_VOLUME_LOGS_IN}:${VAULT_VOLUME_LOGS_OUT}
+      - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
+    expose:
+      - "${VAULT_EXPOSE_API_PORT}"
+    healthcheck:
+      test: ["CMD", "vault", "status", "-tls-skip-verify"]
+      interval: ${VAULT_HEALTHCHECK_INTERVAL}
+      timeout: ${VAULT_HEALTHCHECK_TIMEOUT}
+      retries: ${VAULT_HEALTHCHECK_RETRIES}
+    networks:
+      - ${VAULT_NETWORK}
+  ##########################################
+  # WAF : Modsecurity + CRS + Nginx        #
+  ##########################################
+  waf:
     build:
       context: ${WAF_BUILD_CONTEXT_PATH}
       dockerfile: ${WAF_BUILD_DOCKERFILE_PATH}
@@ -19,7 +62,11 @@ services:
       - "${WAF_PORT_HTTP}:${WAF_PORT_HTTP_HIGH}"
     networks:
       - ${WAF_NETWORK}
-
+      - ${FRONTEND_NETWORK}
+      - ${BACKEND_NETWORK}
+  ##########################################
+  # Frontend                               #
+  ##########################################
   frontend:
     build:
       context: ${FRONTEND_BUILD_CONTEXT_PATH}
@@ -36,7 +83,11 @@ services:
       - "${FRONTEND_EXPOSE_PORT}"
     networks:
       - ${FRONTEND_NETWORK}
-
+      - ${BACKEND_NETWORK}
+      - ${WAF_NETWORK}
+  ##########################################
+  # Backend                                #
+  ##########################################
   backend:
     build:
       context: ${BACKEND_BUILD_CONTEXT_PATH}
@@ -56,7 +107,12 @@ services:
       - "${BACKEND_EXPOSE_PORT}"
     networks:
       - ${BACKEND_NETWORK}
-
+      - ${WAF_NETWORK}
+      - ${DB_NETWORK}
+      - ${FRONTEND_NETWORK}
+  ##########################################
+  # Database : PostGreSQL                  #
+  ##########################################
   db:
     image: ${DB_IMAGE}
     container_name: ${DB_CONTAINER_NAME}
@@ -67,17 +123,38 @@ services:
       - ${DB_VOLUME_DATA_IN}:${DB_VOLUME_DATA_OUT}
     expose:
       - "${DB_EXPOSE_PORT}"
-    networks:
-      - ${DB_NETWORK}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_HEALTHCHECK_POSTGRES_USER} -d ${DB_HEALTHCHECK_POSTGRES_DB}" ]
       interval: ${DB_HEALTHCHECK_INTERVAL}
       timeout: ${DB_HEALTHCHECK_TIMEOUT}
       retries: ${DB_HEALTHCHECK_RETRIES}
+    networks:
+      - ${DB_NETWORK}
+      - ${BACKEND_NETWORK}
 
+##########################################
+# Volumes                                #
+##########################################
 volumes:
   db_data:
+    name: db_data
 
+##########################################
+# Networks                               #
+##########################################
 networks:
-  transcendence:
+  vault-network:
+    name: vault-network
+    driver: bridge
+  waf-network:
+    name: waf-network
+    driver: bridge
+  frontend-network:
+    name: frontend-network
+    driver: bridge
+  backend-network:
+    name: backend-network
+    driver: bridge
+  db-network:
+    name: db-network
     driver: bridge

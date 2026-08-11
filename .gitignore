@@ -30,10 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# modsecurity-crs-nginx logs
+# waf logs
 access.log
 error.log
 audit.log
+
+# HashiCorp vault
+init.json
+
 
 # virtual local environments
 venv/

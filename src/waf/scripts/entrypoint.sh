@@ -1,18 +1,18 @@
 #!/bin/sh
 
 ##########################################
-# Modsecuyrity-crs-nginx entrypoint		 #
+# WAF entrypoint		                 #
 ##########################################
 
 set -e
 
-echo "[*] Modsecurity-crs-nginx entrypoint executing..."
+echo "[*] waf entrypoint executing..."
 
 ##########################################
 # SSL Certificates generation            #
 ##########################################
 
-/usr/local/src/modsecurity/scripts/ssl-certification-gen.sh
+/usr/local/src/waf/scripts/ssl-certification-gen.sh
 
 ##########################################
 # *.conf.template => *.conf              #
@@ -29,8 +29,8 @@ ${NGINX_CLIENT_MAX_BODY_SIZE}
 ${NGINX_ACCESS_LOG_PATH}
 ${NGINX_MODSEC_RULES_FILE_PATH}
 ${NGINX_CONF_INCLUDE_PATH}' \
-	< /usr/local/src/modsecurity/nginx/nginx.conf.template \
-	> /usr/local/src/modsecurity/nginx/nginx.conf
+	< /usr/local/src/waf/nginx/nginx.conf.template \
+	> /usr/local/src/waf/nginx/nginx.conf
 
 echo "[✔] nginx.conf.template converted to nginx.conf successfully."
 
@@ -46,8 +46,8 @@ ${BACKEND_HOST}
 ${BACKEND_PORT}
 ${FRONTEND_HOST}
 ${FRONTEND_PORT}' \
-	< /usr/local/src/modsecurity/nginx/conf.d/reverse-proxy.conf.template \
-	> /usr/local/src/modsecurity/nginx/conf.d/reverse-proxy.conf
+	< /usr/local/src/waf/nginx/conf.d/reverse-proxy.conf.template \
+	> /usr/local/src/waf/nginx/conf.d/reverse-proxy.conf
 
 echo "[✔] reverse-proxy.conf.template converted to reverse-proxy.conf successfully."
 
@@ -61,8 +61,8 @@ ${MODSEC_AUDIT_LOG_FORMAT}
 ${MODSEC_DEBUG_LOG}
 ${MODSEC_DEBUG_LOG_LEVEL}
 ${MODSEC_CUSTOM_RULES_INCLUDE_PATH}' \
-	< /usr/local/src/modsecurity/modsecurity/modsecurity.conf.template \
-	> /usr/local/src/modsecurity/modsecurity/modsecurity.conf
+	< /usr/local/src/waf/modsecurity/modsecurity.conf.template \
+	> /usr/local/src/waf/modsecurity/modsecurity.conf
 
 echo "[✔] modsecurity.conf.template converted to modsecurity.conf successfully."
 
@@ -78,43 +78,43 @@ mkdir -p /etc/nginx/modsecurity/custom
 
 echo "[*] Copying all necessary config files..."
 
-cp /usr/local/src/modsecurity/nginx/nginx.conf \
+cp /usr/local/src/waf/nginx/nginx.conf \
    /etc/nginx/nginx.conf
 
 echo "[✔] Copied nginx.conf file."
 
-cp -r /usr/local/src/modsecurity/nginx/conf.d/* \
+cp -r /usr/local/src/waf/nginx/conf.d/* \
       /etc/nginx/conf.d/
 
 echo "[✔] Copied all nginx conf.d/* files."
 
-cp /usr/local/src/modsecurity/modsecurity/modsecurity.conf \
+cp /usr/local/src/waf/modsecurity/modsecurity.conf \
       /etc/nginx/modsecurity/
 
 echo "[✔] Copied modsecurity.conf file."
 
-cp /usr/local/src/modsecurity/modsecurity/unicode.mapping \
+cp /usr/local/src/waf/modsecurity/unicode.mapping \
 	/etc/nginx/modsecurity/
 
 echo "[✔] Copied unicode.mapping file."
 
-cp /usr/local/src/modsecurity/modsecurity/crs-setup.conf \
+cp /usr/local/src/waf/modsecurity/crs-setup.conf \
 	/etc/nginx/modsecurity/
 
 echo "[✔] Copied crs-setup.conf file."
 
-cp /usr/local/src/modsecurity/modsecurity/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
+cp /usr/local/src/waf/modsecurity/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
 	/etc/nginx/modsecurity/
 
 echo "[✔] Copied REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf file."
 
-cp /usr/local/src/modsecurity/modsecurity/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf \
+cp /usr/local/src/waf/modsecurity/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf \
 	/etc/nginx/modsecurity/
 
 echo "[✔] Copied RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf file."
 
 
-cp -r /usr/local/src/modsecurity/modsecurity/custom/* \
+cp -r /usr/local/src/waf/modsecurity/custom/* \
 	/etc/nginx/modsecurity/custom/
 
 echo "[✔] Copied all modsecurity /custom/*.conf files."
@@ -131,4 +131,4 @@ exec nginx -g "daemon off; error_log stderr debug;"
 
 echo "[✔] nginx daemon off."
 
-echo "[✔] Modsecurity-crs-nginx entrypoint successful."
+echo "[✔] waf entrypoint successful."

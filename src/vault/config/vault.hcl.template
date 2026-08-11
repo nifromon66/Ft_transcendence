@@ -1,0 +1,18 @@
+ui = false
+disable_mlock = false
+
+api_addr = "${VAULT_API_ADDR}"
+cluster_addr = "${VAULT_CLUSTER_ADDR}"
+log_level = "${VAULT_LOGGING_LEVEL}"
+
+listener "tcp" {
+    address = "${VAULT_LISTEN_ADDRESS}"
+    tls_disable = 0
+    tls_cert_file = "${VAULT_TLS_CERT}"
+    tls_key_file = "${VAULT_TLS_KEY}"
+}
+
+storage "raft" {
+    path = "${VAULT_STORAGE_DATA_DIR}"
+    node_id = "${VAULT_STORAGE_NODE_ID}"
+}
