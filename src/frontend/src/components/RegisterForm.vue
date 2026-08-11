@@ -5,6 +5,7 @@ import  ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
+import { optimizeImage } from '@/utils/imageProcessor'
 import { registerUser } from '@/services/userService'
 import { loginUser } from '@/services/authService'
 import { uploadAvatar } from '@/services/uploadService'
@@ -20,7 +21,7 @@ const avatarFile = ref(null)
 const uploadProgress = ref(0)
 const isUploading = ref(false)
 
-const processFile = (rawFile) => {
+const processFile = async (rawFile) => {
   const {isValid, error } = validateAvatar(rawFile)
 
   if (!isValid) {
@@ -29,8 +30,16 @@ const processFile = (rawFile) => {
     return
   }
 
-  errorMessage.value = ''
-  avatarFile.value = rawFile
+  try {
+    const optimizedFile = await optimizeImage(rawFile)
+
+    errorMessage.value = ''
+    avatarFile.value = optimizedFile
+  } catch (err) {
+    errorMessage.value = "Erreur lors du redimensionnement automatique de cette image."
+    avatarFile.value = null
+  }
+
 }
 
 const clearFile = () => {

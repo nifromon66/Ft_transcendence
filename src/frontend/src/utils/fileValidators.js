@@ -1,3 +1,8 @@
+/**
+ * Validates an uploaded avatar file (checks existence, allowed extensions, MIME types, and 10MB size limit).
+ * @param {File} file - The uploaded image file to validate.
+ * @returns {{isValid: boolean, error: string|null}} An object indicating if the file is valid, along with an error message if it is not.
+ */
 export const validateAvatar = (file) => {
     const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
     const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp']

@@ -58,7 +58,7 @@ const handleClear = () => {
             class="w-12 h-12 object-cover rounded-full border border-gray-300"
         />
         <div class="flex-1 overflow-hidden">
-            <p class="text-sm font-medium text-gray-700 truncate">{{ file.name }}</p>
+            <p class="text-sm font-medium text-gray-700 truncate">{{ file.originalName || file.name }}</p>
             <p class="text-xs text-gray-500">({{ formatFileSize(file.size) }})</p>
         </div>
         

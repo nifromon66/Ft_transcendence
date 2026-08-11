@@ -1,3 +1,8 @@
+/**
+ * Formats a file size in bytes into a human-readable string (Octets, Ko, Mo).
+ * @param {number} bytes - The file size in bytes.
+ * @returns {string} The formatted file size string.
+ */
 export function formatFileSize(bytes) {
     if (bytes === 0) {
         return '0 Octets'

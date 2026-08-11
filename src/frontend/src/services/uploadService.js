@@ -1,3 +1,11 @@
+/**
+ * Uploads the user avatar to the server with progress tracking.
+ * @param {string} token - The JWT authentication token.
+ * @param {File} file - The image file to upload.
+ * @param {Function} [onProgress] - Optional callback function to track upload progress percentage (0 to 100).
+ * @returns {Promise<void>} Resolves when the upload completes successfully.
+ * @throws {Error} If the upload fails due to network issues or server rejection.
+ */
 export function uploadAvatar(token, file, onProgress) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
