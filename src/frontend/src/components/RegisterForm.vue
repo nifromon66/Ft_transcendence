@@ -85,36 +85,70 @@ async function register() {
 </script>
 
 <template>
-  <div>
-    <h2>Inscription</h2>
-    <form @submit.prevent="register">
-      <input v-model="username" placeholder="Nom d'utilisateur" required />
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Mot de passe" required />
-      
-      <div style="margin: 15px 0;">
-        <label for="avatar">Photo de profil (optionnel)</label>
+  <div class="flex flex-1 items-center justify-center bg-primary-dark">
+    <div class="-translate-y-32 w-full max-w-sm rounded-lg bg-menu-background p-8 shadow-lg">
+      <h2 class="mb-6 text-center text-2xl font-bold text-black">Inscription</h2>
+      <form @submit.prevent="register" class="flex flex-col gap-0.5">
+        <div>
+          <input 
+            v-model="username" 
+            placeholder="Nom d'utilisateur" 
+            class="w-full rounded border p-2 bg-white font-semibold text-black"
+            required
+          />
+        </div>
+        <div>
+          <input 
+            v-model="email"
+            type="email" 
+            placeholder="Email" 
+            class="w-full rounded border p-2 bg-white font-semibold text-black"
+            required
+          />
+        </div>
+        <div>
+          <input 
+            v-model="password" 
+            type="password" 
+            placeholder="Mot de passe" 
+            class="w-full rounded border p-2 bg-white font-semibold text-black"
+            required
+          />
+        </div>
+        <div style="margin: 15px 0;">
+          <label for="avatar">Photo de profil (optionnel)</label>
         
-        <ImageDropZone
-          v-if="!avatarFile"
-          @file-dropped="processFile"
-          :disabled="isUploading"
-        />
+          <ImageDropZone
+            v-if="!avatarFile"
+            @file-dropped="processFile"
+            :disabled="isUploading"
+          />
 
-        <ImagePreview
-          v-if="avatarFile && !isUploading"
-          :file="avatarFile"
-          :disabled="isUploading"
-          @clear="clearFile"
-        />
+          <ImagePreview
+            v-if="avatarFile && !isUploading"
+            :file="avatarFile"
+            :disabled="isUploading"
+            @clear="clearFile"
+          />
 
-        <ProgressBar
-          v-if="isUploading"
-          :progress="uploadProgress"
-        />
-      </div>
-      <button type="submit" :disabled="isUploading">S'inscrire</button>
-    </form>
-    <p v-if="errorMessage" style="color: red">{{ errorMessage }}</p>
+          <ProgressBar
+            v-if="isUploading"
+            :progress="uploadProgress"
+          />
+        </div>
+        <button
+          type="submit"
+          :disabled="isUploading"
+          class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+        >
+          S'inscrire
+        </button>
+      </form>
+      <p
+        v-if="errorMessage"
+        class="mt-4 h-6 text-center text-red-600">
+        {{ errorMessage }}
+      </p>
+    </div>
   </div>
 </template>
