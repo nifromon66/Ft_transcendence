@@ -17,18 +17,46 @@ export function uploadAvatar(token, file, onProgress) {
         xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
                 resolve()
-            } else {
-                let errorMsg = "Une erreur est survenue lors du transfert de l'image."
-                try {
-                    const uploadError = JSON.parse(xhr.responseText)
-                    errorMsg = uploadError.error || errorMsg
-                } catch (e) { }
-                reject(new Error(errorMsg))
+                return
             }
+
+            let serverErrorMessage = "Une erreur est survenue lors du transfert de l'image."
+
+            try {
+                const responseData = JSON.parse(xhr.responseText)
+                if (responseData.error) {
+                    serverErrorMessage = responseData.error
+                }
+            } catch (e) {
+
+            }
+
+            let finalMessage = serverErrorMessage;
+
+            switch (xhr.status) {
+                case 400:
+                    finalMessage = `Requête invalide : ${serverErrorMessage}`
+                    break;
+                case 401:
+                case 403:
+                    finalMessage = "Session invalide ou expirée. L'envoi a été refusé."
+                    break;
+                case 413:
+                    finalMessage = "L'image est trop volumineuse."
+                    break;
+                case 500:
+                    finalMessage = `Erreur interne du serveur : ${serverErrorMessage}`
+                    break;
+                default:
+                    finalMessage = `Erreur ${xhr.status} : ${serverErrorMessage}`
+            }
+
+            reject(new Error(finalMessage))
         }
 
-        xhr.onerror = () => reject(new Error("Erreur réseau lors du transfert de l'image."))
-
+        xhr.onerror = () => {
+            reject(new Error("Erreur réseau lors du transfert de l'image."))
+        }
         xhr.send(formData)
     })
 }
