@@ -2,9 +2,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import  ImageDropZone from './ImageDropZone.vue'
+import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
-import { formatFileSize } from '@/utils/formatters'
 import { registerUser } from '@/services/userService'
 import { loginUser } from '@/services/authService'
 import { uploadAvatar } from '@/services/uploadService'
@@ -31,6 +31,11 @@ const processFile = (rawFile) => {
 
   errorMessage.value = ''
   avatarFile.value = rawFile
+}
+
+const clearFile = () => {
+  avatarFile.value = null
+  errorMessage.value = ''
 }
 
 async function register() {
@@ -81,15 +86,18 @@ async function register() {
       <div style="margin: 15px 0;">
         <label for="avatar">Photo de profil (optionnel)</label>
         
-        <ImageDropZone 
+        <ImageDropZone
+          v-if="!avatarFile"
           @file-dropped="processFile"
           :disabled="isUploading"
         />
 
-        <p v-if="avatarFile && !isUploading" class="text-sm text-green-600 mt-2 font-medium">
-          <span>{{ avatarFile.name }}</span>
-          <span class="text-xs text-gray-400">({{ formatFileSize(avatarFile.size) }})</span>
-        </p>
+        <ImagePreview
+          v-if="avatarFile && !isUploading"
+          :file="avatarFile"
+          :disabled="isUploading"
+          @clear="clearFile"
+        />
 
         <ProgressBar
           v-if="isUploading"
