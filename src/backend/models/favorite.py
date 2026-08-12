@@ -26,9 +26,14 @@ class Favorite(db.Model):
 
     recipe: Mapped[Recipe] = relationship(back_populates="favorites")
 
-    def __init__(self, *,
-                user: User | None = None, user_id: int | None = None,
-                recipe: Recipe | None = None, recipe_id: int | None = None):
+    def __init__(
+        self,
+        *,
+        user: User | None = None,
+        user_id: int | None = None,
+        recipe: Recipe | None = None,
+        recipe_id: int | None = None,
+    ):
         if user is not None:
             self.user = user
         elif user_id is not None:

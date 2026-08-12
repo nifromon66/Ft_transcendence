@@ -19,5 +19,5 @@ class Category(db.Model):
 
     recipes: Mapped[list[Recipe]] = relationship(back_populates="category")
 
-    def __init__(self, name:str):
+    def __init__(self, name: str):
         self.name = name

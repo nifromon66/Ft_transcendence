@@ -19,7 +19,9 @@ class Tag(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list[Recipe]] = relationship(secondary=recipe_tag, back_populates="tags")
+    recipes: Mapped[list[Recipe]] = relationship(
+        secondary=recipe_tag, back_populates="tags"
+    )
 
     def __init__(self, name):
         self.name = name

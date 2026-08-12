@@ -27,9 +27,14 @@ class UserBadge(db.Model):
 
     badge: Mapped[Badge] = relationship(back_populates="users")
 
-    def __init__(self, *,
-            user_id: int | None = None, user: User | None = None,
-            badge_id: int | None = None, badge: Badge | None = None):
+    def __init__(
+        self,
+        *,
+        user_id: int | None = None,
+        user: User | None = None,
+        badge_id: int | None = None,
+        badge: Badge | None = None,
+    ):
 
         if user is not None:
             self.user = user
@@ -63,10 +68,15 @@ class RecipeIngredient(db.Model):
 
     ingredient: Mapped[Ingredient] = relationship(back_populates="recipes")
 
-    def __init__(self, *,
-                 recipe: Recipe | None = None, recipe_id: int | None = None,
-                 ingredient: Ingredient | None = None, ingredient_id: int | None = None,
-                 quantity: str | None = None):
+    def __init__(
+        self,
+        *,
+        recipe: Recipe | None = None,
+        recipe_id: int | None = None,
+        ingredient: Ingredient | None = None,
+        ingredient_id: int | None = None,
+        quantity: str | None = None,
+    ):
         if recipe is not None:
             self.recipe = recipe
         elif recipe_id is not None:
@@ -85,11 +95,16 @@ class RecipeIngredient(db.Model):
 
 
 recipe_utensil = Table(
-    "recipe_utensil", db.metadata,
+    "recipe_utensil",
+    db.metadata,
     Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
-    Column("utensil_id", ForeignKey("utensils.id"), primary_key=True))
+    Column("utensil_id", ForeignKey("utensils.id"), primary_key=True),
+)
 
 
-recipe_tag = Table("recipe_tag", db.metadata,
+recipe_tag = Table(
+    "recipe_tag",
+    db.metadata,
     Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
-    Column("tag_id", ForeignKey("tags.id"), primary_key=True))
+    Column("tag_id", ForeignKey("tags.id"), primary_key=True),
+)

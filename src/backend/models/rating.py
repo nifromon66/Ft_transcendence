@@ -17,9 +17,13 @@ class Rating(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
 
-    recipe_id: Mapped[int] = mapped_column(Integer, ForeignKey("recipes.id"), nullable=False)
+    recipe_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("recipes.id"), nullable=False
+    )
 
     score: Mapped[int] = mapped_column(Integer)
 
@@ -29,13 +33,20 @@ class Rating(db.Model):
 
     recipe: Mapped[Recipe] = relationship(back_populates="ratings")
 
-    __table_args__ = (UniqueConstraint("user_id", "recipe_id"),
-                      CheckConstraint("score >= 1 AND score <= 5"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "recipe_id"),
+        CheckConstraint("score >= 1 AND score <= 5"),
+    )
 
-    def __init__(self, *,
-        user_id: int | None = None, user: User | None = None,
-        recipe_id: int | None = None, recipe: Recipe | None = None,
-        score: int,):
+    def __init__(
+        self,
+        *,
+        user_id: int | None = None,
+        user: User | None = None,
+        recipe_id: int | None = None,
+        recipe: Recipe | None = None,
+        score: int,
+    ):
 
         if user is not None:
             self.user = user
@@ -45,7 +56,7 @@ class Rating(db.Model):
             raise ValueError("Init Rating: value must be provided")
 
         if recipe is not None:
-           self.recipe = recipe
+            self.recipe = recipe
         elif recipe_id is not None:
             self.recipe_id = recipe_id
         else:
@@ -56,7 +67,6 @@ class Rating(db.Model):
         self.score = score
 
         self.created_at = datetime.now(timezone.utc)
-
 
     def update_score(self, score: int) -> None:
         if not 1 <= score <= 5:

@@ -37,10 +37,17 @@ class Comment(db.Model):
 
     replies: Mapped[list[Comment]] = relationship(back_populates="parent")
 
-    def __init__(self, *, user_id: int | None = None, user: User | None = None,
-                 recipe_id: int | None = None, recipe: Recipe | None = None,
-                 content: str,
-                 parent_id: int | None = None, parent: Comment | None = None):
+    def __init__(
+        self,
+        *,
+        user_id: int | None = None,
+        user: User | None = None,
+        recipe_id: int | None = None,
+        recipe: Recipe | None = None,
+        content: str,
+        parent_id: int | None = None,
+        parent: Comment | None = None,
+    ):
         if user_id is not None:
             self.user_id = user_id
         elif user is not None:
@@ -54,7 +61,7 @@ class Comment(db.Model):
             self.recipe = recipe
         else:
             raise ValueError("Init Comment: Db value must be provided")
-    
+
         self.content = content
         if parent_id is not None:
             self.parent_id = parent_id

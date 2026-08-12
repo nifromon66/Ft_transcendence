@@ -22,5 +22,5 @@ class Badge(db.Model):
     users: Mapped[list[UserBadge]] = relationship(back_populates="badge")
 
     def __init__(self, *, name: str, description: str | None = None):
-            self.name = name
-            self.description = description
+        self.name = name
+        self.description = description
