@@ -1,70 +1,160 @@
+##########################################
+# Docker Compose                         #
+##########################################
+name: ${PROJECT_NAME}
+
+##########################################
+# Services                               #
+##########################################
 services:
-  db:
-    image: postgres:16
-    env_file:
-      - .envs/.env.db
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    networks:
-      - backend_db_network
-
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-      interval: 2s
-      timeout: 5s
-      retries: 10
-
-  backend:
+  ####################################################
+  # Vault : HashiCorp Vault Hardened + Raft database #
+  ####################################################
+  vault:
     build:
-      context: ./src/backend
-      dockerfile: ../../docker/backend/Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
+      context: ${VAULT_BUILD_CONTEXT_PATH}
+      dockerfile: ${VAULT_BUILD_DOCKERFILE_PATH}
+    image: ${VAULT_CONTAINER_NAME}:${VAULT_AUTHOR}
+    container_name: ${VAULT_CONTAINER_NAME}
+    restart: unless-stopped
     env_file:
-      - .envs/.env.db
-      - .envs/.env.backend
-    networks:
-      - backend_db_network
-      - nginx_backend_network
-
+      - ${VAULT_ENV_FILE_PATH}
+      - ${VAULT_ENV_FILE_SECRETS_PATH}
+    cap_add:
+      - ${VAULT_CAP_ADD_IPC_LOCK}
+    tmpfs:
+      - ${VAULT_TMPFS_TMP_PATH}
+      - ${VAULT_TMPFS_RUN_PATH}
     volumes:
-      - ./src/backend:/app
-      - ./uploads:/app/uploads
-
+      - ${VAULT_VOLUME_INIT_IN}:${VAULT_VOLUME_INIT_OUT}
+      - ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
+      - ${VAULT_VOLUME_LOGS_IN}:${VAULT_VOLUME_LOGS_OUT}
+      - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
+    expose:
+      - "${VAULT_EXPOSE_API_PORT}"
+    healthcheck:
+      test: [ "CMD", "vault", "status", "-tls-skip-verify" ]
+      interval: ${VAULT_HEALTHCHECK_INTERVAL}
+      timeout: ${VAULT_HEALTHCHECK_TIMEOUT}
+      retries: ${VAULT_HEALTHCHECK_RETRIES}
+    networks:
+      - ${VAULT_NETWORK}
+  ##########################################
+  # WAF : Modsecurity + CRS + Nginx        #
+  ##########################################
+  waf:
+    build:
+      context: ${WAF_BUILD_CONTEXT_PATH}
+      dockerfile: ${WAF_BUILD_DOCKERFILE_PATH}
+    image: ${WAF_CONTAINER_NAME}:${WAF_AUTHOR}
+    container_name: ${WAF_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${WAF_ENV_FILE_PATH}
+    volumes:
+      - "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
+      - "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "${WAF_PORT_HTTPS}:${WAF_PORT_HTTPS_HIGH}"
+      - "${WAF_PORT_HTTP}:${WAF_PORT_HTTP_HIGH}"
+    networks:
+      - ${WAF_NETWORK}
+      - ${FRONTEND_NETWORK}
+      - ${BACKEND_NETWORK}
+  ##########################################
+  # Frontend                               #
+  ##########################################
   frontend:
     build:
-      context: ./src/frontend
-      dockerfile: ../../docker/frontend/Dockerfile
-    networks:
-      - nginx_frontend_network
+      context: ${FRONTEND_BUILD_CONTEXT_PATH}
+      dockerfile: ${FRONTEND_BUILD_DOCKERFILE_PATH}
+    image: ${FRONTEND_CONTAINER_NAME}:${FRONTEND_AUTHOR}
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    restart: unless-stopped
     volumes:
-      - ./src/frontend:/app
+      - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
       - /app/node_modules
     depends_on:
       - backend
-
-  nginx:
-    build:
-      context: ./src/nginx
-      dockerfile: ../../docker/nginx/Dockerfile
-    env_file:
-      - .envs/.env.nginx
+    expose:
+      - "${FRONTEND_EXPOSE_PORT}"
     networks:
-      - nginx_frontend_network
-      - nginx_backend_network
-
-    ports:
-      - "443:443"
-      - "80:80"
+      - ${FRONTEND_NETWORK}
+      - ${BACKEND_NETWORK}
+      - ${WAF_NETWORK}
+  ##########################################
+  # Backend                                #
+  ##########################################
+  backend:
+    build:
+      context: ${BACKEND_BUILD_CONTEXT_PATH}
+      dockerfile: ${BACKEND_BUILD_DOCKERFILE_PATH}
+    image: ${BACKEND_CONTAINER_NAME}:${BACKEND_AUTHOR}
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${BACKEND_ENV_FILE_BACKEND_PATH}
+      - ${BACKEND_ENV_FILE_DB_PATH}
+    volumes:
+      - ${BACKEND_VOLUME_APP_IN}:${BACKEND_VOLUME_APP_OUT}
     depends_on:
-      - backend
-      - frontend
+      db:
+        condition: service_healthy
+    expose:
+      - "${BACKEND_EXPOSE_PORT}"
+    networks:
+      - ${BACKEND_NETWORK}
+      - ${WAF_NETWORK}
+      - ${DB_NETWORK}
+      - ${FRONTEND_NETWORK}
+  ##########################################
+  # Database : PostGreSQL                  #
+  ##########################################
+  db:
+    image: ${DB_IMAGE}
+    container_name: ${DB_CONTAINER_NAME}
+    restart: unless-stopped
+    env_file:
+      - ${DB_ENV_FILE_PATH}
+    volumes:
+      - ${DB_VOLUME_DATA_IN}:${DB_VOLUME_DATA_OUT}
+    expose:
+      - "${DB_EXPOSE_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_HEALTHCHECK_POSTGRES_USER} -d ${DB_HEALTHCHECK_POSTGRES_DB}" ]
+      interval: ${DB_HEALTHCHECK_INTERVAL}
+      timeout: ${DB_HEALTHCHECK_TIMEOUT}
+      retries: ${DB_HEALTHCHECK_RETRIES}
+    networks:
+      - ${DB_NETWORK}
+      - ${BACKEND_NETWORK}
 
+##########################################
+# Volumes                                #
+##########################################
 volumes:
   db_data:
+    name: db_data
 
+##########################################
+# Networks                               #
+##########################################
 networks:
-  backend_db_network:
-  nginx_frontend_network:
-  nginx_backend_network:
+  vault-network:
+    name: vault-network
+    driver: bridge
+  waf-network:
+    name: waf-network
+    driver: bridge
+  frontend-network:
+    name: frontend-network
+    driver: bridge
+  backend-network:
+    name: backend-network
+    driver: bridge
+  db-network:
+    name: db-network
+    driver: bridge

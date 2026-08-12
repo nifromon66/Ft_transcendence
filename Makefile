@@ -3,17 +3,20 @@ COMPOSE_ENV_FILES := .envs/.env.compose
 export COMPOSE_ENV_FILES
 
 up:
-	docker compose up --build
+	docker compose up -d --build
 
 down:
 	docker compose down
 
-down-v:
-	docker compose down -v
-
 logs:
 	docker compose logs -f
 
-re: down-v up
+restart:
+	docker compose restart
 
-.PHONY: up down down-v logs re
+clean:
+	docker compose down -v --remove-orphans
+
+re: clean up
+
+.PHONY: up down test-waf logs restart clean re

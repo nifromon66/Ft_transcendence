@@ -1,0 +1,30 @@
+load_module ${NGINX_MODSEC_MODULE_FILE_PATH};
+user nginx;
+
+worker_processes auto;
+
+error_log ${NGINX_ERROR_LOG_PATH} notice;
+
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    server_tokens off;
+    client_max_body_size ${NGINX_CLIENT_MAX_BODY_SIZE};
+    access_log ${NGINX_ACCESS_LOG_PATH};
+
+    # ModSecurity
+    modsecurity on;
+    modsecurity_rules_file ${NGINX_MODSEC_RULES_FILE_PATH};
+
+    include ${NGINX_CONF_INCLUDE_PATH};
+}

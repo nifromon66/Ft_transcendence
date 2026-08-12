@@ -8,10 +8,10 @@ RUN apt-get update \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY src/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY src/backend .
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD ["python", "app.py"]
