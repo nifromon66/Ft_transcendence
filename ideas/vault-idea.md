@@ -3,10 +3,12 @@
 - Create a */ dir for each scripts directory
 - Create a lib/ dir in the vault dir which will source the logs-lib.sh and contains every utility bash function
 - Have 3 Vault nodes
+- more unseal keys 3 /5 standard.
 - Harden all projects containers
 - Have a CA
+- Add a Vault Agent
 - Rewrite the envs properly
 - Have a prefix '_*' for secrets that should be gitignore, dockerignore or hidden in secrets
 - Have a suffix '*_" for unaccessible without vault login
 - Add colors to the logs for the shell
-- 
+- Use hvac in the python

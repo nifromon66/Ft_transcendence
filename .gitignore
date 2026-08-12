@@ -37,6 +37,8 @@ audit.log
 
 # HashiCorp vault
 init.json
+role-id
+secret-id
 
 
 # virtual local environments
