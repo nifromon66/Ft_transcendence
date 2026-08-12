@@ -48,3 +48,6 @@ docker-compose.override.yaml
 
 # local utility script
 open-editor.sh
+
+# uploads
+uploads/
