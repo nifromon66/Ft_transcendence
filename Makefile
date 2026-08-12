@@ -1,4 +1,4 @@
-COMPOSE_ENV_FILES := .envs/.env.compose
+COMPOSE_ENV_FILES := .envs/.env.compose,.envs/.env.vault
 
 export COMPOSE_ENV_FILES
 
