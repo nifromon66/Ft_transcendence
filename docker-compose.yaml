@@ -144,17 +144,17 @@ volumes:
 ##########################################
 networks:
   vault-network:
-    name: vault-network
+    name: ${VAULT_NETWORK}
     driver: bridge
   waf-network:
-    name: waf-network
+    name: ${WAF_NETWORK}
     driver: bridge
   frontend-network:
-    name: frontend-network
+    name: ${FRONTEND_NETWORK}
     driver: bridge
   backend-network:
-    name: backend-network
+    name: ${BACKEND_NETWORK}
     driver: bridge
   db-network:
-    name: db-network
+    name: ${DB_NETWORK}
     driver: bridge

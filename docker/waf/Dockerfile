@@ -4,6 +4,8 @@ USER root
 
 RUN apk add --no-cache bash gettext openssl
 
+RUN mkdir -p /var/log/nginx
+
 COPY src/waf /usr/local/src/waf
 
 RUN chmod +x \
