@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from extensions import db
@@ -5,7 +7,8 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from .association import RecipeUtensil
+    from .association import recipe_utensil
+    from .recipe import Recipe
 
 
 class Utensil(db.Model):
@@ -15,4 +18,9 @@ class Utensil(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list["RecipeUtensil"]] = relationship(back_populates="utensil")
+    recipes: Mapped[list[Recipe]] = relationship(
+        secondary="recipe_utensil", back_populates="utensils"
+    )
+
+    def __init__(self, name):
+        self.name = name

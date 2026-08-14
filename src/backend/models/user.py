@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -30,15 +32,15 @@ class User(db.Model):
 
     xp: Mapped[int | None] = mapped_column(Integer)
 
-    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
+    comments: Mapped[list[Comment]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
+    badges: Mapped[list[UserBadge]] = relationship(back_populates="user")
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
+    favorites: Mapped[list[Favorite]] = relationship(back_populates="user")
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
+    ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
     def __init__(self, username: str, email: str, password: str):
         self.username = username
@@ -49,4 +51,9 @@ class User(db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str]:
-        return {"id": self.id, "username": self.username, "email": self.email}
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "avatar_url": self.avatar_url,
+        }

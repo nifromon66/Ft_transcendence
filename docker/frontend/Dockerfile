@@ -4,10 +4,10 @@ WORKDIR /app
 
 RUN apk add --no-cache tini
 
-COPY package*.json ./
+COPY src/frontend/package*.json ./
 RUN npm install --legacy-peer-deps
 
-COPY . .
+COPY src/frontend .
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 CMD ["npm", "run", "dev", "--", "--host"]
