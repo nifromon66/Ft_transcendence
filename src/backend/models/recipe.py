@@ -8,7 +8,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from .association import RecipeIngredient, recipe_tag, recipe_utensil
+    from .association import RecipeIngredient
     from .category import Category
     from .comment import Comment
     from .favorite import Favorite
@@ -51,7 +51,7 @@ class Recipe(db.Model):
 
     comments: Mapped[list[Comment]] = relationship(back_populates="recipe")
 
-    ingredients: Mapped[list[RecipeIngredient]] = relationship(back_populates="recipe")
+    ingredients: Mapped[list[RecipeIngredient]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
     utensils: Mapped[list[Utensil]] = relationship(secondary="recipe_utensil", back_populates="recipes")
 

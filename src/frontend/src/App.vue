@@ -18,6 +18,7 @@ function logout() {
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink v-if="authStore.user" to="/badges">Badges</RouterLink>
       </nav>
 
       <div v-if="authStore.user">

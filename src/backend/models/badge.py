@@ -19,7 +19,7 @@ class Badge(db.Model):
 
     description: Mapped[str | None] = mapped_column(Text)
 
-    users: Mapped[list[UserBadge]] = relationship(back_populates="badge")
+    users: Mapped[list[UserBadge]] = relationship(back_populates="badge", cascade="all, delete-orphan")
 
     def __init__(self, *, name: str, description: str | None = None):
             self.name = name

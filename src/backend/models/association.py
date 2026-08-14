@@ -93,3 +93,8 @@ recipe_utensil = Table(
 recipe_tag = Table("recipe_tag", db.metadata,
     Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
     Column("tag_id", ForeignKey("tags.id"), primary_key=True))
+
+#note for my self:
+# 1-N, no need Table()
+# N-N without additional attribute, use Table()
+# N-N with additional attribute, use ORM class

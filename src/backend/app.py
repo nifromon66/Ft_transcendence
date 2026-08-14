@@ -6,15 +6,20 @@ from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
     jwt_required,
+    set_access_cookies,
 )
 from models import User
 from sqlalchemy import select
+
+from memo_gamification import gamification_api
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
+
+app.register_blueprint(gamification_api)
 
 jwt.init_app(app)
 db.init_app(app)

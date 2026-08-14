@@ -36,7 +36,8 @@ class User(db.Model):
 
     comments: Mapped[list["Comment"]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
+    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user",
+                                                     cascade="all, delete-orphan")
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
 
