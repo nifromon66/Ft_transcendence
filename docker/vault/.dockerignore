@@ -1,0 +1,4 @@
+src/vault/data/
+src/vault/logs/
+src/vault/tls/
+src/vault/init/
