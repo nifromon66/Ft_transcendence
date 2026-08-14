@@ -100,6 +100,7 @@ vault_system_configured() {
         return 0
     fi
     log_info "Vault System not configured. Proceeding with Vault System Configuration..."
+    return 1
 }
 
 vault_security_configured() {
