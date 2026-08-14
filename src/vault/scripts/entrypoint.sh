@@ -63,20 +63,12 @@ touch "${VAULT_LOGS_PATH}"
 # Start Vault
 #########################################
 
-#chown -R vault:${HOST_GID} \
-#    ${VAULT_INIT_DIR} \
-#    ${VAULT_TLS_DIR} \
-#    ${VAULT_STORAGE_DATA_DIR} \
-#    ${VAULT_STORAGE_DATABASE_DIR} \
-#    ${VAULT_LOGS_DIR}
-
-#chmod -R g+rwX \
-#    ${VAULT_INIT_DIR} \
-#    ${VAULT_STORAGE_DATA_DIR} \
-#    ${VAULT_STORAGE_DATABASE_DIR} \
-#    ${VAULT_LOGS_DIR}
-
-#find ${VAULT_INIT_DIR} ${VAULT_STORAGE_DATA_DIR} ${VAULT_STORAGE_DATABASE_DIR} ${VAULT_LOGS_DIR} -type d -exec chmod g+s {} \;
+chown -R vault:vault \
+    ${VAULT_INIT_DIR} \
+    ${VAULT_TLS_DIR} \
+    ${VAULT_STORAGE_DATA_DIR} \
+    ${VAULT_STORAGE_DATABASE_DIR} \
+    ${VAULT_LOGS_DIR}
 
 log_info "Starting Vault..."
 
@@ -84,7 +76,7 @@ vault server -config=/tmp/vault.hcl &
 
 VAULT_PID=$!
 
-${VAULT_SH_BOOTSTRAP_PATH}
+${VAULT_SH_BOOTSTRAP_PATH} "$@"
 
 wait "$VAULT_PID"
 
