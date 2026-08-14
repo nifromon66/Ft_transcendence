@@ -32,15 +32,15 @@ class User(db.Model):
 
     xp: Mapped[int | None] = mapped_column(Integer)
 
-    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
+    comments: Mapped[list[Comment]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user")
+    badges: Mapped[list[UserBadge]] = relationship(back_populates="user")
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
+    favorites: Mapped[list[Favorite]] = relationship(back_populates="user")
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
+    ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
     def __init__(self, username: str, email: str, password: str):
         self.username = username
