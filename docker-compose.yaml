@@ -16,6 +16,8 @@ services:
       dockerfile: ${VAULT_BUILD_DOCKERFILE_PATH}
     image: ${VAULT_CONTAINER_NAME}:${VAULT_AUTHOR}
     container_name: ${VAULT_CONTAINER_NAME}
+    #environment:
+    #  - HOST_GID=${GID:-1000}
     restart: unless-stopped
     env_file:
       - ${VAULT_ENV_FILE_PATH}

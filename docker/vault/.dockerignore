@@ -1,3 +1,4 @@
+src/vault/approles/
 src/vault/data/
 src/vault/logs/
 src/vault/tls/
