@@ -1,9 +1,5 @@
 import os
 
-<<<<<<< HEAD
-from extensions import bcrypt, db, jwt
-from file_upload_management.routes import upload_bp
-=======
 from vault import VaultClient
 
 vault = VaultClient()
@@ -12,8 +8,16 @@ database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
 
+from vault import VaultClient
 
->>>>>>> nifromon
+vault = VaultClient()
+
+database_secrets = vault.get_secret("database")
+jwt_secrets = vault.get_secret("jwt")
+
+
+from extensions import bcrypt, db, jwt
+from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
