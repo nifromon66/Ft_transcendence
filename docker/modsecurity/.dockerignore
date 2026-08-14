@@ -1,0 +1,39 @@
+# virtual local environments
+venv/
+.venv/
+env/
+
+# Python cache and compilation files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Python build artifacts
+build/
+dist/
+
+# Pyright config
+pyrightconfig.json
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# env files
+.env
+.env*
+*.env
+
+# git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+
+# logs
+*.log
