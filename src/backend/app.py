@@ -23,9 +23,12 @@ from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
     jwt_required,
+    set_access_cookies,
 )
 from models import User
 from sqlalchemy import select
+
+from memo_gamification import gamification_api
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
@@ -146,6 +149,7 @@ with app.app_context():
     db.create_all()
 
 app.register_blueprint(upload_bp)
+app.register_blueprint(gamification_api)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
