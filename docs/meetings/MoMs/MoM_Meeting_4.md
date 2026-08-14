@@ -2,11 +2,7 @@
 - Date : 08/06/2026.
 - Start time : 10 AM.
 - Launch break : 12 PM - 13h30 PM.
-<<<<<<< HEAD
-- End time : 15h30 PM.
-=======
 - End time : 17 PM.
->>>>>>> a265cd17a6be36774e812e6d966a6a4fa5b4e82a
 - Location : Cantina, 42, Perpignan, France
 ## Attendance :
 - [x] @nifromon
@@ -15,17 +11,11 @@
 - [x] @shanwang
 ## Agenda Items :
 - Basic Nginx by @cgregoir
-<<<<<<< HEAD
-- Baic PostGreSQL by @shanwang
-=======
 - Basic PostGreSQL by @shanwang
->>>>>>> a265cd17a6be36774e812e6d966a6a4fa5b4e82a
 - Basic ModSecurity WAF by @nifromon
 - Basic File management by @juduchar
 - Basic Tailwind CSS setup by @cgregoir (opt after Nginx)
 ## Notes :
-<<<<<<< HEAD
-=======
 
 ### Items :
 - [x] Basic Nginx by @cgregoir
@@ -47,4 +37,3 @@ We did but we encountered some problems with the .conf files (Modsecurity and Ng
 - Basic File management by @juduchar
 - Basic Frontend user log-in/out + profile interface by @juduchar (opt after Basic File Management)
 - Basic ModSecurity WAF by @nifromon
->>>>>>> a265cd17a6be36774e812e6d966a6a4fa5b4e82a
