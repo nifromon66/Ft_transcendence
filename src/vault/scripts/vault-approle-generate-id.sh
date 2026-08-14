@@ -72,4 +72,13 @@ log_ok "Generated AppRole Admin SecretID."
 
 log_ok "Generated AppRoles IDs for Admin."
 
+chmod 700 \
+    ${VAULT_APPROLE_ID_DIR} \
+    ${VAULT_APPROLE_BACKEND_ID_DIR} \
+    ${VAULT_APPROLE_ADMIN_ID_DIR}
+
+chmod 600 \
+    ${VAULT_APPROLE_BACKEND_ID_DIR}/* \
+    ${VAULT_APPROLE_BACKEND_ID_DIR}/*
+
 log_ok "Generated AppRoles IDs."

@@ -13,6 +13,7 @@ vault kv put \
     port="${DATABASE_PORT}" \
     database="${DATABASE_NAME}" \
     username="${DATABASE_USERNAME}" \
-    password="${DATABASE_PASSWORD}"
+    password="${DATABASE_PASSWORD}" \
+    url="${DATABASE_URL}"
 
 log_ok "Database secrets written."

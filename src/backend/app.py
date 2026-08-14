@@ -1,7 +1,19 @@
 import os
 
+<<<<<<< HEAD
 from extensions import bcrypt, db, jwt
 from file_upload_management.routes import upload_bp
+=======
+from vault import VaultClient
+
+vault = VaultClient()
+
+database_secrets = vault.get_secret("database")
+jwt_secrets = vault.get_secret("jwt")
+
+
+
+>>>>>>> nifromon
 from flask import Flask, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
@@ -13,9 +25,9 @@ from sqlalchemy import select
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
+app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
 jwt.init_app(app)
 db.init_app(app)

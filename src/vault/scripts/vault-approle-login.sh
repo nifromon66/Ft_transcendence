@@ -10,8 +10,8 @@ ROLE="$1"
 
 log_info "Login into $ROLE AppRole..."
 
-ROLE_ID="$(vault_get_role_id ${VAULT_APPROLE_ID_PATH}/"$ROLE"-role-id)"
-SECRET_ID="$(vault_get_secret_id ${VAULT_APPROLE_ID_PATH}/"$ROLE"-secret-id)"
+ROLE_ID="$(vault_get_role_id ${VAULT_APPROLE_ID_DIR}/"$ROLE"/role-id)"
+SECRET_ID="$(vault_get_secret_id ${VAULT_APPROLE_ID_DIR}/"$ROLE"/secret-id)"
 
 VAULT_TOKEN="$(vault write \
     -tls-skip-verify \

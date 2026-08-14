@@ -45,6 +45,8 @@ audit.log
 
 # HashiCorp vault
 init.json
+role-id
+secret-id
 
 
 >>>>>>> 01401c183f16efa248d6466a9f6d56dd719d8971
