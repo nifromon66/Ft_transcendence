@@ -1,0 +1,11 @@
+# Documentation :
+- Each Function must have a commentary above to describe it, explain how it works, and it's purpose.
+- Each File must have a header that describe the content of the file, its purpose and  the functions involved.
+- Each Directory :
+	- Include mirror directory in docs/ which have a compilation of README.md files that explain how the module / service / functionality :
+		- How did you approach it.
+		- How did you solve it.
+		- How did it go (bugs, problems, issues etc ...)
+		- How it works.
+		- How does it include itself in the project (purpose, dependancies etc ...)..
+- Each README.md file must be written the Markdown format with a clear structure.

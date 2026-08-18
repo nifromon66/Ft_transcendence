@@ -30,11 +30,8 @@ function closeMenu() {
       @close-menu="closeMenu"
     />
 
-    <main class="flex-1">
-      <RouterView />
-    </main>
+    <RouterView />
 
     <SiteFooter />
-
   </div>
 </template>

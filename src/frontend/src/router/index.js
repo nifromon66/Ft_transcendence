@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import HomeView from '../views/HomeView.vue'
 import FollowView from '../views/FollowView.vue'
+import BadgeView from '../views/BadgeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,13 +43,25 @@ const router = createRouter({
       path: '/terms',
       name: 'terms',
       component: () => import('../views/TermsView.vue'),
-    },  
+    },
     {
       path: '/privacy',
       name : 'privacy',
       component: () => import('../views/PrivacyView.vue'),
-    },  
+    },
+    {
+      path: '/badges',
+      name: 'badges',
+      component: BadgeView,
+      meta: { requiresAuth: true },
+    },
   ],
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !localStorage.getItem('token')) {
+    return { name: 'login' }
+  }
 })
 
 export default router

@@ -33,7 +33,7 @@
 <template>
   <div class="flex flex-1 items-center justify-center bg-primary-dark">
 
-    <div class="-translate-y-32 w-full max-w-sm rounded-lg bg-menu-background p-8 shadow-lg">
+    <div class="w-full max-w-sm rounded-lg bg-menu-background p-8 shadow-lg">
 
       <h2 class="mb-6 text-center text-2xl font-bold text-black">
         Connexion

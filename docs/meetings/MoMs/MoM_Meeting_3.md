@@ -88,6 +88,10 @@
 A Base project is being developped on which we could start the development of all other modules.
 
 ## Action Items :
-- 
+- Basic Nginx by @cgregoir
+- Baic PostGreSQL by @shanwang
+- Basic ModSecurity WAF by @nifromon
+- Basic File management by @juduchar
+- Basic Tailwind CSS setup by @cgregoir (opt after Nginx)
 
 
