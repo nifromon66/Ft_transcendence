@@ -1,7 +1,10 @@
+<<<<<<< HEAD
+=======
 # Docker
 **/.DS_Store
 **/*.log
 
+>>>>>>> 01401c183f16efa248d6466a9f6d56dd719d8971
 # env files
 .env
 .env*
@@ -11,7 +14,10 @@
 # ssl certificates
 *.crt
 *.key
+<<<<<<< HEAD
+=======
 *.pem
+>>>>>>> 01401c183f16efa248d6466a9f6d56dd719d8971
 certs/
 
 # database folders
@@ -30,6 +36,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+<<<<<<< HEAD
+=======
 # waf logs
 access.log
 error.log
@@ -37,8 +45,11 @@ audit.log
 
 # HashiCorp vault
 init.json
+role-id
+secret-id
 
 
+>>>>>>> 01401c183f16efa248d6466a9f6d56dd719d8971
 # virtual local environments
 venv/
 .venv/
@@ -62,6 +73,9 @@ docker-compose.override.yaml
 
 # local utility script
 open-editor.sh
+<<<<<<< HEAD
+=======
 
 # uploads
 uploads/
+>>>>>>> 01401c183f16efa248d6466a9f6d56dd719d8971

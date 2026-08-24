@@ -18,9 +18,7 @@ class Utensil(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list[Recipe]] = relationship(
-        secondary="recipe_utensil", back_populates="utensils"
-    )
+    recipes: Mapped[list[Recipe]] = relationship(secondary="recipe_utensil", back_populates="utensils")
 
     def __init__(self, name):
         self.name = name

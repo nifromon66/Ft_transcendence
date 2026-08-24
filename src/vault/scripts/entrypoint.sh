@@ -16,7 +16,12 @@ mkdir -p \
     ${VAULT_INIT_DIR} \
     ${VAULT_TLS_DIR} \
     ${VAULT_STORAGE_DATA_DIR} \
-    ${VAULT_LOGS_DIR}
+    ${VAULT_LOGS_DIR} \
+    ${VAULT_APPROLE_ID_DIR}
+
+mkdir -p \
+    ${VAULT_APPROLE_BACKEND_ID_DIR} \
+    ${VAULT_APPROLE_ADMIN_ID_DIR}
 
 log_ok "Created necessary runtime directories."
 
@@ -57,12 +62,13 @@ touch "${VAULT_LOGS_PATH}"
 #########################################
 # Start Vault
 #########################################
-#chown -R vault:vault \
-    #${VAULT_INIT_DIR} \
-    #${VAULT_TLS_DIR} \
-    #${VAULT_STORAGE_DATA_DIR} \
-    #${VAULT_STORAGE_DATABASE_DIR} \
-    #${VAULT_LOGS_DIR}
+
+chown -R vault:vault \
+    ${VAULT_INIT_DIR} \
+    ${VAULT_TLS_DIR} \
+    ${VAULT_STORAGE_DATA_DIR} \
+    ${VAULT_STORAGE_DATABASE_DIR} \
+    ${VAULT_LOGS_DIR}
 
 log_info "Starting Vault..."
 
@@ -70,7 +76,7 @@ vault server -config=/tmp/vault.hcl &
 
 VAULT_PID=$!
 
-${VAULT_SH_BOOTSTRAP_PATH}
+${VAULT_SH_BOOTSTRAP_PATH} "$@"
 
 wait "$VAULT_PID"
 

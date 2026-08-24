@@ -1,4 +1,4 @@
-COMPOSE_ENV_FILES := .envs/.env.compose,.envs/.env.vault
+COMPOSE_ENV_FILES := .envs/.env.compose
 
 export COMPOSE_ENV_FILES
 
@@ -11,6 +11,9 @@ down:
 logs:
 	docker compose logs -f
 
+insert-secrets:
+	docker exec -it vault ./usr/local/src/vault/scripts/vault-secrets.sh
+
 restart:
 	docker compose restart
 
@@ -19,4 +22,4 @@ clean:
 
 re: clean up
 
-.PHONY: up down test-waf logs restart clean re
+.PHONY: up down test-waf logs restart clean re insert-secrets

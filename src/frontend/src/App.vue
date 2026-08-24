@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
+import SiteFooter from './components/SiteFooter.vue'
 
 const menuOpen = ref(false)
 
@@ -30,5 +31,7 @@ function closeMenu() {
     />
 
     <RouterView />
+
+    <SiteFooter />
   </div>
 </template>

@@ -17,7 +17,7 @@ class Ingredient(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list[RecipeIngredient]] = relationship(back_populates="ingredient")
+    recipes: Mapped[list[RecipeIngredient]] = relationship(back_populates="ingredient", cascade="all, delete-orphan")
 
     def __init__(self, name):
         self.name = name

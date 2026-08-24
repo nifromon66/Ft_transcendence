@@ -1,5 +1,21 @@
 import os
 
+from vault import VaultClient
+
+vault = VaultClient()
+
+database_secrets = vault.get_secret("database")
+jwt_secrets = vault.get_secret("jwt")
+
+
+from vault import VaultClient
+
+vault = VaultClient()
+
+database_secrets = vault.get_secret("database")
+jwt_secrets = vault.get_secret("jwt")
+
+
 from extensions import bcrypt, db, jwt
 from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
@@ -7,15 +23,18 @@ from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
     jwt_required,
+    set_access_cookies,
 )
 from models import User
 from sqlalchemy import select
 
+from memo_gamification import gamification_api
+
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
+app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
 jwt.init_app(app)
 db.init_app(app)
@@ -130,6 +149,7 @@ with app.app_context():
     db.create_all()
 
 app.register_blueprint(upload_bp)
+app.register_blueprint(gamification_api)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

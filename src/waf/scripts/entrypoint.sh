@@ -73,6 +73,8 @@ echo "[✔] Converted templates to configs successfully."
 ##########################################
 
 mkdir -p /etc/nginx/modsecurity
+mkdir -p /var/log/nginx
+mkdir -p /var/log/modsecurity
 
 mkdir -p /etc/nginx/modsecurity/custom
 
