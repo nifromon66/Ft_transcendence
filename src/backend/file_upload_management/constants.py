@@ -1,6 +1,6 @@
 import os
 
-UPLOAD_FOLDER = "/app/uploads"
+UPLOAD_FOLDER = "uploads"
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 

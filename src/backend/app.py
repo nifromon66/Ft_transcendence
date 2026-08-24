@@ -7,15 +7,6 @@ vault = VaultClient()
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
-
-from vault import VaultClient
-
-vault = VaultClient()
-
-database_secrets = vault.get_secret("database")
-jwt_secrets = vault.get_secret("jwt")
-
-
 from extensions import bcrypt, db, jwt
 from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
@@ -25,10 +16,9 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
+from memo_gamification import gamification_api
 from models import User
 from sqlalchemy import select
-
-from memo_gamification import gamification_api
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
@@ -45,7 +35,7 @@ bcrypt.init_app(app)
 @app.route("/users", methods=["GET"])
 def get_users():
     users = db.session.execute(select(User)).scalars().all()
-    return jsonify([user.to_dict() for user in users])
+    return jsonify([user.to_dict() for user in users]), 200
 
 
 # C - Create : créer un utilisateur
@@ -54,21 +44,23 @@ def create_user():
     data = request.get_json()
 
     if not data:
-        return jsonify({"error": "Aucune donnée fournie"}), 400
+        return jsonify({"success": False, "error": "Aucune donnée fournie"}), 200
 
     username = data.get("username", "").strip()
     email = data.get("email", "").strip()
     password = data.get("password", "")
 
     if not username or not email or not password:
-        return jsonify({"error": "username, email et password requis"}), 400
+        return jsonify(
+            {"success": False, "error": "username, email et password requis"}
+        ), 200
 
     existing_user = db.session.execute(
         select(User).where(User.email == email)
     ).scalar_one_or_none()
 
     if existing_user:
-        return jsonify({"error": "Cet email est déjà utilisé."}), 409
+        return jsonify({"success": False, "error": "Cet email est déjà utilisé."}), 200
 
     new_user = User(
         username=data["username"], email=data["email"], password=data["password"]
@@ -76,7 +68,7 @@ def create_user():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify(new_user.to_dict()), 201
+    return jsonify({"success": True, **new_user.to_dict()}), 201
 
 
 # U - Update : modifier un utilisateur existant
@@ -85,14 +77,14 @@ def update_user(user_id: int):
     user = db.session.get(User, user_id)
 
     if user is None:
-        return jsonify({"error": "utilisateur introuvable"}), 404
+        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
 
     data = request.get_json()
     if "username" in data:
         user.username = data["username"]
 
     db.session.commit()
-    return jsonify(user.to_dict())
+    return jsonify({"success": True, **user.to_dict()}), 200
 
 
 # D - Delete : supprimer un utilisateur
@@ -100,12 +92,12 @@ def update_user(user_id: int):
 def delete_user(user_id: int):
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"error": "utilisateur introuvable"}), 404
+        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
 
     db.session.delete(user)
     db.session.commit()
 
-    return jsonify({"message": "utilisateur supprimé"}), 200
+    return jsonify({"success": True, "message": "utilisateur supprimé"}), 200
 
 
 @app.route("/login", methods=["POST"])
@@ -113,23 +105,27 @@ def login():
     data = request.get_json()
 
     if not data or "email" not in data or "password" not in data:
-        return jsonify({"error": "email et password requis"}), 400
+        return jsonify({"success": False, "error": "email et password requis"}), 200
 
     email = data.get("email", "").strip()
     password = data.get("password", "")
 
     if not email or not password:
-        return jsonify({"error": "email et password requis"}), 400
+        return jsonify({"success": False, "error": "email et password requis"}), 200
 
     user = db.session.execute(
         select(User).where(User.email == data["email"])
     ).scalar_one_or_none()
 
     if user is None or not user.check_password(data["password"]):
-        return jsonify({"error": "email ou mot de passe incorrect"}), 401
+        return jsonify(
+            {"success": False, "error": "email ou mot de passe incorrect"}
+        ), 200
 
     access_token = create_access_token(identity=str(user.id))
-    return jsonify({"access_token": access_token, "user": user.to_dict()})
+    return jsonify(
+        {"success": True, "access_token": access_token, "user": user.to_dict()}
+    ), 200
 
 
 @app.route("/me", methods=["GET"])
@@ -139,9 +135,9 @@ def me():
     user = db.session.get(User, int(user_id))
 
     if user is None:
-        return jsonify({"error": "utilisateur introuvable"}), 404
+        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
 
-    return jsonify(user.to_dict())
+    return jsonify({"success": True, **user.to_dict()}), 200
 
 
 # Crée les tables si elles n'existent pas encore
