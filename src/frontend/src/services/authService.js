@@ -17,10 +17,19 @@ export async function loginUser(credentials) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
 
-    if (!data.success) {
-        throw new Error(data.error || "Votre compte a été créé avec succès. Cependant, une erreur réseau a empêché l'authentification.")
+    }
+
+    if (!response.ok) {
+        throw new Error(data.error || "Identifiants incorrects")
+    }
+
+    if (!data.access_token) {
+        throw new Error(data.error || "Identifiants incorrects.")
     }
 
     return data.access_token

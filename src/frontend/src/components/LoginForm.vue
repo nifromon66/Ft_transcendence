@@ -20,8 +20,8 @@
 
     const data = await response.json()
 
-    if (!response.ok) {
-      errorMessage.value = data.error || 'Erreur de connexion'
+    if (!response.ok || !data.access_token) {
+      errorMessage.value = data.error || 'Email ou mot de passe incorrect'
       return
     }
 
