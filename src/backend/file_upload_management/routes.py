@@ -3,9 +3,10 @@ import uuid
 
 import magic
 from extensions import db
-from flask import Blueprint, jsonify, request, send_from_directory
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
 
 from .constants import (
@@ -115,3 +116,47 @@ def get_secure_file(filename):
         return jsonify({"success": False, "error": "Unauthorized file type"}), 200
 
     return send_from_directory(UPLOAD_FOLDER, filename, mimetype=mimetype)
+
+
+@upload_bp.route("/users/avatar", methods=["DELETE"])
+@jwt_required()
+def delete_avatar():
+    try:
+        user_id = get_jwt_identity()
+        user = db.session.get(User, int(user_id))
+
+        if user is None or not user.avatar_url:
+            return jsonify({"success": False, "error": "Aucun avatar à supprimer"}), 200
+
+        file_path = os.path.join(UPLOAD_FOLDER, user.avatar_url)
+
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            else:
+                current_app.logger.warning(
+                    f"Le fichier {file_path} n'a pas été trouvé sur le disque."
+                )
+
+        except OSError as e:
+            current_app.logger.error(
+                f"Erreur système lors de la suppression du fichier {e!s}"
+            )
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Erreur système lors de la suppression du fichier",
+                }
+            ), 500
+
+        user.avatar_url = None
+        db.session.commit()
+
+        return jsonify({"success": True, "message": "Avatar supprimé avec succès"}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erreur lors de la suppression de l'avatar: {e!s}")
+        return jsonify(
+            {"success": False, "error": "Erreur interne lors de la suppression"}
+        ), 500

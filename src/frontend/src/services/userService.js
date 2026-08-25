@@ -20,7 +20,7 @@ export async function registerUser(userData) {
 
     const data = await response.json()
 
-    if (!response.ok) {
+    if (data.success === false) {
         throw new Error(data.error || "Erreur lors de l'inscription")
     }
 
@@ -48,7 +48,7 @@ export async function fetchUserProfile(token) {
 
     const data = await response.json()
 
-    if (!response.ok) {
+    if (data.success === false) {
         throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
     }
 
