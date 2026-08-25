@@ -15,7 +15,7 @@ from .constants import (
     MAX_UPLOAD_SIZE,
     UPLOAD_FOLDER,
 )
-from .services import save_raw_file
+from .services import delete_file_physically, save_raw_file
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -128,16 +128,8 @@ def delete_avatar():
         if user is None or not user.avatar_url:
             return jsonify({"success": False, "error": "Aucun avatar à supprimer"}), 200
 
-        file_path = os.path.join(UPLOAD_FOLDER, user.avatar_url)
-
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            else:
-                current_app.logger.warning(
-                    f"Le fichier {file_path} n'a pas été trouvé sur le disque."
-                )
-
+            delete_file_physically(user.avatar_url)
         except OSError as e:
             current_app.logger.error(
                 f"Erreur système lors de la suppression du fichier {e!s}"
