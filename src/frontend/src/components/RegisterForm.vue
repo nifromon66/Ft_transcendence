@@ -48,10 +48,6 @@ const clearFile = () => {
 }
 
 async function register() {
-  if (errorMessage.value) {
-    return
-  }
-
   errorMessage.value = ''
 
   try {
