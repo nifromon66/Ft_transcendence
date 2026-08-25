@@ -1,6 +1,6 @@
 <script setup>
   import { RouterLink } from 'vue-router'
-  import { useAuthStore } from '../authState'
+  import { useAuthStore } from '@/authState'
   import Burger from './Burger.vue'
   import SiteBrand from './SiteBrand.vue'
   

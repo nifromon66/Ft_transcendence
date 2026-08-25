@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { fetchUserProfile } from '@/services/userService'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -17,6 +18,18 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+    },
+    async fetchUser() {
+      if (!this.token) {
+        return
+      }
+      try {
+        const userData = await fetchUserProfile(this.token)
+        this.setAuth(this.token, userData)
+      } catch (error) {
+        this.clearAuth()
+        throw error
+      }
     }
   }
 })

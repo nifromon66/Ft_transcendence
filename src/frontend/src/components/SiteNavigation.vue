@@ -1,6 +1,6 @@
   <script setup>
     import { RouterLink, useRouter } from 'vue-router'
-    import { useAuthStore } from '../authState'
+    import { useAuthStore } from '@/authState'
     import { ref } from 'vue'
     import Burger from './Burger.vue'
     import SiteBrand from './SiteBrand.vue'
@@ -18,7 +18,7 @@
     function logout() {
       authStore.clearAuth()
       accountMenuOpen.value = false
-    router.push({ name: 'welcome' })
+      router.push({ name: 'welcome' })
     }
 </script>
 
@@ -71,14 +71,23 @@
             </RouterLink>
           </template>
 
-          <button
-            v-else
-            type="button"
-            class="w-full rounded-full px-4 py-2 text-left hover:bg-primary-light"
-            @click="logout"
-          >
-            Déconnexion
-          </button>
+          <template v-else>
+            <RouterLink
+              :to="{ name: 'profile' }"
+              class="block rounded-full px-4 py-2 hover:bg-primary-light"
+              @click="accountMenuOpen = false"
+            >
+              Mon profil
+            </RouterLink>
+
+            <button
+              type="button"
+              class="w-full rounded-full px-4 py-2 text-left hover:bg-primary-light"
+              @click="logout"
+            >
+              Déconnexion
+            </button>
+          </template>
         </div>
       </div>
     </nav>
