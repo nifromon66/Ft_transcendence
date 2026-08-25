@@ -2,16 +2,25 @@ import { defineStore } from 'pinia'
 import { fetchUserProfile } from '@/services/userService'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user') || 'null')
-  }),
+  state: () => {
+    const rawUser = localStorage.getItem('user')
+
+    return {
+      token: localStorage.getItem('token') || null,
+      user: (rawUser && rawUser !== 'undefined') ? JSON.parse(rawUser) : null
+    }
+  },
   actions: {
     setAuth(token, user) {
       this.token = token
       this.user = user
       localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user))
+      } else {
+        localStorage.removeItem('user');
+      }
     },
     clearAuth() {
       this.token = null
