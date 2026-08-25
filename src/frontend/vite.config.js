@@ -9,7 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    vueDevTools({
+      ...(process.env.EDITOR ? { launchEditor: process.env.EDITOR } : {}),
+    }),
     tailwindcss(),
   ],
   resolve: {

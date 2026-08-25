@@ -1,6 +1,6 @@
 <script setup>
 
-  import RecipeCard from '../components/RecipeCard.vue'
+  import RecipeCard from '@/components/RecipeCard.vue'
   import { computed } from 'vue'
 
   import tartePommeImage from '../assets/temp_assets/DSC01764.jpg'

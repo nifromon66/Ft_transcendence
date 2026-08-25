@@ -18,7 +18,7 @@ restart:
 	docker compose restart
 
 clean:
-	docker compose down -v --remove-orphans
+	docker compose down -v --rmi local --remove-orphans
 
 re: clean up
 

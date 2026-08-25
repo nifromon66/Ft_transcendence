@@ -1,5 +1,5 @@
 <script setup>
-import BadgeList from '../components/BadgeList.vue'
+import BadgeList from '@/components/BadgeList.vue'
 </script>
 
 <template>

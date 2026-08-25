@@ -75,6 +75,8 @@ services:
     image: ${FRONTEND_CONTAINER_NAME}:${FRONTEND_AUTHOR}
     container_name: ${FRONTEND_CONTAINER_NAME}
     restart: unless-stopped
+    env_file:
+      - ${FRONTEND_ENV_FILE_PATH}
     volumes:
       - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
       - /app/node_modules

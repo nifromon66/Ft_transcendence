@@ -19,9 +19,38 @@ export async function registerUser(userData) {
     }
 
     const data = await response.json()
+
     if (!response.ok) {
         throw new Error(data.error || "Erreur lors de l'inscription")
     }
 
     return data
+}
+
+/**
+ * Fetches the authenticated user's profile data.
+ * @param {string} token - The user's authentication token.
+ * @returns {Promise<Object>} The user profile data.
+ * @throws {Error} If the request fails or unauthorized.
+ */
+export async function fetchUserProfile(token) {
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    const response = await fetch(`${baseUrl}/api/users/me`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+
+    if (response.status >= 500) {
+        throw new Error("Erreur interne du serveur. Veuillew réessayer.")
+    }
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
+    }
+
+    return data.user || data
 }

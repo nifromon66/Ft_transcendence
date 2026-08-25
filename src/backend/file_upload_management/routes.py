@@ -1,13 +1,19 @@
+import os
 import uuid
 
 import magic
 from extensions import db
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
 from werkzeug.utils import secure_filename
 
-from .constants import ALLOWED_EXTENSIONS, ALLOWED_MIMETYPES, MAX_UPLOAD_SIZE
+from .constants import (
+    ALLOWED_EXTENSIONS,
+    ALLOWED_MIMETYPES,
+    MAX_UPLOAD_SIZE,
+    UPLOAD_FOLDER,
+)
 from .services import save_raw_file
 
 upload_bp = Blueprint("upload", __name__)
@@ -80,6 +86,7 @@ def upload_file():
 
         return jsonify(
             {
+                "success": True,
                 "message": "File uploaded successfully",
                 "filename": saved_filename,
                 "extension": file_extension,
@@ -89,3 +96,22 @@ def upload_file():
 
     except OSError as e:
         return jsonify({"error": f"System error while saving the file: {e!s}"}), 500
+
+
+@upload_bp.route("/uploads/<filename>", methods=["GET"])
+@jwt_required()
+def get_secure_file(filename):
+    # Check if the requested file actually exists on the disk
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    if not os.path.exists(file_path):
+        return jsonify({"success": False, "error": "File not found"}), 200
+
+    try:
+        mimetype = magic.from_file(file_path, mime=True)
+    except (OSError, magic.MagicException):
+        return jsonify({"success": False, "error": "Unreadable file"}), 200
+
+    if mimetype not in ALLOWED_MIMETYPES:
+        return jsonify({"success": False, "error": "Unauthorized file type"}), 200
+
+    return send_from_directory(UPLOAD_FOLDER, filename, mimetype=mimetype)

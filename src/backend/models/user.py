@@ -36,8 +36,9 @@ class User(db.Model):
 
     comments: Mapped[list["Comment"]] = relationship(back_populates="user")
 
-    badges: Mapped[list["UserBadge"]] = relationship(back_populates="user",
-                                                     cascade="all, delete-orphan")
+    badges: Mapped[list[UserBadge]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
 
@@ -51,5 +52,12 @@ class User(db.Model):
     def check_password(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password_hash, password)
 
-    def to_dict(self) -> dict[str, int | str]:
-        return {"id": self.id, "username": self.username, "email": self.email}
+    def to_dict(self) -> dict[str, int | str | None]:
+        full_avatar_path = f"/uploads/{self.avatar_url}" if self.avatar_url else None
+
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "avatar_url": full_avatar_path,
+        }
