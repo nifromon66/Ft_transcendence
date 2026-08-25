@@ -19,7 +19,7 @@ export async function loginUser(credentials) {
 
     const data = await response.json()
 
-    if (!response.ok) {
+    if (!data.success) {
         throw new Error(data.error || "Votre compte a été créé avec succès. Cependant, une erreur réseau a empêché l'authentification.")
     }
 

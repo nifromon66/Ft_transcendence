@@ -23,8 +23,20 @@ export function uploadAvatar(token, file, onProgress) {
         }
 
         xhr.onload = () => {
+
+            let responseData = {}
+            try {
+                responseData = JSON.parse(xhr.responseText)
+            } catch (e) {
+
+            }
+
             if (xhr.status >= 200 && xhr.status < 300) {
-                resolve()
+                if (responseData.success === false) {
+                    reject(new Error(responseData.error || "Erreur serveur lors de l'envoi de l'image."))
+                    return
+                }
+                resolve(responseData)
                 return
             }
 
