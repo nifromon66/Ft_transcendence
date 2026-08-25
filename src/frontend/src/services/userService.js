@@ -18,9 +18,18 @@ export async function registerUser(userData) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
 
-    if (data.success === false) {
+    }
+
+    if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de l'inscription")
+    }
+
+    if (data.error || data.success === false) {
         throw new Error(data.error || "Erreur lors de l'inscription")
     }
 
