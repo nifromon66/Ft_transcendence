@@ -1,12 +1,50 @@
 <script setup>
 import { ref } from 'vue'
 import DocumentUpload from '@/components/DocumentUpload.vue'
+import { uploadDocument } from '@/services/uploadService'
 
 const currentDocument = ref(null)
+const progress = ref(0)
+const isUploading = ref(false)
+const uploadMessage = ref('')
+const isSuccess = ref(false)
 
 const handleDocumentReady = (file) => {
     currentDocument.value = file
+    uploadMessage.value = ''
+    progress.value = 0
 }
+
+const handleUploadToServer = async () => {
+    if (!currentDocument.value) {
+        return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+        uploadMessage.value = "Veuillez vous connecter pour envoyer un document."
+        isSuccess.value = false
+        return
+    }
+
+    isUploading.value = true
+    uploadMessage.value = ''
+    progress.value = 0
+
+    try {
+        const result = await uploadDocument(token, currentDocument.value, (p) => {
+            progress.value = p
+        })
+        uploadMessage.value = `Document envoyé sur le serveur : ${result.filename}`
+        isSuccess.value = true
+    } catch (error) {
+        uploadMessage.value = error.message
+        isSuccess.value = false
+    } finally {
+        isUploading.value = false
+    }
+}
+
 </script>
 
 <template>
@@ -28,6 +66,23 @@ const handleDocumentReady = (file) => {
                     <li><strong>Taille :</strong> {{ currentDocument.size }} octets</li>
                 </ul>
             </div>
+
+            <div v-if="isUploading || progress > 0" class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                    :style="{ width: `${progress}%` }"></div>
+            </div>
+            <div v-if="isUploading" class="text-xs text-right text-gray-500">{{ progress }}%</div>
+
+            <button v-if="currentDocument" @click="handleUploadToServer" :disabled="isUploading"
+                class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isUploading ? "Envoi en cours..." : "Envoyer le pdf sur le serveur" }}
+            </button>
+        </div>
+
+        <div v-if="uploadMessage"
+            :class="isSuccess ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'"
+            class="mt-4 p-3 rounded-lg border text-sm font-medium">
+            {{ uploadMessage }}
         </div>
     </main>
 </template>
