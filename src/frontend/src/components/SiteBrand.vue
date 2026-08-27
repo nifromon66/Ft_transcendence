@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import siteLogo from '@/assets/path1.svg'
+import siteLogo from '@/assets/logo.svg'
 
 const emit = defineEmits(['select'])
 </script>
