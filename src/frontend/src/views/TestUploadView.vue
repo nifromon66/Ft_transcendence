@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import DocumentUpload from '@/components/DocumentUpload.vue';
+import DocumentUpload from '@/components/DocumentUpload.vue'
 
 const currentDocument = ref(null)
 
