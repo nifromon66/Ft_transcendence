@@ -1,27 +1,20 @@
 <script setup>
-  defineProps({
-    recipe: {
-      type: Object,
-      required: true,
-    },
-  })
+defineProps({
+  recipe: {
+    type: Object,
+    required: true,
+  },
+})
 </script>
 
 <template>
   <article class="flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-md">
-    <img
-      v-if="recipe.imageUrl"
-      :src="recipe.imageUrl"
-      :alt="`Photo de ${recipe.title}`"
-      class="aspect-video w-full object-cover"
-    />
+    <img v-if="recipe.imageUrl" :src="recipe.imageUrl" :alt="`Photo de ${recipe.title}`"
+      class="aspect-video w-full object-cover" />
 
-    <div
-      v-else
-      class="flex aspect-video items-center justify-center bg-primary-light"
-    >
+    <div v-else class="flex aspect-video items-center justify-center bg-primary-light">
       Image indisponible
-</div>
+    </div>
 
     <div class="flex flex-1 flex-col p-5">
       <h2 class="text-xl font-bold text-gray-900">
