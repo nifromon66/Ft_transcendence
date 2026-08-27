@@ -12,7 +12,7 @@ export function uploadAvatar(token, file, onProgress) {
         const formData = new FormData()
         formData.append('file', file)
 
-        xhr.open('POST', '/api/upload')
+        xhr.open('POST', '/api/upload/avatar')
         xhr.setRequestHeader('Authorization', `Bearer ${token}`)
 
         xhr.upload.onprogress = (event) => {
