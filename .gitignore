@@ -23,6 +23,7 @@ data/
 node_modules/
 dist/
 build/
+dev-dist/
 
 # frontend logs
 npm-debug.log*
