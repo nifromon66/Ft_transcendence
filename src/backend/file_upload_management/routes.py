@@ -10,9 +10,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
 
 from .constants import (
-    ALLOWED_EXTENSIONS,
-    ALLOWED_MIMETYPES,
-    MAX_UPLOAD_SIZE,
+    ALLOWED_AVATAR_EXTENSIONS,
+    ALLOWED_AVATAR_MIMETYPES,
+    ALLOWED_DOCUMENT_EXTENSIONS,
+    ALLOWED_DOCUMENT_MIMETYPES,
+    MAX_AVATAR_SIZE,
+    MAX_DOCUMENT_SIZE,
     UPLOAD_FOLDER,
 )
 from .services import delete_file_physically, save_raw_file
@@ -20,48 +23,43 @@ from .services import delete_file_physically, save_raw_file
 upload_bp = Blueprint("upload", __name__)
 
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+def allowed_file(filename, allowed_extensions):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
 
 
-@upload_bp.route("/upload", methods=["POST"])
-@jwt_required()
-def upload_file():
-    # Check if the request size is not too large
-    if request.content_length and request.content_length > MAX_UPLOAD_SIZE:
-        return jsonify({"error": "File too large (Max 10MB)"}), 413
-
-    # Check if the multipart/form-data request contains the 'file' part
-    if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
-
-    file = request.files["file"]
-
-    # Check if the user submitted an empty form
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
+    if not file or file.filename == "":
+        return None, jsonify({"error": "No selected file"}), 400
 
     # Check if the extension of the file is allowed
-    if not allowed_file(file.filename):
-        return jsonify(
-            {
-                "error": "File extension not allowed",
-                "allowed extensions": list(ALLOWED_EXTENSIONS),
-            }
-        ), 400
+    if not allowed_file(file.filename, allowed_extensions):
+        return (
+            None,
+            jsonify(
+                {
+                    "error": "File extension not allowed",
+                    "allowed extensions": list(allowed_extensions),
+                }
+            ),
+            400,
+        )
 
     # Check if the MIME type of the file is allowed
     file_header = file.read(2048)
     file.seek(0)
-
     file_mimetype = magic.from_buffer(file_header, mime=True)
-    if file_mimetype not in ALLOWED_MIMETYPES:
-        return jsonify(
-            {
-                "error": "File content not allowed",
-                "allowed mimetypes": list(ALLOWED_MIMETYPES),
-            }
-        ), 400
+
+    if file_mimetype not in allowed_mimetypes:
+        return (
+            None,
+            jsonify(
+                {
+                    "error": "File content not allowed",
+                    "allowed mimetypes": list(allowed_mimetypes),
+                }
+            ),
+            400,
+        )
 
     file_extension = file.filename.rsplit(".", 1)[1].lower()
 
@@ -76,30 +74,97 @@ def upload_file():
     file.filename = new_filename
 
     try:
-        saved_filename = save_raw_file(file)
+        saved_filename = save_raw_file(file, subfolder=subfolder)
 
-        user_id = get_jwt_identity()
-        user = db.session.get(User, int(user_id))
-
-        if user:
-            user.avatar_url = saved_filename
-            db.session.commit()
-
-        return jsonify(
+        return (
             {
                 "success": True,
                 "message": "File uploaded successfully",
                 "filename": saved_filename,
                 "extension": file_extension,
                 "mime type": file_mimetype,
-            }
-        ), 201
+            },
+            None,
+            None,
+        )
 
     except OSError as e:
         return jsonify({"error": f"System error while saving the file: {e!s}"}), 500
 
 
-@upload_bp.route("/uploads/<filename>", methods=["GET"])
+@upload_bp.route("/upload/avatar", methods=["POST"])
+@jwt_required()
+def upload_avatar():
+    max_mb = MAX_AVATAR_SIZE // (1024 * 1024)
+
+    # Check if the request size is not too large
+    if request.content_length and request.content_length > MAX_AVATAR_SIZE:
+        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
+
+    # Check if the multipart/form-data request contains the 'file' part
+    if "file" not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files["file"]
+    file_data, err_resp, err_code = handle_file_upload(
+        file,
+        subfolder="avatars",
+        allowed_extensions=ALLOWED_AVATAR_EXTENSIONS,
+        allowed_mimetypes=ALLOWED_AVATAR_MIMETYPES,
+    )
+
+    if err_resp:
+        return err_resp, err_code
+
+    try:
+        user_id = get_jwt_identity()
+        user = db.session.get(User, int(user_id))
+
+        if user:
+            if user.avatar_url:
+                try:
+                    delete_file_physically(user.avatar_url)
+                except OSError:
+                    pass
+            user.avatar_url = file_data["filename"]
+            current_app.logger.info(f"AVATAR URL: {user.avatar_url}")
+            db.session.commit()
+
+        return jsonify(file_data), 201
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": f"Database error: {e!s}"}), 500
+
+
+@upload_bp.route("/upload/document", methods=["POST"])
+@jwt_required()
+def upload_document():
+    max_mb = MAX_DOCUMENT_SIZE // (1024 * 1024)
+
+    # Check if the request size is not too large
+    if request.content_length and request.content_length > MAX_DOCUMENT_SIZE:
+        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
+
+    # Check if the multipart/form-data request contains the 'file' part
+    if "file" not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files["file"]
+    file_data, err_resp, err_code = handle_file_upload(
+        file,
+        subfolder="documents",
+        allowed_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
+        allowed_mimetypes=ALLOWED_DOCUMENT_MIMETYPES,
+    )
+
+    if err_resp:
+        return err_resp, err_code
+
+    return jsonify(file_data), 201
+
+
+@upload_bp.route("/uploads/<path:filename>", methods=["GET"])
 @jwt_required()
 def get_secure_file(filename):
     # Check if the requested file actually exists on the disk
@@ -112,10 +177,13 @@ def get_secure_file(filename):
     except (OSError, magic.MagicException):
         return jsonify({"success": False, "error": "Unreadable file"}), 200
 
-    if mimetype not in ALLOWED_MIMETYPES:
+    allowed_mimetypes = ALLOWED_AVATAR_MIMETYPES.union(ALLOWED_DOCUMENT_MIMETYPES)
+    if mimetype not in allowed_mimetypes:
         return jsonify({"success": False, "error": "Unauthorized file type"}), 200
 
-    return send_from_directory(UPLOAD_FOLDER, filename, mimetype=mimetype)
+    directory = os.path.dirname(file_path)
+    base_filename = os.path.basename(file_path)
+    return send_from_directory(directory, base_filename, mimetype=mimetype)
 
 
 @upload_bp.route("/users/avatar", methods=["DELETE"])

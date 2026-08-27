@@ -1,11 +1,16 @@
 import os
 
 UPLOAD_FOLDER = "uploads"
-
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024
-
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-
-ALLOWED_MIMETYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+MAX_AVATAR_SIZE = 10 * 1024 * 1024
+
+ALLOWED_AVATAR_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+ALLOWED_AVATAR_MIMETYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+
+MAX_DOCUMENT_SIZE = 5 * 1024 * 1024
+
+ALLOWED_DOCUMENT_EXTENSIONS = {"pdf"}
+
+ALLOWED_DOCUMENT_MIMETYPES = {"application/pdf"}
