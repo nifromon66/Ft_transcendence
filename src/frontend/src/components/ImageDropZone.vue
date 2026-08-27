@@ -49,7 +49,8 @@ const handleFileSelect = (event) => {
             isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
         ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
             @drop.stop.prevent="handleDrop" @click="triggerFileInput">
-            <input type="file" ref="fileInput" class="hidden" @change="handleFileSelect" :disabled="disabled" />
+            <input type="file" id="avatar" ref="fileInput" class="hidden" @change="handleFileSelect"
+                :disabled="disabled" accept=".png, .jpg, .jpeg, .gif, .webp" />
 
             <div class="text-gray-600">
                 <p class="mb-1 text-sm">Glissez-déposez un fichier ici</p>
