@@ -48,6 +48,14 @@ export async function registerUser(userData) {
  * @throws {Error} If the request fails or unauthorized.
  */
 export async function fetchUserProfile(token) {
+    if (!navigator.onLine) {
+        throw new Error("Impossible de récupérer le profil : vous êtes hors ligne.")
+    }
+
+    if (!token) {
+        throw new Error("Token d'authentification manquant.")
+    }
+
     const baseUrl = import.meta.env.VITE_API_URL || '';
 
     const response = await fetch(`${baseUrl}/api/me`, {
@@ -57,6 +65,10 @@ export async function fetchUserProfile(token) {
             'Accept': 'application/json'
         }
     })
+
+    if (response.status === 401) {
+        throw new Error("SESSION_EXPIRED")
+    }
 
     if (response.status >= 500) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
