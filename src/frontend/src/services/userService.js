@@ -8,19 +8,33 @@
  * @throws {Error} If the server fails or registration is unsuccessful.
  */
 export async function registerUser(userData) {
-    const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    })
+    let response;
+    try {
+        response = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        })
+    } catch (e) {
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connection internet.")
+    }
 
     if (response.status >= 500) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
 
     if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de l'inscription")
+    }
+
+    if (data.error || data.success === false) {
         throw new Error(data.error || "Erreur lors de l'inscription")
     }
 
@@ -34,21 +48,32 @@ export async function registerUser(userData) {
  * @throws {Error} If the request fails or unauthorized.
  */
 export async function fetchUserProfile(token) {
-    const baseUrl = import.meta.env.VITE_API_URL || ''
-    const response = await fetch(`${baseUrl}/api/users/me`, {
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+
+    const response = await fetch(`${baseUrl}/api/me`, {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
         }
     })
 
     if (response.status >= 500) {
-        throw new Error("Erreur interne du serveur. Veuillew réessayer.")
+        throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
 
     if (!response.ok) {
+        throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
+    }
+
+    if (data.success === false) {
         throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
     }
 

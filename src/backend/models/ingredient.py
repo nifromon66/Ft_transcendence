@@ -13,11 +13,13 @@ if TYPE_CHECKING:
 class Ingredient(db.Model):
     __tablename__ = "ingredients"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
     recipes: Mapped[list[RecipeIngredient]] = relationship(back_populates="ingredient", cascade="all, delete-orphan")
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name, id:int | None = None):
+        if id is not None:
+            self.id = id
+        self.name = name.capitalize()

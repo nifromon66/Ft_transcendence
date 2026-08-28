@@ -7,20 +7,33 @@
  * @throws {Error} If the server fails or authentication is unsuccessful.
  */
 export async function loginUser(credentials) {
-    const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-    })
-
+    let response;
+    try {
+        response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials)
+        })
+    } catch (e) {
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connection internet.")
+    }
     if (response.status >= 500) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
 
     if (!response.ok) {
-        throw new Error(data.error || "Votre compte a été créé avec succès. Cependant, une erreur réseau a empêché l'authentification.")
+        throw new Error(data.error || "Identifiants incorrects")
+    }
+
+    if (!data.access_token) {
+        throw new Error(data.error || "Identifiants incorrects.")
     }
 
     return data.access_token

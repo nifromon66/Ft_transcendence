@@ -1,18 +1,10 @@
-/**
- * Uploads the user avatar to the server with progress tracking.
- * @param {string} token - The JWT authentication token.
- * @param {File} file - The image file to upload.
- * @param {Function} [onProgress] - Optional callback function to track upload progress percentage (0 to 100).
- * @returns {Promise<void>} Resolves when the upload completes successfully.
- * @throws {Error} If the upload fails due to network issues or server rejection.
- */
-export function uploadAvatar(token, file, onProgress) {
+export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgress) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         const formData = new FormData()
         formData.append('file', file)
 
-        xhr.open('POST', '/api/upload')
+        xhr.open('POST', endpoint)
         xhr.setRequestHeader('Authorization', `Bearer ${token}`)
 
         xhr.upload.onprogress = (event) => {
@@ -23,38 +15,39 @@ export function uploadAvatar(token, file, onProgress) {
         }
 
         xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve()
-                return
-            }
-
-            let serverErrorMessage = "Une erreur est survenue lors du transfert de l'image."
-
+            let responseData = {}
             try {
-                const responseData = JSON.parse(xhr.responseText)
-                if (responseData.error) {
-                    serverErrorMessage = responseData.error
-                }
+                responseData = JSON.parse(xhr.responseText)
             } catch (e) {
 
             }
 
-            let finalMessage = serverErrorMessage;
+            if (xhr.status >= 200 && xhr.status < 300) {
+                if (responseData.success === false) {
+                    reject(new Error(responseData.error || `Erreur serveur lors de l'envoi de ${fileTypeLabel}.`))
+                    return
+                }
+                resolve(responseData)
+                return
+            }
+
+            let serverErrorMessage = responseData.error || `Une erreur est survenue lors du transfert de ${fileTypeLabel}.`
+            let finalMessage
 
             switch (xhr.status) {
                 case 400:
                     finalMessage = `Requête invalide : ${serverErrorMessage}`
-                    break;
+                    break
                 case 401:
                 case 403:
                     finalMessage = "Session invalide ou expirée. L'envoi a été refusé."
-                    break;
+                    break
                 case 413:
-                    finalMessage = "L'image est trop volumineuse."
-                    break;
+                    finalMessage = "Le fichier est trop volumineux."
+                    break
                 case 500:
                     finalMessage = `Erreur interne du serveur : ${serverErrorMessage}`
-                    break;
+                    break
                 default:
                     finalMessage = `Erreur ${xhr.status} : ${serverErrorMessage}`
             }
@@ -63,8 +56,16 @@ export function uploadAvatar(token, file, onProgress) {
         }
 
         xhr.onerror = () => {
-            reject(new Error("Erreur réseau lors du transfert de l'image."))
+            reject(new Error(`Erreur réseau lors du transfert de ${fileTypeLabel}.`))
         }
         xhr.send(formData)
     })
+}
+
+export function uploadAvatar(token, file, onProgress) {
+    return uploadFileToServer(token, file, '/api/upload/avatar', "l'image", onProgress)
+}
+
+export function uploadDocument(token, file, onProgress) {
+    return uploadFileToServer(token, file, '/api/upload/document', "le document", onProgress)
 }

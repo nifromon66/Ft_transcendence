@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from extensions import db
@@ -21,6 +22,13 @@ class Badge(db.Model):
 
     users: Mapped[list[UserBadge]] = relationship(back_populates="badge", cascade="all, delete-orphan")
 
-    def __init__(self, *, name: str, description: str | None = None):
+    def __init__(self, *, id: int | None, name: str, description: str | None = None):
+            self.id = id
             self.name = name
             self.description = description
+
+
+class BadgeType(IntEnum):
+    NEW_BEE = 1
+    FIRST_RECIPE = 2
+    RECIPE_MASTER = 3

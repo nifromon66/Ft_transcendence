@@ -27,10 +27,10 @@ async function claimBadge(badgeId) {
     },
     body: JSON.stringify({ badge_id: badgeId }),
   })
-//   .then(async response => {
-//     console.log("status:", response.status);
-//     console.log("body:", await response.text());
-// });
+  //   .then(async response => {
+  //     console.log("status:", response.status);
+  //     console.log("body:", await response.text());
+  // });
 
   if (!response.ok) {
     errorMessage.value = await response.text()

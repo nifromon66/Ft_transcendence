@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import  ImageDropZone from './ImageDropZone.vue'
+import ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
@@ -22,7 +22,7 @@ const uploadProgress = ref(0)
 const isUploading = ref(false)
 
 const processFile = async (rawFile) => {
-  const {isValid, error } = validateAvatar(rawFile)
+  const { isValid, error } = validateAvatar(rawFile)
 
   if (!isValid) {
     errorMessage.value = error
@@ -48,10 +48,6 @@ const clearFile = () => {
 }
 
 async function register() {
-  if (errorMessage.value) {
-    return
-  }
-
   errorMessage.value = ''
 
   try {
@@ -90,63 +86,33 @@ async function register() {
       <h2 class="mb-6 text-center text-2xl font-bold text-black">Inscription</h2>
       <form @submit.prevent="register" class="flex flex-col gap-0.5">
         <div>
-          <input 
-            v-model="username" 
-            placeholder="Nom d'utilisateur" 
-            class="w-full rounded border p-2 bg-white font-semibold text-black"
-            required
-          />
+          <input v-model="username" id="username" placeholder="Nom d'utilisateur"
+            class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
-          <input 
-            v-model="email"
-            type="email" 
-            placeholder="Email" 
-            class="w-full rounded border p-2 bg-white font-semibold text-black"
-            required
-          />
+          <input v-model="email" id="email" type="email" placeholder="Email"
+            class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
-          <input 
-            v-model="password" 
-            type="password" 
-            placeholder="Mot de passe" 
-            class="w-full rounded border p-2 bg-white font-semibold text-black"
-            required
-          />
+          <input v-model="password" id="password" type="password" placeholder="Mot de passe"
+            class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div style="margin: 15px 0;">
           <label for="avatar">Photo de profil (optionnel)</label>
-        
-          <ImageDropZone
-            v-if="!avatarFile"
-            @file-dropped="processFile"
-            :disabled="isUploading"
-          />
 
-          <ImagePreview
-            v-if="avatarFile && !isUploading"
-            :file="avatarFile"
-            :disabled="isUploading"
-            @clear="clearFile"
-          />
+          <ImageDropZone v-if="!avatarFile" @file-selected="processFile" :disabled="isUploading" />
 
-          <ProgressBar
-            v-if="isUploading"
-            :progress="uploadProgress"
-          />
+          <ImagePreview v-if="avatarFile && !isUploading" :file="avatarFile" :disabled="isUploading"
+            @clear="clearFile" />
+
+          <ProgressBar v-if="isUploading" :progress="uploadProgress" />
         </div>
-        <button
-          type="submit"
-          :disabled="isUploading"
-          class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
-        >
+        <button type="submit" :disabled="isUploading"
+          class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700">
           S'inscrire
         </button>
       </form>
-      <p
-        v-if="errorMessage"
-        class="mt-4 h-6 text-center text-red-600">
+      <p v-if="errorMessage" class="mt-4 h-6 text-center text-red-600">
         {{ errorMessage }}
       </p>
     </div>

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -26,6 +26,8 @@ class User(db.Model):
 
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
+    role: Mapped[str] = mapped_column(String, nullable=False, default="user")
+
     avatar_url: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
@@ -44,10 +46,13 @@ class User(db.Model):
 
     ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
 
-    def __init__(self, username: str, email: str, password: str):
+    def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
         self.email = email
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        if role != "user":
+            self.role = role
+
 
     def check_password(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password_hash, password)

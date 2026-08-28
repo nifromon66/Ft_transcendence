@@ -20,15 +20,9 @@ function closeMenu() {
   <div class="flex min-h-screen flex-col bg-page-background">
     <SiteNavigation @toggle-menu="toggleMenu" />
 
-    <div
-      v-if="menuOpen"
-      class="fixed inset-0 z-40"
-      @click="closeMenu"
-    ></div>
+    <div v-if="menuOpen" class="fixed inset-0 z-40" @click="closeMenu"></div>
 
-    <SideMenu v-if="menuOpen" 
-      @close-menu="closeMenu"
-    />
+    <SideMenu v-if="menuOpen" @close-menu="closeMenu" />
 
     <RouterView />
 
