@@ -18,6 +18,8 @@ from flask_jwt_extended import (
 )
 from memo_gamification import gamification_api
 from models import User
+from recipe_management.commands import seed_categories
+from recipe_management.routes import recipe_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
@@ -146,6 +148,8 @@ with app.app_context():
 
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
+app.register_blueprint(recipe_bp)
+app.cli.add_command(seed_categories)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
