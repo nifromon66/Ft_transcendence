@@ -3,8 +3,6 @@ COMPOSE_ENV_FILES := .envs/.env.compose
 export COMPOSE_ENV_FILES
 
 up:
-	sudo chown -R ${USER}:${USER} src/vault/approles src/vault/data
-	sudo chown -R ${USER}:${USER} src/vault/data/raft
 	docker compose up -d --build
 
 rebuild:
