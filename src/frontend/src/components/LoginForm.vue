@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/authState'
+import { loginUser } from '@/services/authService'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -12,21 +13,20 @@ const errorMessage = ref('')
 async function login() {
   errorMessage.value = ''
 
-  const response = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.value, password: password.value })
-  })
+  try {
+    const token = await loginUser({
+      email: email.value,
+      password: password.value
+    })
 
-  const data = await response.json()
+    authStore.setAuth(token, null)
+    await authStore.fetchUser()
 
-  if (!response.ok || !data.access_token) {
-    errorMessage.value = data.error || 'Email ou mot de passe incorrect'
-    return
+    router.push({ name: 'welcome' })
+
+  } catch (error) {
+    errorMessage.value = error.message
   }
-
-  authStore.setAuth(data.access_token, data.user)
-  router.push({ name: 'welcome' })
 }
 </script>
 
@@ -41,10 +41,10 @@ async function login() {
 
       <form @submit.prevent="login" class="flex flex-col gap-0.5">
 
-        <input v-model="email" type="email" placeholder="Email"
+        <input v-model="email" type="email" id="email" autocomplete="email" placeholder="Email"
           class="w-full rounded border p-2 bg-white font-semibold text-black" />
 
-        <input v-model="password" type="password" placeholder="Mot de passe"
+        <input v-model="password" type="password" id="password" placeholder="Mot de passe"
           class="w-full rounded border p-2 bg-white font-semibold text-black" />
 
         <button type="submit" class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700">
