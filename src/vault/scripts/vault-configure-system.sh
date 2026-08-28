@@ -13,7 +13,6 @@ then
     log_info "Enabling Vault audit logs..."
 
     vault audit enable \
-        -tls-skip-verify \
         file \
         file_path=${VAULT_LOGS_PATH}
 
@@ -25,7 +24,6 @@ then
     log_info "Enabling Vault secrets..."
 
     vault secrets enable \
-        -tls-skip-verify \
         -path=secret \
         kv-v2
 

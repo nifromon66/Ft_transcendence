@@ -4,12 +4,11 @@ set -eu
 
 . ${VAULT_LIB_SH_PATH}
 
-log_info "Vault AppRole logging out..."
+log_info "Vault token revocation..."
 
 vault token revoke-self \
-    -tls-skip-verify \
     >/dev/null 2>&1 || true
 
 unset VAULT_TOKEN
 
-log_ok "Vault AppRole logged out."
+log_ok "Vault token revoked."

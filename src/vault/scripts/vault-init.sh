@@ -1,18 +1,18 @@
 #!/bin/sh
 
 set -eu
+umask 077
 
-echo "[*] Initializing Vault..."
+. ${VAULT_LIB_SH_PATH}
 
-mkdir -p /usr/local/src/vault/init
+log_info "Initializing Vault..."
 
 vault operator init \
-    -tls-skip-verify \
-    -key-shares=1 \
-    -key-threshold=1 \
+    -key-shares=${VAULT_UNSEAL_KEY_COUNT} \
+    -key-threshold=${VAULT_UNSEAL_KEY_THRESHOLD} \
     -format=json \
-    > /vault/init/init.json
+    > ${VAULT_INIT_PATH}
 
-chmod 600 /vault/init/init.json
+chmod 600 ${VAULT_INIT_PATH}
 
-echo "[✔] Vault initialized."
+log_ok "Vault initialized."

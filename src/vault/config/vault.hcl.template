@@ -8,8 +8,9 @@ log_level = "${VAULT_LOGGING_LEVEL}"
 listener "tcp" {
     address = "${VAULT_LISTEN_ADDRESS}"
     tls_disable = 0
-    tls_cert_file = "${VAULT_TLS_CERT}"
-    tls_key_file = "${VAULT_TLS_KEY}"
+    tls_client_ca_file = "${VAULT_TLS_CA_CERT}"
+    tls_cert_file = "${VAULT_TLS_SERVER_CERT}"
+    tls_key_file = "${VAULT_TLS_SERVER_KEY}"
 }
 
 storage "raft" {

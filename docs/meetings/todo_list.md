@@ -1,0 +1,9 @@
+- Searching utility : filter, sorting, pagination
+- Chat system, friends system
+- Internationalization system (Multiple languages, Multiple browsers)
+- User Management system (friends connection indicator, Oauth 2.0, 2FA)
+- IA - Personal recommendations
+- Gamification
+- Terms of service, Privacy Policy.
+- Clean everything
+- 

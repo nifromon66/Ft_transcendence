@@ -20,6 +20,10 @@ mkdir -p \
     ${VAULT_APPROLE_ID_DIR}
 
 mkdir -p \
+    ${VAULT_TLS_SERVER_DIR} \
+    ${VAULT_TLS_CA_DIR}
+
+mkdir -p \
     ${VAULT_APPROLE_BACKEND_ID_DIR} \
     ${VAULT_APPROLE_ADMIN_ID_DIR}
 
@@ -31,7 +35,8 @@ log_ok "Created necessary runtime directories."
 
 log_info "Vault TLS Certificate generation..."
 
-${VAULT_SH_TLS_CERT_GEN_PATH}
+${VAULT_SH_TLS_CA_CERT_GEN_PATH}
+${VAULT_SH_TLS_SERVER_CERT_GEN_PATH}
 
 #########################################
 # Generate vault.hcl
@@ -41,8 +46,8 @@ log_info "Generating ${VAULT_SH_HCL_CONFIG_PATH} from ${VAULT_SH_HCL_CONFIG_TEMP
 
 envsubst '
 ${VAULT_LISTEN_ADDRESS}
-${VAULT_TLS_CERT}
-${VAULT_TLS_KEY}
+${VAULT_TLS_SERVER_CERT}
+${VAULT_TLS_SERVER_KEY}
 ${VAULT_STORAGE_DATA_DIR}
 ${VAULT_STORAGE_NODE_ID}
 ${VAULT_API_ADDR}
@@ -63,12 +68,12 @@ touch "${VAULT_LOGS_PATH}"
 # Start Vault
 #########################################
 
-chown -R vault:vault \
-    ${VAULT_INIT_DIR} \
-    ${VAULT_TLS_DIR} \
-    ${VAULT_STORAGE_DATA_DIR} \
-    ${VAULT_STORAGE_DATABASE_DIR} \
-    ${VAULT_LOGS_DIR}
+# chown -R vault:vault \
+#     ${VAULT_INIT_DIR} \
+#     ${VAULT_TLS_DIR} \
+#     ${VAULT_STORAGE_DATA_DIR} \
+#     ${VAULT_STORAGE_DATABASE_DIR} \
+#     ${VAULT_LOGS_DIR}
 
 log_info "Starting Vault..."
 

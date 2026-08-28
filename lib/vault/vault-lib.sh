@@ -3,7 +3,7 @@
 . /usr/local/src/vault/scripts/lib/logs.sh
 
 vault_status() {
-    vault status -tls-skip-verify >/dev/null 2>&1
+    vault status >/dev/null 2>&1
     return $?
 }
 
@@ -15,7 +15,7 @@ vault_is_reachable() {
 }
 
 vault_is_initialized() {
-    STATUS="$(vault status -tls-skip-verify 2>/dev/null || true)"
+    STATUS="$(vault status 2>/dev/null || true)"
 
     if echo "$STATUS" | grep -q "Initialized.*true"; then
         log_ok "Vault already initialized. Skipping Initialization..."
@@ -26,7 +26,7 @@ vault_is_initialized() {
 }
 
 vault_is_sealed() {
-    STATUS="$(vault status -tls-skip-verify 2>/dev/null || true)"
+    STATUS="$(vault status 2>/dev/null || true)"
 
     if echo "$STATUS" | grep -q "Sealed.*true"; then
         log_ok "Vault still sealed. Proceeding with Unsealing..."
@@ -37,7 +37,7 @@ vault_is_sealed() {
 }
 
 vault_secret_enabled() {
-    SECRETS="$(vault secrets list -tls-skip-verify 2>/dev/null || true)"
+    SECRETS="$(vault secrets list 2>/dev/null || true)"
 
     if echo "$SECRETS" | grep -q "^secret/"; then
         return 0
@@ -46,7 +46,7 @@ vault_secret_enabled() {
 }
 
 vault_audit_enabled() {
-    AUDITS="$(vault audit list -tls-skip-verify 2>/dev/null || true)"
+    AUDITS="$(vault audit list 2>/dev/null || true)"
 
     if echo "$AUDITS" | grep -q "^file/"; then
         return 0
@@ -55,7 +55,7 @@ vault_audit_enabled() {
 }
 
 vault_policy_written() {
-    POLICIES="$(vault policy list -tls-skip-verify 2>/dev/null || true)"
+    POLICIES="$(vault policy list 2>/dev/null || true)"
 
     if echo "$POLICIES" | grep -q "^backend" && echo "$POLICIES" | grep -q "^admin"; then
         return 0
@@ -64,12 +64,8 @@ vault_policy_written() {
 }
 
 vault_approle_written() {
-    if vault read \
-        -tls-skip-verify \
-        ${VAULT_APPROLE_BACKEND_AUTH_PATH} >/dev/null 2>&1 && 
-        vault read \
-        -tls-skip-verify \
-        ${VAULT_APPROLE_ADMIN_AUTH_PATH} >/dev/null 2>&1
+    if vault read ${VAULT_APPROLE_BACKEND_AUTH_PATH} >/dev/null 2>&1 && \
+        vault read ${VAULT_APPROLE_ADMIN_AUTH_PATH} >/dev/null 2>&1
     then
         return 0
     fi
@@ -78,10 +74,10 @@ vault_approle_written() {
 
 vault_approle_ids_exist()
 {
-    [ -f "$VAULT_APPROLE_ADMIN_ROLE_ID_PATH" ] &&
-    [ -f "$VAULT_APPROLE_ADMIN_SECRET_ID_PATH" ] &&
-    [ -f "$VAULT_APPROLE_BACKEND_ROLE_ID_PATH" ] &&
-    [ -f "$VAULT_APPROLE_BACKEND_SECRET_ID_PATH" ]
+    [ -f ${VAULT_APPROLE_ADMIN_ROLE_ID_PATH} ] &&
+    [ -f ${VAULT_APPROLE_ADMIN_SECRET_ID_PATH} ] &&
+    [ -f ${VAULT_APPROLE_BACKEND_ROLE_ID_PATH} ] &&
+    [ -f ${VAULT_APPROLE_BACKEND_SECRET_ID_PATH} ]
 }
 
 vault_system_configured() {

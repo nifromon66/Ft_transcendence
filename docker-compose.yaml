@@ -34,7 +34,7 @@ services:
     expose:
       - "${VAULT_EXPOSE_API_PORT}"
     healthcheck:
-      test: [ "CMD", "vault", "status", "-tls-skip-verify" ]
+      test: [ "CMD", "vault", "status" ]
       interval: ${VAULT_HEALTHCHECK_INTERVAL}
       timeout: ${VAULT_HEALTHCHECK_TIMEOUT}
       retries: ${VAULT_HEALTHCHECK_RETRIES}
@@ -103,6 +103,7 @@ services:
     volumes:
       - ${BACKEND_VOLUME_APP_IN}:${BACKEND_VOLUME_APP_OUT}
       - ${BACKEND_VOLUME_APPROLE_IN}:${BACKEND_VOLUME_APPROLE_OUT}:ro
+      - ${BACKEND_VOLUME_TLS_CA_IN}:${BACKEND_VOLUME_TLS_CA_OUT}:ro
     depends_on:
       db:
         condition: service_healthy

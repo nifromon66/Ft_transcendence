@@ -27,8 +27,15 @@ log_info "Unsealing Vault..."
 
 if vault_is_sealed
 then
-    ${VAULT_SH_UNSEAL_PATH}
-    log_ok "Vault Unsealed."
+    if [ "${VAULT_AUTO_UNSEAL}" = "true" ]
+    then
+        ${VAULT_SH_UNSEAL_PATH}
+    else
+        log_warn "Vault is sealed and automatic unsealing is disabled."
+        log_warn "Stopping vault-bootstrap.sh here."
+        log_warn "Skipping Vault Configuration..."
+        exit 0
+    fi
 else
     log_ok "Vault Already Unsealed."
 fi

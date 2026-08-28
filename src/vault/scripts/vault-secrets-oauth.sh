@@ -7,7 +7,6 @@ set -eu
 log_info "Writing OAuth secrets..."
 
 vault kv put \
-    -tls-skip-verify \
     secret/oauth \
     client_id="${OAUTH42_CLIENT_ID}" \
     client_secret="${OAUTH42_CLIENT_SECRET}"

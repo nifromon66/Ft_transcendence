@@ -7,7 +7,6 @@ set -eu
 log_info "Writing database secrets..."
 
 vault kv put \
-    -tls-skip-verify \
     secret/database \
     host="${DATABASE_HOST}" \
     port="${DATABASE_PORT}" \

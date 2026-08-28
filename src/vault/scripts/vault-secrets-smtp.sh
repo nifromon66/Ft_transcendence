@@ -7,7 +7,6 @@ set -eu
 log_info "Writing SMTP secrets..."
 
 vault kv put \
-    -tls-skip-verify \
     secret/smtp \
     host="${SMTP_HOST}" \
     port="${SMTP_PORT}" \

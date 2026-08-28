@@ -31,7 +31,7 @@ class VaultClient:
                 "role_id": role_id,
                 "secret_id": secret_id,
             },
-            verify=False,
+            verify=os.environ["BACKEND_VAULT_CA_CERT"],
             timeout=5,
         )
 
@@ -52,7 +52,7 @@ class VaultClient:
             headers={
                 "X-Vault-Token": self._token,
             },
-            verify=False,
+            verify=os.environ["BACKEND_VAULT_CA_CERT"],
             timeout=5,
         )
 

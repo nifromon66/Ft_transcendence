@@ -13,7 +13,6 @@ then
     log_info "Writing Vault backend policies..."
 
     vault policy write \
-        -tls-skip-verify \
         backend \
         ${VAULT_POLICY_BACKEND_PATH}
 
@@ -21,7 +20,6 @@ then
     log_info "Writing Vault admin policies..."
 
     vault policy write \
-        -tls-skip-verify \
         admin \
         ${VAULT_POLICY_ADMIN_PATH}
 
@@ -34,7 +32,6 @@ then
     log_info "Enabling Vault approles..."
 
     vault auth enable \
-        -tls-skip-verify \
         approle
 
     log_ok "Vault approles enabled."
@@ -42,14 +39,12 @@ then
     log_info "Writing Vault backend role..."
 
     vault write \
-        -tls-skip-verify \
         ${VAULT_APPROLE_BACKEND_AUTH_PATH} \
         @${VAULT_ROLE_BACKEND_PATH}
 
     log_ok "Vault admin role written."
 
     vault write \
-        -tls-skip-verify \
         ${VAULT_APPROLE_ADMIN_AUTH_PATH} \
         @${VAULT_ROLE_ADMIN_PATH}
 

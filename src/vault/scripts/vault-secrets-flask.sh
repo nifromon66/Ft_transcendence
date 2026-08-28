@@ -7,7 +7,6 @@ set -eu
 log_info "Writing Flask secret..."
 
 vault kv put \
-    -tls-skip-verify \
     secret/flask \
     secret_key="${FLASK_SECRET_KEY}"
 
