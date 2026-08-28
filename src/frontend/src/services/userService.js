@@ -8,11 +8,16 @@
  * @throws {Error} If the server fails or registration is unsuccessful.
  */
 export async function registerUser(userData) {
-    const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    })
+    let response;
+    try {
+        response = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        })
+    } catch (e) {
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connection internet.")
+    }
 
     if (response.status >= 500) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
