@@ -9,6 +9,7 @@ import { optimizeImage } from '@/utils/imageProcessor'
 
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
+import router from '@/router'
 
 const authStore = useAuthStore()
 
@@ -30,8 +31,12 @@ onMounted(async () => {
             return
         }
 
-        const userProfile = await fetchUserProfile(token)
+        if (!navigator.onLine) {
+            errorMessage.value = "Vous êtes hors ligne. Impossible de charger les données du profil."
+            return
+        }
 
+        const userProfile = await fetchUserProfile(token)
         authStore.user = userProfile
 
         if (authStore.user?.avatar_url) {
@@ -39,7 +44,12 @@ onMounted(async () => {
             avatarImageSrc.value = URL.createObjectURL(blob)
         }
     } catch (err) {
-        errorMessage.value = "Impossible de charger le profil."
+        if (err.message === "SESSION_EXPIRED") {
+            authStore.logout()
+            router.push('/login')
+        } else {
+            errorMessage.value = err.message || "Impossible de charger le profil."
+        }
     } finally {
         isLoading.value = false
     }
@@ -52,6 +62,10 @@ onUnmounted(() => {
 })
 
 const handleDeleteAvatar = async () => {
+    if (!navigator.onLine) {
+        alert("Impossible de supprimer l'avatar en mode hors ligne.")
+        return
+    }
     if (!confirm("Êtes-vous sûr de vouloir supprimer votre avatar ?")) {
         return
     }
@@ -95,6 +109,11 @@ const handleNewFile = (rawFile) => {
 
 const saveAvatar = async () => {
     if (!selectedFile.value) {
+        return
+    }
+
+    if (!navigator.onLine) {
+        alert("Impossible d'enregistrer l'avatar en mode hors ligne.")
         return
     }
 
@@ -145,6 +164,10 @@ const cancelEdit = () => {
             <h1 class="mb-6 border-b pb-4 text-2xl font-bold text-gray-800">Profil Utilisateur</h1>
 
             <div v-if="isLoading" class="text-gray-500">Chargement des informations...</div>
+
+            <div v-else-if="errorMessage" class="text-red-500 font-medium p-4 bg-red-50 rounded-lg">
+                {{ errorMessage }}
+            </div>
 
             <div v-else-if="authStore.user"
                 class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
@@ -225,7 +248,7 @@ const cancelEdit = () => {
             </div>
 
             <div v-else class="text-red-500">
-                {{ errorMessage || "Impossible de charger le profil." }}
+                Impossible de charger le profil.
             </div>
 
         </div>

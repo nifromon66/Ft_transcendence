@@ -86,11 +86,11 @@ async function register() {
       <h2 class="mb-6 text-center text-2xl font-bold text-black">Inscription</h2>
       <form @submit.prevent="register" class="flex flex-col gap-0.5">
         <div>
-          <input v-model="username" id="username" placeholder="Nom d'utilisateur"
+          <input v-model="username" id="username" placeholder="Nom d'utilisateur" autocomplete="username"
             class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
-          <input v-model="email" id="email" type="email" placeholder="Email"
+          <input v-model="email" id="email" type="email" placeholder="Email" autocomplete="email"
             class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
