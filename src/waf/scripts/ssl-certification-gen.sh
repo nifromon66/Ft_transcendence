@@ -27,7 +27,9 @@ openssl req \
 	-newkey "${SSL_KEY_TYPE}":"${SSL_KEY_SIZE}" \
 	-keyout "${SSL_KEY}" \
 	-out "${SSL_CERT}" \
-	-subj "${SSL_COMMON_NAME}"
+	-subj "${SSL_COMMON_NAME}"\
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+
 
 chmod 600 \
 	"${SSL_CERT}" \
