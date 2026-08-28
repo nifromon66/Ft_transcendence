@@ -65,4 +65,17 @@ router.beforeEach((to) => {
   }
 })
 
+router.onError((error) => {
+  if (!navigator.onLine) {
+    return
+  }
+  throw error
+})
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    window.location.reload()
+  })
+}
+
 export default router
