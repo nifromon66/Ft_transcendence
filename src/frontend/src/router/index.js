@@ -6,6 +6,7 @@ import HomeView from '../views/HomeView.vue'
 import FollowView from '../views/FollowView.vue'
 import BadgeView from '../views/BadgeView.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -49,7 +50,12 @@ const router = createRouter({
       name: 'badges',
       component: BadgeView,
       meta: { requiresAuth: true },
-    }
+    },
+    {
+      path: '/test-upload',
+      name: 'test-upload',
+      component: () => import('@/views/TestUploadView.vue'),
+    },
   ],
 })
 

@@ -1,12 +1,11 @@
-/**
- * Validates an uploaded avatar file (checks existence, allowed extensions, MIME types, and 10MB size limit).
- * @param {File} file - The uploaded image file to validate.
- * @returns {{isValid: boolean, error: string|null}} An object indicating if the file is valid, along with an error message if it is not.
- */
-export const validateAvatar = (file) => {
-    const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
-    const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp']
-    const ALLOWED_MIMETYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+const validateFile = (file, options) => {
+    const {
+        allowedExtensions,
+        allowedMimeTypes,
+        maxSize,
+        maxSizeLabel,
+        typeName
+    } = options
 
     if (!file) return {
         isValid: false,
@@ -17,28 +16,48 @@ export const validateAvatar = (file) => {
     const hasExtension = fileName.includes('.')
     const fileExtension = hasExtension ? fileName.split('.').pop().toLowerCase() : ''
 
-    if (!hasExtension || !ALLOWED_EXTENSIONS.includes(fileExtension)) {
+    if (!hasExtension || !allowedExtensions.includes(fileExtension)) {
         return {
             isValid: false,
-            error: "L'extension du fichier n'est pas autorisée (.png, .jpg, .jpeg, .gif, ou .webp uniquement)."
+            error: "L'extension du fichier n'est pas autorisée."
         }
     }
 
-    if (!ALLOWED_MIMETYPES.includes(file.type)) {
+    if (!allowedMimeTypes.includes(file.type)) {
         return {
             isValid: false,
-            error: "Le format du fichier n'est pas reconnu comme une image valide."
+            error: `Le format du fichier n'est pas reconnu comme un ${typeName} valide.`
         }
     }
 
-    if (file.size > MAX_UPLOAD_SIZE) {
+    if (file.size > maxSize) {
         return {
             isValid: false,
-            error: "Le fichier dépasse la taille autorisée (10 Mo max)."
+            error: `Le fichier dépasse la taille autorisée (${maxSizeLabel} max).`
         }
     }
     return {
         isValid: true,
         error: null
     }
+}
+
+export const validateAvatar = (file) => {
+    return validateFile(file, {
+        typeName: "avatar",
+        allowedExtensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+        maxSize: 10 * 1024 * 1024,
+        maxSizeLabel: "10 Mo"
+    })
+}
+
+export const validateDocument = (file) => {
+    return validateFile(file, {
+        typeName: "document",
+        allowedExtensions: ['pdf'],
+        allowedMimeTypes: ['application/pdf'],
+        maxSize: 5 * 1024 * 1024,
+        maxSizeLabel: "5 Mo"
+    })
 }

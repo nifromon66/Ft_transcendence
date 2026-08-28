@@ -8,9 +8,11 @@ vault = VaultClient()
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
+from dotenv import dotenv_values
 from extensions import bcrypt, db, jwt
 from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
@@ -22,6 +24,27 @@ from models import User
 from sqlalchemy import select
 
 app = Flask(__name__)
+
+env_frontend = dotenv_values(".env.frontend")
+frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
+
+CORS(
+    app,
+    resources={
+        r"/uploads/*": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
+        r"/upload": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
+        r"/users/avatar": {"origins": [frontend_url], "methods": ["DELETE", "OPTIONS"]},
+        r"/login": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
+        r"/me": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
+        r"/users*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        },
+    },
+    supports_credentials=True,
+    allow_headers=["Authorization", "Content-Type"],
+)
+
 app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
 app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
