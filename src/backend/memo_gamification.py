@@ -1,14 +1,13 @@
 # TODO:
-# aword_badge ok
 # +xp
-# enum badge id
+# Requirements for obtaining the badges
 
 # routers : maybe later move functions routers in the folder backend/routers
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import UserBadge, User, Badge
-from extensions import bcrypt, db, jwt
+from extensions import db
 
 gamification_api = Blueprint('gamification_api', __name__)
 
@@ -102,7 +101,7 @@ def getbadge():
 
 @gamification_api.route("/badges", methods=["GET"])
 @jwt_required()
-def get_badges():
+def display_badges():
     user_id = get_jwt_identity()
 
     badges = db.session.scalars(
