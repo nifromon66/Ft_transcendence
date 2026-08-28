@@ -23,7 +23,7 @@
 </script>
 
 <template>
-  <header class="sticky top-0 bg-primary shadow-lg">
+  <header class="sticky top-0 z-50 bg-primary shadow-lg">
     <nav class="flex w-full items-center justify-between px-6 py-6 text-white">
       <!-- left side -->
       <div class="flex items-center gap-3">
