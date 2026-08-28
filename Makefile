@@ -5,6 +5,10 @@ export COMPOSE_ENV_FILES
 up:
 	docker compose up -d --build
 
+rebuild:
+	docker compose build --no-cache
+	docker compose up -d
+
 down:
 	docker compose down
 
@@ -20,6 +24,9 @@ restart:
 clean:
 	docker compose down -v --rmi local --remove-orphans
 
-re: clean up
+prune:
+	docker system prune -f --volumes
 
-.PHONY: up down test-waf logs restart clean re insert-secrets
+re: clean prune rebuild
+
+.PHONY: up rebuild down test-waf logs restart clean prune re insert-secrets
