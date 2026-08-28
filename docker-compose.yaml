@@ -145,6 +145,12 @@ services:
 volumes:
   db_data:
     name: db_data
+  vault_1_data:
+    name: vault_1_data
+  vault_2_data:
+    name: vault_2_data
+  vault_3_data:
+    name: vault_3_data
 
 ##########################################
 # Networks                               #
@@ -152,6 +158,9 @@ volumes:
 networks:
   vault-network:
     name: ${VAULT_NETWORK}
+    driver: bridge
+  vault-raft-network:
+    name: vault-raft-network
     driver: bridge
   waf-network:
     name: ${WAF_NETWORK}

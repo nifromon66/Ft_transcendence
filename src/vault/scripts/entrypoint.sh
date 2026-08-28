@@ -30,16 +30,7 @@ mkdir -p \
 log_ok "Created necessary runtime directories."
 
 #########################################
-# TLS
-#########################################
-
-log_info "Vault TLS Certificate generation..."
-
-${VAULT_SH_TLS_CA_CERT_GEN_PATH}
-${VAULT_SH_TLS_SERVER_CERT_GEN_PATH}
-
-#########################################
-# Generate vault.hcl
+# Generate vault.hcl and vault-server.ext
 #########################################
 
 log_info "Generating ${VAULT_SH_HCL_CONFIG_PATH} from ${VAULT_SH_HCL_CONFIG_TEMPLATE_PATH}..."
@@ -57,6 +48,24 @@ ${VAULT_LOGGING_LEVEL}' \
     > ${VAULT_SH_HCL_CONFIG_PATH}
 
 log_ok "Generated ${VAULT_SH_HCL_CONFIG_PATH}."
+
+log_info "Generating ${VAULT_SH_EXT_CONFIG_PATH} from ${VAULT_SH_EXT_CONFIG_TEMPLATE_PATH}..."
+
+envsubst '
+${VAULT_NODE_NAME}' \
+    < ${VAULT_SH_EXT_CONFIG_TEMPLATE_PATH} \
+    > ${VAULT_SH_EXT_CONFIG_PATH}
+
+log_ok "Generated ${VAULT_SH_EXT_CONFIG_PATH}."
+
+#########################################
+# TLS
+#########################################
+
+log_info "Vault TLS Certificate generation..."
+
+${VAULT_SH_TLS_CA_CERT_GEN_PATH}
+${VAULT_SH_TLS_SERVER_CERT_GEN_PATH}
 
 #########################################
 # Logs

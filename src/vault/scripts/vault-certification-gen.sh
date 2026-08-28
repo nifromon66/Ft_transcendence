@@ -4,21 +4,23 @@ set -eu
 
 . "${VAULT_LIB_SH_PATH}"
 
-log_info "Generating Vault server certificate..."
+log_info "Generating Vault ${VAULT_NODE_NAME} server certificate..."
 
 mkdir -p "${VAULT_TLS_SERVER_DIR}"
 
 if [ -f "${VAULT_TLS_SERVER_CERT}" ] && [ -f "${VAULT_TLS_SERVER_KEY}" ]; then
+    log_info "Vault ${VAULT_NODE_NAME} server certificate already exists."
+
     if openssl x509 \
         -checkend "${VAULT_TLS_SERVER_CERT_EXPIRY_DIFF}" \
         -noout \
         -in "${VAULT_TLS_SERVER_CERT}"
     then
-        log_ok "Vault server certificate still valid."
+        log_ok "Vault ${VAULT_NODE_NAME} server certificate still valid."
         exit 0
     fi
 
-    log_warn "Vault server certificate is expired or near expiry."
+    log_warn "Vault ${VAULT_NODE_NAME} server certificate is expired or near expiry."
 
     rm -f \
         "${VAULT_TLS_SERVER_CERT}" \
@@ -36,7 +38,7 @@ openssl req \
     -new \
     -key "${VAULT_TLS_SERVER_KEY}" \
     -out "${VAULT_TLS_SERVER_CSR}" \
-    -subj "/C=${VAULT_TLS_SERVER_CERT_COUNTRY}/ST=${VAULT_TLS_SERVER_CERT_STATE}/L=${VAULT_TLS_SERVER_CERT_CITY}/O=${VAULT_TLS_SERVER_CERT_ORGANIZATION}/CN=${VAULT_TLS_SERVER_CERT_COMMON_NAME}"
+    -subj "/C=${VAULT_TLS_SERVER_CERT_COUNTRY}/ST=${VAULT_TLS_SERVER_CERT_STATE}/L=${VAULT_TLS_SERVER_CERT_CITY}/O=${VAULT_TLS_SERVER_CERT_ORGANIZATION}/CN=${VAULT_NODE_NAME}"
 
 openssl x509 \
     -req \
@@ -51,6 +53,8 @@ openssl x509 \
 
 chmod 644 "${VAULT_TLS_SERVER_CERT}"
 
-rm -f "${VAULT_TLS_CSR}" "${VAULT_TLS_CA_CERT}.srl"
+rm -f \
+    "${VAULT_TLS_SERVER_CSR}" \
+    "${VAULT_TLS_CA_CERT}.srl"
 
-log_ok "Vault server certificate generated."
+log_ok "Vault ${VAULT_NODE_NAME} server certificate generated."
