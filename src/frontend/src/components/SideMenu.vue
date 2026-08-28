@@ -35,6 +35,15 @@
       >
         Suivis
       </RouterLink>
+
+      <RouterLink
+        v-if="authStore.user"
+        :to="{ name: 'postRecipe' }"
+        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light"
+        @click="emit('close-menu')"
+      >
+        Poster une recette
+      </RouterLink>
       
       <RouterLink
         :to="{ name: 'about' }"

@@ -60,7 +60,22 @@ const router = createRouter({
       component: BadgeView,
       meta: { requiresAuth: true },
     },
+    {
+      path: '/recipe/:id',
+      name : 'recipe-details',
+      component: () => import('../views/RecipeDetailsView.vue'),
+      props: true,
+    },
+    {
+      path: '/postRecipe',
+      name : 'postRecipe',
+      component: () => import('../views/PostRecipeView.vue'),
+      props: true,
+    },
   ],
+  scrollBehavior() {
+    return { top: 0, behavior: 'smooth' }
+  }
 })
 
 router.beforeEach((to) => {
