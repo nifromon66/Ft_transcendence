@@ -1,5 +1,6 @@
 import os
 
+from seeds import seed_database
 from vault import VaultClient
 
 vault = VaultClient()
@@ -143,6 +144,8 @@ def me():
 # Crée les tables si elles n'existent pas encore
 with app.app_context():
     db.create_all()
+    seed_database()
+
 
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)

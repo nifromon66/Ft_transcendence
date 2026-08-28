@@ -7,7 +7,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from .association import recipe_utensil
+    # from .association import recipe_utensil
     from .recipe import Recipe
 
 
@@ -18,7 +18,7 @@ class Utensil(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list[Recipe]] = relationship(secondary="recipe_utensil", back_populates="utensils")
+    recipes: Mapped[list["Recipe"]] = relationship(secondary="recipe_utensil", back_populates="utensils")
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name : str):
+        self.name = name.capitalize()

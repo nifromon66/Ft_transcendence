@@ -7,6 +7,8 @@ from extensions import db
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .recipe_step import RecipeStep
+
 if TYPE_CHECKING:
     from .association import RecipeIngredient
     from .category import Category
@@ -37,13 +39,15 @@ class Recipe(db.Model):
 
     difficulty: Mapped[str | None] = mapped_column(String)
 
-    instructions: Mapped[str | None] = mapped_column(Text)
+    # instructions: Mapped[str | None] = mapped_column(Text)
 
     image_url: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
     updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+    steps: Mapped[list[RecipeStep]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.step_number")
 
     user: Mapped[User] = relationship(back_populates="recipes")
 
@@ -68,8 +72,8 @@ class Recipe(db.Model):
         description: str | None = None,
         cooking_time: int | None = None,
         difficulty: str | None = None,
-        instructions: str | None = None,
-        image_url: str | None = None,):
+        image_url: str | None = None,
+        steps: list["RecipeStep"] | None = None):
 
         if user is not None:
             self.user = user
@@ -89,11 +93,11 @@ class Recipe(db.Model):
         self.description = description
         self.cooking_time = cooking_time
         self.difficulty = difficulty
-        self.instructions = instructions
         self.image_url = image_url
-
         self.created_at = datetime.now(timezone.utc)
         self.updated_at = None
+
+        self.steps = steps or []
 
     def update(
         self,
@@ -106,6 +110,7 @@ class Recipe(db.Model):
         image_url: str | None = None,
         category_id: int | None = None,
         category: Category | None = None,
+        steps: list["RecipeStep"] | None = None,
     ) -> None:
 
         if title is not None:
@@ -120,9 +125,6 @@ class Recipe(db.Model):
         if difficulty is not None:
             self.difficulty = difficulty
 
-        if instructions is not None:
-            self.instructions = instructions
-
         if image_url is not None:
             self.image_url = image_url
 
@@ -130,5 +132,7 @@ class Recipe(db.Model):
             self.category = category
         elif category_id is not None:
             self.category_id = category_id
+
+        self.steps = steps or []
 
         self.updated_at = datetime.now(timezone.utc)
