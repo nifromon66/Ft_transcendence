@@ -83,6 +83,12 @@ class RecipeIngredient(db.Model):
 
         self.quantity = quantity
 
+friend = Table(
+    "friend", db.metadata,
+    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("friend_id", ForeignKey("users.id"), primary_key=True)
+)
+
 
 recipe_utensil = Table(
     "recipe_utensil", db.metadata,

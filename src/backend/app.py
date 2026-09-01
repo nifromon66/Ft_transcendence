@@ -19,7 +19,11 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
+
+# to be re-organized here
+from memo_recipe import recipes_api
 from memo_gamification import gamification_api
+
 from models import User
 from recipe_management.routes import recipe_bp
 from sqlalchemy import select
@@ -174,6 +178,7 @@ with app.app_context():
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
+app.register_blueprint(recipes_api)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

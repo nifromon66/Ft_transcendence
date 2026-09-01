@@ -4,11 +4,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import DateTime, Integer, String, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .association import friend
+
 if TYPE_CHECKING:
-    from .association import UserBadge
+    from .association import UserBadge, friend
     from .comment import Comment
     from .favorite import Favorite
     from .rating import Rating
@@ -46,6 +48,16 @@ class User(db.Model):
 
     ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
 
+    # who is my friend 
+    friends1: Mapped[list[User]] = relationship(secondary="friend",
+        primaryjoin=id == friend.c.user_id,
+        secondaryjoin=id == friend.c.friend_id,)
+
+    # i am a friend of whom
+    friends2: Mapped[list[User]] = relationship(secondary="friend",
+        primaryjoin=id == friend.c.friend_id,
+        secondaryjoin=id == friend.c.user_id,)
+
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
         self.email = email
@@ -66,3 +78,27 @@ class User(db.Model):
             "email": self.email,
             "avatar_url": full_avatar_path,
         }
+
+    from sqlalchemy import select
+
+    def get_mutual_friends(self) -> list["User"]:
+        # just for me cmt
+        # SELECT u1.*
+        # FROM users AS u1
+        # JOIN friend AS f1 ON u1.id = f1.user_id
+        # JOIN friend AS f2 ON f2.user_id = f1.friend_id
+        #                  AND f2.friend_id = f1.user_id
+        # WHERE u1.id = current_user_id;
+        f1 = friend.alias("f1")
+        f2 = friend.alias("f2")
+        stmt = (
+            select(User)
+            .join(f1, User.id == f1.c.friend_id)
+            .join(
+                f2,
+                (f2.c.user_id == f1.c.friend_id)
+                & (f2.c.friend_id == f1.c.user_id),
+            )
+            .where(f1.c.user_id == self.id)
+        )
+        return db.session.scalars(stmt).all()
