@@ -2,7 +2,13 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/authState'
-import { createRecipe, fetchCategories } from '@/services/recipeService'
+import { 
+  createRecipe, 
+  fetchCategories,
+  fetchIngredients,
+  fetchTags,
+  fetchUtensils, 
+} from '@/services/recipeService'
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -14,7 +20,10 @@ const scrollToTop = () => {
 const router = useRouter()
 const authStore = useAuthStore()
 const categories = ref([])
-const isLoadingCategories = ref(true)
+const ingredientOptions = ref([])
+const utensilOptions = ref([])
+const tagOptions = ref([])
+const isLoadingOptions = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
@@ -24,27 +33,99 @@ const recipe = reactive({
   description: '',
   cookingTime: null,
   difficulty: '',
-  instructions: '',
+  steps: [{ id: 1, description: '' }],
   image: null,
-  ingredients: [{ name: '', quantity: '' }],
-  utensils: [''],
-  tags: [''],
+  ingredients: [{  id: 1, ingredientId: '', quantity: '' }],
+  utensils: [{ id: 1, utensilId: '', }],
+  tags: [{ id: 1, tagId: '', }],
 })
 
+let nextStepId = 2
+
+const addStep = () => {
+  recipe.steps.push({
+    id: nextStepId,
+    description: '',
+  })
+
+  nextStepId += 1
+}
+
+const removeStep = (index) => {
+  if (recipe.steps.length > 1) {
+    recipe.steps.splice(index, 1)
+  }
+}
+
+let nextIngredientId = 2
 const addIngredient = () => {
-  recipe.ingredients.push({ name: '', quantity: '' })
+  recipe.ingredients.push({ id: nextIngredientId, ingredientId: '', quantity: '' })
+  nextIngredientId += 1
+}
+
+let nextUtensilId = 2
+
+const addUtensil = () => {
+  recipe.utensils.push({
+    id: nextUtensilId,
+    utensilId: '',
+  })
+
+  nextUtensilId += 1
+}
+
+const removeUtensil = (index) => {
+  if (recipe.utensils.length > 1) {
+    recipe.utensils.splice(index, 1)
+  }
+}
+
+const isUtensilSelected = (utensilId, currentIndex) => {
+  return recipe.utensils.some((utensil, index) => {
+    return (
+      index !== currentIndex &&
+      utensil.utensilId === utensilId
+    )
+  })
+}
+
+let nextTagId = 2
+
+const addTag = () => {
+  recipe.tags.push({
+    id: nextTagId,
+    tagId: '',
+  })
+
+  nextTagId += 1
+}
+
+const removeTag = (index) => {
+  if (recipe.tags.length > 1) {
+    recipe.tags.splice(index, 1)
+  }
+}
+
+const isTagSelected = (tagId, currentIndex) => {
+  return recipe.tags.some((tag, index) => {
+    return (
+      index !== currentIndex &&
+      tag.tagId === tagId
+    )
+  })
 }
 
 const removeIngredient = (index) => {
   recipe.ingredients.splice(index, 1)
 }
 
-const addListItem = (list) => {
-  list.push('')
-}
-
-const removeListItem = (list, index) => {
-  list.splice(index, 1)
+const isIngredientSelected = (ingredientId, currentIndex) => {
+  return recipe.ingredients.some((ingredient, index) => {
+    return (
+      index !== currentIndex &&
+      ingredient.ingredientId === ingredientId
+    )
+  })
 }
 
 const selectImage = (event) => {
@@ -53,11 +134,27 @@ const selectImage = (event) => {
 
 onMounted(async () => {
   try {
-    categories.value = await fetchCategories()
+    const [
+      loadedCategories,
+      loadedIngredients,
+      loadedUtensils,
+      loadedTags,
+    ] = await Promise.all([
+      fetchCategories(),
+      fetchIngredients(),
+      fetchUtensils(),
+      fetchTags(),
+    ])
+
+    categories.value = loadedCategories
+    ingredientOptions.value = loadedIngredients
+    utensilOptions.value = loadedUtensils
+    tagOptions.value = loadedTags
   } catch (error) {
-    errorMessage.value = error.message
+    errorMessage.value =
+      error.message || 'Impossible de charger les options du formulaire.'
   } finally {
-    isLoadingCategories.value = false
+    isLoadingOptions.value = false
   }
 })
 
@@ -76,7 +173,22 @@ const submitRecipe = async () => {
     description: recipe.description || null,
     cooking_time: recipe.cookingTime === '' ? null : recipe.cookingTime,
     difficulty: recipe.difficulty || null,
-    instructions: recipe.instructions || null,
+    steps: recipe.steps.map((step) => ({
+      description: step.description.trim(),
+    })),
+    
+    ingredients: recipe.ingredients.map((ingredient) => ({
+      ingredient_id: ingredient.ingredientId,
+      quantity: ingredient.quantity.trim() || null,
+    })),
+
+    utensil_ids: recipe.utensils.map(
+      (utensil) => utensil.utensilId
+    ),
+    
+    tag_ids: recipe.tags.map(
+      (tag) => tag.tagId
+    ),
   }
 
   try {
@@ -129,13 +241,13 @@ const submitRecipe = async () => {
                 id="recipe-category"
                 v-model="recipe.categoryId"
                 required
-                :disabled="isLoadingCategories"
+                :disabled="isLoadingOptions"
                 class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-wait
                     disabled:bg-gray-100"
               >
                 <option disabled value="">
-                  {{ isLoadingCategories ? 'Chargement des catégories...' : 'Choisir une catégorie' }}
+                  {{ isLoadingOptions ? 'Chargement des catégories...' : 'Choisir une catégorie' }}
                 </option>
                 <option
                   v-for="category in categories"
@@ -209,17 +321,51 @@ const submitRecipe = async () => {
           </div>
 
           <div class="mt-4">
-            <label for="recipe-instructions" class="mb-1 block font-medium">
-              Instructions
-            </label>
-            <textarea
-              id="recipe-instructions"
-              v-model.trim="recipe.instructions"
-              rows="8"
-              placeholder="Décris les différentes étapes de la préparation..."
-              class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
-                  focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
+            <h3 class="mb-3 font-medium">Étapes de préparation</h3>
+
+            <div class="space-y-4">
+              <div
+                v-for="(step, index) in recipe.steps"
+                :key="step.id"
+                class="rounded-md border border-gray-200 p-4"
+              >
+                <label
+                  :for="`recipe-step-${step.id}`"
+                  class="mb-1 block font-medium"
+                >
+                  Étape {{ index + 1 }}
+                </label>
+
+                <textarea
+                  :id="`recipe-step-${step.id}`"
+                  v-model.trim="step.description"
+                  rows="3"
+                  required
+                  placeholder="Décris cette étape de la préparation..."
+                  class="w-full resize-none rounded-md border border-gray-300 px-3 py-2
+                      focus:border-blue-500 focus:outline-none focus:ring-2
+                      focus:ring-blue-200"
+                />
+
+                <button
+                  v-if="recipe.steps.length > 1"
+                  type="button"
+                  class="mt-2 rounded-md px-3 py-2 text-red-600 hover:bg-red-50"
+                  @click="removeStep(index)"
+                >
+                  Retirer cette étape
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="mt-3 rounded-md border border-primary px-3 py-2
+                    font-medium text-primary-dark hover:bg-primary-light"
+              @click="addStep"
+            >
+              Ajouter une étape
+            </button>
           </div>
         </section>
 
@@ -231,17 +377,30 @@ const submitRecipe = async () => {
           <div class="space-y-3">
             <div
               v-for="(ingredient, index) in recipe.ingredients"
-              :key="index"
+              :key="ingredient.id"
               class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
             >
-              <input
-                v-model.trim="ingredient.name"
-                type="text"
+              <select
+                v-model="ingredient.ingredientId"
+                required
                 :aria-label="`Ingrédient ${index + 1}`"
-                placeholder="Ex. Carottes"
-                class="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
+                class="rounded-md border border-gray-300 bg-white px-3 py-2
+                    focus:border-blue-500 focus:outline-none focus:ring-2
+                    focus:ring-blue-200"
+              >
+                <option disabled value="">
+                  Choisir un ingrédient
+                </option>
+
+                <option
+                  v-for="ingredientOption in ingredientOptions"
+                  :key="ingredientOption.id"
+                  :value="ingredientOption.id"
+                  :disabled="isIngredientSelected(ingredientOption.id, index)"
+                >
+                  {{ ingredientOption.name }}
+                </option>
+              </select>
               <input
                 v-model.trim="ingredient.quantity"
                 type="text"
@@ -278,22 +437,36 @@ const submitRecipe = async () => {
           <div class="space-y-3">
             <div
               v-for="(utensil, index) in recipe.utensils"
-              :key="index"
+              :key="utensil.id"
               class="flex gap-2"
             >
-              <input
-                v-model.trim="recipe.utensils[index]"
-                type="text"
+              <select
+                v-model="utensil.utensilId"
+                required
                 :aria-label="`Ustensile ${index + 1}`"
-                placeholder="Ex. Casserole"
-                class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+                class="min-w-0 flex-1 rounded-md border border-gray-300
+                    bg-white px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
+              >
+                <option disabled value="">
+                  Choisir un ustensile
+                </option>
+
+                <option
+                  v-for="utensilOption in utensilOptions"
+                  :key="utensilOption.id"
+                  :value="utensilOption.id"
+                  :disabled="isUtensilSelected(utensilOption.id, index)"
+                >
+                  {{ utensilOption.name }}
+                </option>
+              </select>
+
               <button
                 v-if="recipe.utensils.length > 1"
                 type="button"
                 class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50"
-                @click="removeListItem(recipe.utensils, index)"
+                @click="removeUtensil(index)"
               >
                 Retirer
               </button>
@@ -302,8 +475,9 @@ const submitRecipe = async () => {
 
           <button
             type="button"
-            class="mt-3 rounded-md border border-primary px-3 py-2 font-medium text-primary-dark hover:bg-primary-light"
-            @click="addListItem(recipe.utensils)"
+            class="mt-3 rounded-md border border-primary px-3 py-2
+                font-medium text-primary-dark hover:bg-primary-light"
+            @click="addUtensil"
           >
             Ajouter un ustensile
           </button>
@@ -315,22 +489,36 @@ const submitRecipe = async () => {
           <div class="space-y-3">
             <div
               v-for="(tag, index) in recipe.tags"
-              :key="index"
+              :key="tag.id"
               class="flex gap-2"
             >
-              <input
-                v-model.trim="recipe.tags[index]"
-                type="text"
+              <select
+                v-model="tag.tagId"
+                required
                 :aria-label="`Tag ${index + 1}`"
-                placeholder="Ex. Végétarien"
-                class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
+                class="min-w-0 flex-1 rounded-md border border-gray-300
+                    bg-white px-3 py-2 focus:border-blue-500
+                      focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                <option disabled value="">
+                  Choisir un tag
+                </option>
+
+                <option
+                  v-for="tagOption in tagOptions"
+                  :key="tagOption.id"
+                  :value="tagOption.id"
+                  :disabled="isTagSelected(tagOption.id, index)"
+                >
+                  {{ tagOption.name }}
+                </option>
+              </select>
+
               <button
                 v-if="recipe.tags.length > 1"
                 type="button"
                 class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50"
-                @click="removeListItem(recipe.tags, index)"
+                @click="removeTag(index)"
               >
                 Retirer
               </button>
@@ -339,8 +527,9 @@ const submitRecipe = async () => {
 
           <button
             type="button"
-            class="mt-3 rounded-md border border-primary px-3 py-2 font-medium text-primary-dark hover:bg-primary-light"
-            @click="addListItem(recipe.tags)"
+            class="mt-3 rounded-md border border-primary px-3 py-2
+                font-medium text-primary-dark hover:bg-primary-light"
+            @click="addTag"
           >
             Ajouter un tag
           </button>
@@ -370,7 +559,7 @@ const submitRecipe = async () => {
 
         <button
           type="submit"
-          :disabled="isSubmitting || isLoadingCategories"
+          :disabled="isSubmitting || isLoadingOptions"
           class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-dark
               disabled:cursor-not-allowed disabled:opacity-50"
         >
