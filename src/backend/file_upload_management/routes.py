@@ -5,20 +5,28 @@ import magic
 from extensions import db
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import User
+from models import Recipe, RecipeStep, User
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
+from werkzeug.security import safe_join
 
 from .constants import (
     ALLOWED_AVATAR_EXTENSIONS,
     ALLOWED_AVATAR_MIMETYPES,
     ALLOWED_DOCUMENT_EXTENSIONS,
     ALLOWED_DOCUMENT_MIMETYPES,
+    ALLOWED_RECIPE_IMAGE_EXTENSIONS,
+    ALLOWED_RECIPE_IMAGE_MIMETYPES,
     MAX_AVATAR_SIZE,
     MAX_DOCUMENT_SIZE,
+    MAX_RECIPE_IMAGE_SIZE,
     UPLOAD_FOLDER,
 )
-from .services import delete_file_physically, save_raw_file
+from .services import (
+    delete_empty_parent_directory,
+    delete_file_physically,
+    save_raw_file,
+)
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -88,8 +96,415 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
             None,
         )
 
-    except OSError as e:
-        return jsonify({"error": f"System error while saving the file: {e!s}"}), 500
+    except OSError as error:
+        return (
+            None,
+            jsonify(
+                {
+                    "error": (
+                        "System error while saving the file: "
+                        f"{error!s}"
+                    )
+                }
+            ),
+            500,
+        )
+
+
+@upload_bp.route("/recipes/<int:recipe_id>/image", methods=["POST"])
+@jwt_required()
+def upload_recipe_image(recipe_id: int):
+    max_mb = MAX_RECIPE_IMAGE_SIZE // (1024 * 1024)
+
+    if request.content_length and request.content_length > MAX_RECIPE_IMAGE_SIZE:
+        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
+
+    if "file" not in request.files:
+        return jsonify(
+            {"error": "No file part in the request"}
+        ), 400
+
+    recipe = db.session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Recette introuvable",
+            }
+        ), 404
+
+    try:
+        user_id = int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Utilisateur non authentifié",
+            }
+        ), 401
+
+    if recipe.user_id != user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": (
+                    "Tu ne peux modifier que tes propres recettes"
+                ),
+            }
+        ), 403
+
+    file = request.files["file"]
+
+    file_data, error_response, error_code = handle_file_upload(
+        file,
+        subfolder=f"recipes/{recipe.id}/cover",
+        allowed_extensions=ALLOWED_RECIPE_IMAGE_EXTENSIONS,
+        allowed_mimetypes=ALLOWED_RECIPE_IMAGE_MIMETYPES,
+    )
+
+    if error_response is not None:
+        return error_response, error_code
+
+    new_filename = file_data["filename"]
+    old_filename = recipe.image_url
+
+    try:
+        recipe.image_url = new_filename
+        db.session.commit()
+
+    except SQLAlchemyError as error:
+        db.session.rollback()
+
+        try:
+            delete_file_physically(new_filename)
+        except OSError as delete_error:
+            current_app.logger.error(
+                "Impossible de supprimer le nouveau fichier "
+                f"après l'échec SQL : {delete_error!s}"
+            )
+
+        current_app.logger.error(
+            f"Impossible d'enregistrer l'image de la recette : {error!s}"
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible d'enregistrer l'image de la recette",
+            }
+        ), 500
+
+    if old_filename:
+        try:
+            delete_file_physically(old_filename)
+        except OSError as error:
+            current_app.logger.error(
+                "L'ancienne image n'a pas pu être supprimée : "
+                f"{error!s}"
+            )
+
+    return jsonify(
+        {
+            **file_data,
+            "image_url": new_filename,
+        }
+    ), 201
+
+
+@upload_bp.route(
+    "/recipes/<int:recipe_id>/steps/<int:step_id>/image",
+    methods=["POST"],
+)
+@jwt_required()
+def upload_recipe_step_image(
+    recipe_id: int,
+    step_id: int,
+):
+    max_mb = MAX_RECIPE_IMAGE_SIZE // (1024 * 1024)
+
+    if (
+        request.content_length
+        and request.content_length > MAX_RECIPE_IMAGE_SIZE
+    ):
+        return jsonify(
+            {"error": f"File too large (Max {max_mb}MB)"}
+        ), 413
+
+    if "file" not in request.files:
+        return jsonify(
+            {"error": "No file part in the request"}
+        ), 400
+
+    recipe = db.session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Recette introuvable",
+            }
+        ), 404
+
+    try:
+        user_id = int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Utilisateur non authentifié",
+            }
+        ), 401
+
+    if recipe.user_id != user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": (
+                    "Tu ne peux modifier que tes propres recettes"
+                ),
+            }
+        ), 403
+
+    step = db.session.get(RecipeStep, step_id)
+
+    if step is None or step.recipe_id != recipe.id:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Étape introuvable pour cette recette",
+            }
+        ), 404
+
+    file = request.files["file"]
+
+    file_data, error_response, error_code = handle_file_upload(
+        file,
+        subfolder=(
+            f"recipes/{recipe.id}/steps/{step.id}"
+        ),
+        allowed_extensions=ALLOWED_RECIPE_IMAGE_EXTENSIONS,
+        allowed_mimetypes=ALLOWED_RECIPE_IMAGE_MIMETYPES,
+    )
+
+    if error_response is not None:
+        return error_response, error_code
+
+    new_filename = file_data["filename"]
+    old_filename = step.image_url
+
+    try:
+        step.image_url = new_filename
+        db.session.commit()
+
+    except SQLAlchemyError as error:
+        db.session.rollback()
+
+        try:
+            delete_file_physically(new_filename)
+        except OSError as delete_error:
+            current_app.logger.error(
+                "Impossible de supprimer la nouvelle image d'étape "
+                f"après l'échec SQL : {delete_error!s}"
+            )
+
+        current_app.logger.error(
+            "Impossible d'enregistrer l'image de l'étape : "
+            f"{error!s}"
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible d'enregistrer l'image de l'étape",
+            }
+        ), 500
+
+    if old_filename:
+        try:
+            delete_file_physically(old_filename)
+        except OSError as error:
+            current_app.logger.error(
+                "L'ancienne image de l'étape n'a pas pu être "
+                f"supprimée : {error!s}"
+            )
+
+    return jsonify(
+        {
+            **file_data,
+            "image_url": new_filename,
+        }
+    ), 201
+
+
+@upload_bp.route(
+    "/recipes/<int:recipe_id>/steps/<int:step_id>/image",
+    methods=["DELETE"],
+)
+@jwt_required()
+def delete_recipe_step_image(
+    recipe_id: int,
+    step_id: int,
+):
+    recipe = db.session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Recette introuvable",
+            }
+        ), 404
+
+    try:
+        user_id = int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Utilisateur non authentifié",
+            }
+        ), 401
+
+    if recipe.user_id != user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": (
+                    "Tu ne peux modifier que tes propres recettes"
+                ),
+            }
+        ), 403
+
+    step = db.session.get(RecipeStep, step_id)
+
+    if step is None or step.recipe_id != recipe.id:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Étape introuvable pour cette recette",
+            }
+        ), 404
+
+    if not step.image_url:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Cette étape n'a pas d'image",
+            }
+        ), 404
+
+    filename = step.image_url
+
+    try:
+        step.image_url = None
+        db.session.commit()
+    except SQLAlchemyError as error:
+        db.session.rollback()
+
+        current_app.logger.error(
+            "Impossible de supprimer l'image de l'étape : "
+            f"{error!s}"
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible de supprimer l'image de l'étape",
+            }
+        ), 500
+
+    try:
+        delete_file_physically(filename)
+    except OSError as error:
+        current_app.logger.error(
+            "L'image a été retirée de l'étape, mais son fichier "
+            f"n'a pas pu être supprimé : {error!s}"
+        )
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "Image de l'étape supprimée",
+        }
+    ), 200
+
+
+@upload_bp.route("/recipes/<int:recipe_id>/image", methods=["DELETE"])
+@jwt_required()
+def delete_recipe_image(recipe_id: int):
+    recipe = db.session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Recette introuvable",
+            }
+        ), 404
+
+    try:
+        user_id = int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Utilisateur non authentifié",
+            }
+        ), 401
+
+    if recipe.user_id != user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": (
+                    "Tu ne peux modifier que tes propres recettes"
+                ),
+            }
+        ), 403
+
+    if not recipe.image_url:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Cette recette n'a pas d'image",
+            }
+        ), 404
+
+    filename = recipe.image_url
+
+    try:
+        recipe.image_url = None
+        db.session.commit()
+    except SQLAlchemyError as error:
+        db.session.rollback()
+
+        current_app.logger.error(
+            f"Impossible de supprimer l'image de la recette : {error!s}"
+        )
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible de supprimer l'image de la recette",
+            }
+        ), 500
+
+    try:
+        delete_file_physically(filename)
+        delete_empty_parent_directory(filename)
+    except OSError as error:
+        current_app.logger.error(
+            "L'image a été retirée de la recette, mais le fichier "
+            f"n'a pas pu être supprimé : {error!s}"
+        )
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "Image de la recette supprimée",
+        }
+    ), 200
 
 
 @upload_bp.route("/upload/avatar", methods=["POST"])
@@ -162,6 +577,51 @@ def upload_document():
         return err_resp, err_code
 
     return jsonify(file_data), 201
+
+
+@upload_bp.route(
+    "/uploads/recipes/<path:filename>",
+    methods=["GET"],
+)
+def get_public_recipe_image(filename: str):
+    recipe_upload_folder = os.path.join(
+        UPLOAD_FOLDER,
+        "recipes",
+    )
+
+    file_path = safe_join(recipe_upload_folder, filename)
+
+    if file_path is None or not os.path.isfile(file_path):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Image introuvable",
+            }
+        ), 404
+
+    try:
+        mimetype = magic.from_file(file_path, mime=True)
+    except (OSError, magic.MagicException):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Image illisible",
+            }
+        ), 404
+
+    if mimetype not in ALLOWED_RECIPE_IMAGE_MIMETYPES:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Type d'image non autorisé",
+            }
+        ), 415
+
+    return send_from_directory(
+        recipe_upload_folder,
+        filename,
+        mimetype=mimetype,
+    )
 
 
 @upload_bp.route("/uploads/<path:filename>", methods=["GET"])

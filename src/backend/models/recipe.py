@@ -100,39 +100,19 @@ class Recipe(db.Model):
     def update(
         self,
         *,
-        title: str | None = None,
-        description: str | None = None,
-        cooking_time: int | None = None,
-        difficulty: str | None = None,
-        image_url: str | None = None,
-        category_id: int | None = None,
-        category: Category | None = None,
-        steps: list["RecipeStep"] | None = None,
+        title: str,
+        category: Category,
+        description: str | None,
+        cooking_time: int | None,
+        difficulty: str | None,
+        steps: list["RecipeStep"],
     ) -> None:
-
-        if title is not None:
-            self.title = title
-
-        if description is not None:
-            self.description = description
-
-        if cooking_time is not None:
-            self.cooking_time = cooking_time
-
-        if difficulty is not None:
-            self.difficulty = difficulty
-
-        if image_url is not None:
-            self.image_url = image_url
-
-        if category is not None:
-            self.category = category
-        elif category_id is not None:
-            self.category_id = category_id
-
-        if steps is not None:
-            self.steps = steps
-
+        self.title = title
+        self.category = category
+        self.description = description
+        self.cooking_time = cooking_time
+        self.difficulty = difficulty
+        self.steps = steps
         self.updated_at = datetime.now(timezone.utc)
 
 # no list ratings, list favorites, list comments in this function

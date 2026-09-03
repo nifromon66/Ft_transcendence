@@ -77,6 +77,13 @@ const router = createRouter({
       name: 'test-upload',
       component: () => import('@/views/TestUploadView.vue'),
     },
+    {
+      path: '/recipe/:id/edit',
+      name: 'recipe-edit',
+      component: () => import('../views/EditRecipeView.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
     // {
     //   path: "/recipe/:id",
     //   name: "recipe",

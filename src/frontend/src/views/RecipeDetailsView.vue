@@ -1,12 +1,22 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { fetchRecipeById } from '@/services/recipeService'
+import { useAuthStore } from '@/authState'
 
+const authStore = useAuthStore()
 const props = defineProps({
   id: {
     type: String,
     required: true,
   },
+})
+
+const isAuthor = computed(() => {
+  if (!authStore.user || !recipe.value) {
+    return false
+  }
+
+  return Number(authStore.user.id) === Number(recipe.value.author.id)
 })
 
 const recipe = ref(null)
@@ -104,9 +114,23 @@ const formatDate = (date) => {
             </div> 
           </div>          
 
-          <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
-            {{ recipe.title }}
-          </h1>
+          <div class="flex items-start justify-between gap-4">
+            <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
+              {{ recipe.title }}
+            </h1>
+
+            <RouterLink
+              v-if="isAuthor"
+              :to="{
+                name: 'recipe-edit',
+                params: { id: recipe.id },
+              }"
+              class="shrink-0 rounded-md bg-primary px-4 py-2
+                  font-semibold text-white hover:bg-primary-dark"
+            >
+              Modifier
+            </RouterLink>
+          </div>
 
           <p v-if="recipe.description" class="mt-4 text-lg text-gray-600">
             {{ recipe.description }}
