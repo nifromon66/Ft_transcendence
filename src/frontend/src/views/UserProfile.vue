@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
-import { fetchUserProfile } from '@/services/userService'
+import { fetchUserProfile, deleteAccount } from '@/services/userService'
 import { uploadAvatar } from '@/services/uploadService'
 import { fetchAvatarBlob } from '@/services/avatarService'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
+
 
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -44,6 +45,25 @@ const confirmDelete = async () => {
         return
     }
     console.log("Mot de passe prêt à être envoyé :", deletePassword.value)
+    try {
+        const token = authStore.token
+
+        await deleteAccount(deletePassword.value, token)
+
+        closeDeleteModal()
+        authStore.clearAuth()
+        router.push('/')
+
+        alert("Votre compte a été supprimé avec succès.")
+    } catch (err) {
+        if (err.message === "SESSION_EXPIRED") {
+            closeDeleteModal()
+            authStore.clearAuth()
+            router.push('/login')
+        } else {
+            deleteError.value = err.message || "Impossible de supprimer le compte."
+        }
+    }
 }
 
 onMounted(async () => {
@@ -68,7 +88,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.logout()
+            authStore.clearAuth()
             router.push('/login')
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."
