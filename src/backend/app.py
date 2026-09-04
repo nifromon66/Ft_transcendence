@@ -1,6 +1,7 @@
 import os
 
 from seeds import seed_database
+from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
 
 vault = VaultClient()
@@ -122,6 +123,39 @@ def delete_user(user_id: int):
     db.session.commit()
 
     return jsonify({"success": True, "message": "utilisateur supprimé"}), 200
+
+
+@app.route("/users/me/delete", methods=["POST"])
+@jwt_required()
+def delete_my_account():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+
+    data = request.get_json()
+    password = data.get("password", "") if data else ""
+
+    if not password:
+        return jsonify({"success": False, "error": "Le mot de passe est requis."}), 400
+
+    if not user.check_password(password):
+        return jsonify({"success": False, "error": "Mot de passe incorrect."}), 400
+
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Compte supprimé et anonymisé avec succès.",
+            }
+        ), 200
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {"success": False, "error": "Erreur lors de la suppression du compte."}
+        ), 500
 
 
 @app.route("/login", methods=["POST"])
