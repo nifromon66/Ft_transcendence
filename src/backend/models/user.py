@@ -4,13 +4,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import DateTime, Integer, String, select
+from sqlalchemy import Boolean, DateTime, Integer, String, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association import friend
 
 if TYPE_CHECKING:
-    from .association import UserBadge, friend
+    from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
     from .rating import Rating
@@ -50,15 +50,19 @@ class User(db.Model):
 
     ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
-    # who is my friend 
-    friends1: Mapped[list[User]] = relationship(secondary="friend",
+    # who is my friend
+    friends1: Mapped[list[User]] = relationship(
+        secondary="friend",
         primaryjoin=id == friend.c.user_id,
-        secondaryjoin=id == friend.c.friend_id,)
+        secondaryjoin=id == friend.c.friend_id,
+    )
 
     # i am a friend of whom
-    friends2: Mapped[list[User]] = relationship(secondary="friend",
+    friends2: Mapped[list[User]] = relationship(
+        secondary="friend",
         primaryjoin=id == friend.c.friend_id,
-        secondaryjoin=id == friend.c.user_id,)
+        secondaryjoin=id == friend.c.user_id,
+    )
 
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
@@ -83,7 +87,7 @@ class User(db.Model):
 
     from sqlalchemy import select
 
-    def get_mutual_friends(self) -> list["User"]:
+    def get_mutual_friends(self) -> list[User]:
         # just for me cmt
         # SELECT u1.*
         # FROM users AS u1
@@ -98,8 +102,7 @@ class User(db.Model):
             .join(f1, User.id == f1.c.friend_id)
             .join(
                 f2,
-                (f2.c.user_id == f1.c.friend_id)
-                & (f2.c.friend_id == f1.c.user_id),
+                (f2.c.user_id == f1.c.friend_id) & (f2.c.friend_id == f1.c.user_id),
             )
             .where(f1.c.user_id == self.id)
         )
