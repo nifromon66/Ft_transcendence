@@ -1,5 +1,7 @@
 import os
+import uuid
 
+from file_upload_management.routes import delete_file_physically, upload_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -11,7 +13,6 @@ jwt_secrets = vault.get_secret("jwt")
 
 from dotenv import dotenv_values
 from extensions import bcrypt, db, jwt
-from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -144,15 +145,37 @@ def delete_my_account():
         return jsonify({"success": False, "error": "Mot de passe incorrect."}), 400
 
     try:
+        if user.avatar_url:
+            try:
+                delete_file_physically(user.avatar_url)
+            except OSError as e:
+                app.logger.error(f"Erreur lors de la suppression de l'avatar: {e!s}")
+                return jsonify(
+                    {
+                        "sucess": False,
+                        "error": "Erreur lors de la suppression de l'avatar.",
+                    }
+                ), 500
+
+            user.avatar_url = None
+
+        user.is_active = False
+        user.username = "Utilisateur supprimé"
+        user.email = f"deleted_{uuid.uuid4().hex}@anonymized.invalid"
+        user.password_hash = "!"
+
+        db.session.commit()
+
         return jsonify(
             {
                 "success": True,
-                "message": "Compte supprimé et anonymisé avec succès.",
+                "message": "Votre compte a été supprimé avec succès.",
             }
         ), 200
 
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
+        app.logger.error(f"Erreur lors de la suppression du compte : {e!s}")
         return jsonify(
             {"success": False, "error": "Erreur lors de la suppression du compte."}
         ), 500
@@ -175,7 +198,7 @@ def login():
         select(User).where(User.email == data["email"])
     ).scalar_one_or_none()
 
-    if user is None or not user.check_password(data["password"]):
+    if user is None or not user.is_active or not user.check_password(data["password"]):
         return jsonify(
             {"success": False, "error": "email ou mot de passe incorrect"}
         ), 200
@@ -192,7 +215,7 @@ def me():
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
 
-    if user is None:
+    if user is None or not user.is_active:
         return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
 
     return jsonify({"success": True, **user.to_dict()}), 200

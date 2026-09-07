@@ -95,6 +95,12 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
 @upload_bp.route("/upload/avatar", methods=["POST"])
 @jwt_required()
 def upload_avatar():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None or not user.is_active:
+        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+
     max_mb = MAX_AVATAR_SIZE // (1024 * 1024)
 
     # Check if the request size is not too large
@@ -140,6 +146,12 @@ def upload_avatar():
 @upload_bp.route("/upload/document", methods=["POST"])
 @jwt_required()
 def upload_document():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None or not user.is_active:
+        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+
     max_mb = MAX_DOCUMENT_SIZE // (1024 * 1024)
 
     # Check if the request size is not too large
@@ -167,6 +179,12 @@ def upload_document():
 @upload_bp.route("/uploads/<path:filename>", methods=["GET"])
 @jwt_required()
 def get_secure_file(filename):
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None or not user.is_active:
+        return jsonify({"error": "Accès reßfusé"}), 403
+
     # Check if the requested file actually exists on the disk
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     if not os.path.exists(file_path):

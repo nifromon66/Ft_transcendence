@@ -26,6 +26,8 @@ class User(db.Model):
 
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
 
     avatar_url: Mapped[str | None] = mapped_column(String)
@@ -34,17 +36,17 @@ class User(db.Model):
 
     xp: Mapped[int | None] = mapped_column(Integer)
 
-    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
+    comments: Mapped[list[Comment]] = relationship(back_populates="user")
 
     badges: Mapped[list[UserBadge]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
+    favorites: Mapped[list[Favorite]] = relationship(back_populates="user")
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
+    ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
@@ -52,7 +54,7 @@ class User(db.Model):
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
         if role != "user":
             self.role = role
-
+        self.is_active = True
 
     def check_password(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password_hash, password)
