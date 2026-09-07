@@ -39,8 +39,6 @@ class Recipe(db.Model):
 
     difficulty: Mapped[str | None] = mapped_column(String)
 
-    # instructions: Mapped[str | None] = mapped_column(Text)
-
     image_url: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime)
@@ -53,17 +51,17 @@ class Recipe(db.Model):
 
     category: Mapped[Category] = relationship(back_populates="recipes")
 
-    comments: Mapped[list[Comment]] = relationship(back_populates="recipe")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="recipe")
 
-    ingredients: Mapped[list[RecipeIngredient]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
-    utensils: Mapped[list[Utensil]] = relationship(secondary="recipe_utensil", back_populates="recipes")
+    utensils: Mapped[list["Utensil"]] = relationship(secondary="recipe_utensil", back_populates="recipes")
 
-    tags: Mapped[list[Tag]] = relationship(secondary="recipe_tag", back_populates="recipes")
+    tags: Mapped[list["Tag"]] = relationship(secondary="recipe_tag", back_populates="recipes")
 
-    favorites: Mapped[list[Favorite]] = relationship(back_populates="recipe")
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="recipe")
 
-    ratings: Mapped[list[Rating]] = relationship(back_populates="recipe")
+    ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe")
 
     def __init__(self, *,
         user_id: int | None = None, user: User | None = None,
@@ -106,7 +104,6 @@ class Recipe(db.Model):
         description: str | None = None,
         cooking_time: int | None = None,
         difficulty: str | None = None,
-        instructions: str | None = None,
         image_url: str | None = None,
         category_id: int | None = None,
         category: Category | None = None,
@@ -133,6 +130,48 @@ class Recipe(db.Model):
         elif category_id is not None:
             self.category_id = category_id
 
-        self.steps = steps or []
+        if steps is not None:
+            self.steps = steps
 
         self.updated_at = datetime.now(timezone.utc)
+
+# no list ratings, list favorites, list comments in this function
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "cooking_time": self.cooking_time,
+            "difficulty": self.difficulty,
+            "image_url": self.image_url,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": (
+                self.updated_at.isoformat()
+                if self.updated_at
+                else None
+            ),
+            "category": {
+                "id": self.category.id,
+                "name": self.category.name,
+            },
+            "author": {
+                "id": self.user.id,
+                "username": self.user.username,
+            },
+            "steps": [
+                step.to_dict()
+                for step in self.steps
+            ],
+            "ingredients": [
+                ingredient.to_dict()
+                for ingredient in self.ingredients
+            ],
+            "utensils": [
+                utensil.to_dict()
+                for utensil in self.utensils
+            ],
+            "tags": [
+                tag.to_dict()
+                for tag in self.tags
+            ],
+        }

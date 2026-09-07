@@ -4,7 +4,6 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import HomeView from '../views/HomeView.vue'
 import FollowView from '../views/FollowView.vue'
-import BadgeView from '../views/BadgeView.vue'
 
 
 const router = createRouter({
@@ -48,7 +47,7 @@ const router = createRouter({
     {
       path: '/badges',
       name: 'badges',
-      component: BadgeView,
+      component: () => import('@/views/BadgeView.vue'),
       meta: { requiresAuth: true },
     },
     {
@@ -56,6 +55,11 @@ const router = createRouter({
       name: 'test-upload',
       component: () => import('@/views/TestUploadView.vue'),
     },
+    // {
+    //   path: "/recipe/:id",
+    //   name: "recipe",
+    //   component: () => import("../views/RecipeView.vue"),
+    // },
   ],
 })
 
