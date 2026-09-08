@@ -19,7 +19,7 @@ export default defineConfig({
       workbox: {
         inlineWorkboxRuntime: true,
         cleanupOutdatedCaches: true,
-        //navigateFallback: '/index.html',
+        navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,png,svg,jpg}']
       },
       includeAssets: [

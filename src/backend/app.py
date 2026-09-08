@@ -2,6 +2,7 @@ import os
 import uuid
 
 from file_upload_management.routes import delete_file_physically, upload_bp
+from friends_management.routes import friends_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -36,14 +37,94 @@ frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
 CORS(
     app,
     resources={
-        r"/uploads/*": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
-        r"/upload": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
-        r"/users/avatar": {"origins": [frontend_url], "methods": ["DELETE", "OPTIONS"]},
-        r"/login": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
-        r"/me": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
-        r"/users*": {
+        r"/uploads/.*": {
             "origins": [frontend_url],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/upload/avatar": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/upload/document": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/login": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/me": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/users": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "OPTIONS"],
+        },
+        r"/users/\d+": {
+            "origins": [frontend_url],
+            "methods": ["PUT", "DELETE", "OPTIONS"],
+        },
+        r"/users/avatar": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/users/me/delete": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        #
+        r"/friends": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/search": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/discover": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/requests/received": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/requests/sent": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/\d+": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/friends/request/\d+": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/friends/request/\d+/accept": {
+            "origins": [frontend_url],
+            "methods": ["PATCH", "OPTIONS"],
+        },
+        r"/friends/request/\d+/cancel": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/friends/request/\d+/deny": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/badges": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/getbadge": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/recipe/\d+": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
         },
     },
     supports_credentials=True,
@@ -233,6 +314,7 @@ with app.app_context():
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipes_api)
+app.register_blueprint(friends_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -50,20 +50,6 @@ class User(db.Model):
 
     ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
-    # who is my friend
-    friends1: Mapped[list[User]] = relationship(
-        secondary="friend",
-        primaryjoin=id == friend.c.user_id,
-        secondaryjoin=id == friend.c.friend_id,
-    )
-
-    # i am a friend of whom
-    friends2: Mapped[list[User]] = relationship(
-        secondary="friend",
-        primaryjoin=id == friend.c.friend_id,
-        secondaryjoin=id == friend.c.user_id,
-    )
-
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
         self.email = email

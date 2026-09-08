@@ -258,9 +258,7 @@ def get_sent_requests():
     stmt = (
         select(User)
         .join(friend, User.id == friend.c.friend_id)
-        .where(
-            and_(friend.c.friend_id == current_user_id, friend.c.status == "pending")
-        )
+        .where(and_(friend.c.user_id == current_user_id, friend.c.status == "pending"))
     )
 
     sent_list = db.session.execute(stmt).scalars().all()
