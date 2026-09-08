@@ -55,11 +55,11 @@ const router = createRouter({
       name: 'test-upload',
       component: () => import('@/views/TestUploadView.vue'),
     },
-    // {
-    //   path: "/recipe/:id",
-    //   name: "recipe",
-    //   component: () => import("../views/RecipeView.vue"),
-    // },
+    {
+        path: '/search',
+        name: 'search',
+        component: () => import('@/views/SearchResultsView.vue'),
+    }
   ],
 })
 
