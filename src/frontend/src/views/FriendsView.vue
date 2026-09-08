@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useFriends } from '@/composables/useFriends'
+import FriendAvatar from '@/components/FriendAvatar.vue'
 
 const {
     friendsList,
@@ -66,7 +67,11 @@ onMounted(async () => {
             <ul v-if="searchResults.length > 0" class="space-y-3">
                 <li v-for="user in searchResults" :key="user.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <span class="font-medium text-gray-700">{{ user.username }}</span>
+
+                    <div class="flex items-center gap-3">
+                        <FriendAvatar :user="user" />
+                        <span class="font-medium text-gray-700">{{ user.username }}</span>
+                    </div>
 
                     <div class="flex gap-2">
                         <button v-if="user.friendship_status === 'none'" @click="addFriend(user.id)"
@@ -98,7 +103,12 @@ onMounted(async () => {
             <ul class="space-y-3">
                 <li v-for="req in receivedRequestsList" :key="req.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <span class="font-medium text-gray-700">{{ req.username }}</span>
+
+                    <div class="flex items-center gap-3">
+                        <FriendAvatar :user="req" />
+                        <span class="font-medium text-gray-700">{{ req.username }}</span>
+                    </div>
+
                     <div class="flex gap-2">
                         <button @click="acceptRequest(req.id)"
                             class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">
@@ -120,7 +130,12 @@ onMounted(async () => {
             <ul class="space-y-3">
                 <li v-for="req in sentRequestsList" :key="req.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <span class="font-medium text-gray-700">{{ req.username }}</span>
+
+                    <div class="flex items-center gap-3">
+                        <FriendAvatar :user="req" />
+                        <span class="font-medium text-gray-700">{{ req.username }}</span>
+                    </div>
+
                     <button @click="cancelRequest(req.id)"
                         class="px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">
                         Annuler la demande d'ami</button>
@@ -137,7 +152,12 @@ onMounted(async () => {
                 <ul v-else class="space-y-3">
                     <li v-for="friend in friendsList" :key="friend.id"
                         class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <span class="font-medium text-gray-700">{{ friend.username }}</span>
+
+                        <div class="flex items-center gap-3">
+                            <FriendAvatar :user="friend" />
+                            <span class="font-medium text-gray-700">{{ friend.username }}</span>
+                        </div>
+
                         <button @click="deleteFriend(friend.id)"
                             class="px-3 py-1.5 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
                             cet ami</button>
@@ -152,7 +172,12 @@ onMounted(async () => {
                 <ul v-else class="space-y-3">
                     <li v-for="user in discoverList" :key="user.id"
                         class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <span class="font-medium text-gray-700">{{ user.username }}</span>
+
+                        <div class="flex items-center gap-3">
+                            <FriendAvatar :user="user" />
+                            <span class="font-medium text-gray-700">{{ user.username }}</span>
+                        </div>
+
                         <button @click="addFriend(user.id)"
                             class="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium rounded-md hover:bg-blue-100 transition">
                             Ajouter cet ami</button>
