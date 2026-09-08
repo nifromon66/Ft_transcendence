@@ -21,11 +21,10 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
+from memo_gamification import gamification_api
 
 # to be re-organized here
 from memo_recipe import recipes_api
-from memo_gamification import gamification_api
-
 from models import User
 from sqlalchemy import select
 
