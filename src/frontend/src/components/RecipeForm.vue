@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   fetchCategories,
   fetchIngredients,
@@ -10,6 +11,7 @@ import ImageDropZone from '@/components/ImageDropZone.vue'
 import ImagePreview from '@/components/ImagePreview.vue'
 import { validateRecipeImage } from '@/utils/fileValidators'
 
+const router = useRouter()
 const props = defineProps({
   initialRecipe: {
     type: Object,
@@ -36,6 +38,7 @@ const errorMessage = ref('')
 const recipeImageFile = ref(null)
 const existingRecipeImageUrl = ref(props.initialRecipe?.imageUrl || null)
 const shouldDeleteRecipeImage = ref(false)
+const showRecipeImageDropZone = ref(false)
 
 const handleRecipeImage = (file) => {
   const { isValid, error } = validateRecipeImage(file)
@@ -57,6 +60,7 @@ const removeExistingRecipeImage = () => {
 
 const clearRecipeImage = () => {
   recipeImageFile.value = null
+  showRecipeImageDropZone.value = false
 }
 
 const createFormRecipe = () => {
@@ -74,6 +78,7 @@ const createFormRecipe = () => {
           imageUrl: null,
           imageFile: null,
           shouldDeleteImage: false,
+          showImageDropZone: false,
         },
       ],
       ingredients: [
@@ -110,6 +115,7 @@ const createFormRecipe = () => {
       imageUrl: step.imageUrl || null,
       imageFile: null,
       shouldDeleteImage: false,
+      showImageDropZone: false,
     })),
 
     ingredients: props.initialRecipe.ingredients.map((ingredient) => ({
@@ -137,6 +143,7 @@ const addStep = () => {
     imageUrl: null,
     imageFile: null,
     shouldDeleteImage: false,
+    showImageDropZone: false,
   })
 
   nextStepId += 1
@@ -163,6 +170,7 @@ const handleStepImage = (step, file) => {
 
 const clearStepImage = (step) => {
   step.imageFile = null
+  step.showImageDropZone = false
 }
 
 const removeExistingStepImage = (step) => {
@@ -378,7 +386,7 @@ onMounted(async () => {
             </div>
             <div>
               <p class="mb-1 block font-medium">
-                Image de la recette
+                Image de la recette (facultatif)
               </p>
 
               <ImagePreview
@@ -408,16 +416,37 @@ onMounted(async () => {
                 </button>
               </div>
 
-              <ImageDropZone
-                v-else
-                accept=".png,.jpg,.jpeg,.webp"
+              <button
+                v-else-if="!showRecipeImageDropZone"
+                type="button"
+                class="rounded-md border border-primary px-3 py-2 font-medium
+                    text-primary-dark hover:bg-primary-light"
                 :disabled="isSubmitting"
-                @file-selected="handleRecipeImage"
-              />
-
-              <p class="text-sm text-gray-500">
-                PNG, JPEG ou WebP — 10 Mo maximum.
-              </p>
+                @click="showRecipeImageDropZone = true"
+              >
+                Ajouter une image
+              </button>
+              <div v-else class="flex items-start gap-3">
+                <div>
+                  <ImageDropZone
+                    
+                    accept=".png,.jpg,.jpeg,.webp"
+                    :disabled="isSubmitting"
+                    @file-selected="handleRecipeImage"
+                  />
+                  <p class="text-sm text-gray-500">
+                    PNG, JPEG ou WebP — 10 Mo maximum.
+                  </p>
+                </div>
+                <button
+                      type="button"
+                      class="mt-4 shrink-0 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100"
+                      :disabled="isSubmitting"
+                      @click="showRecipeImageDropZone = false"
+                    >
+                      Annuler
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -490,7 +519,7 @@ onMounted(async () => {
                 />
                 <div class="mt-3">
                   <p class="mb-1 text-sm font-medium">
-                    Image de l’étape (optionnelle)
+                    Image de l’étape (facultatif)
                   </p>
 
                   <ImagePreview
@@ -520,16 +549,40 @@ onMounted(async () => {
                     </button>
                   </div>
 
-                  <ImageDropZone
-                    v-else
-                    accept=".png,.jpg,.jpeg,.webp"
+                  <button
+                    v-else-if="!step.showImageDropZone"
+                    type="button"
+                    class="rounded-md border border-primary px-3 py-2 text-sm font-medium
+                        text-primary-dark hover:bg-primary-light"
                     :disabled="isSubmitting"
-                    @file-selected="handleStepImage(step, $event)"
-                  />
-
-                  <p class="text-sm text-gray-500">
-                    PNG, JPEG ou WebP — 10 Mo maximum.
-                  </p>
+                    @click="step.showImageDropZone = true"
+                  >
+                    Ajouter une image
+                  </button>
+                  <div
+                    v-else
+                    class="flex items-start gap-3"
+                  >
+                    <div>
+                      <ImageDropZone
+                        accept=".png,.jpg,.jpeg,.webp"
+                        :disabled="isSubmitting"
+                        @file-selected="handleStepImage(step, $event)"
+                      />
+                      
+                      <p class="text-sm text-gray-500">
+                        PNG, JPEG ou WebP — 10 Mo maximum.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="mt-4 shrink-0 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100"
+                      :disabled="isSubmitting"
+                      @click="step.showImageDropZone = false"
+                    >
+                      Annuler
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -727,6 +780,17 @@ onMounted(async () => {
               disabled:cursor-not-allowed disabled:opacity-50"
         >
           {{ isSubmitting ? 'Enregistrement...' : submitLabel }}
+        </button>
+
+        <button
+          type="button"
+          class="w-full rounded-md border border-gray-300 px-4 py-3
+                font-semibold text-gray-700 hover:bg-gray-100
+                disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="isSubmitting"
+          @click="router.back()"
+        >
+          Annuler
         </button>
 
         <p
