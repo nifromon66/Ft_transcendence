@@ -7,8 +7,12 @@ const emit = defineEmits(['file-selected'])
 const props = defineProps({
     disabled: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
+    accept: {
+        type: String,
+        default: '.png,.jpg,.jpeg,.gif,.webp',
+    },
 })
 
 const isDragging = ref(false)

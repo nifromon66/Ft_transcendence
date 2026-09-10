@@ -45,15 +45,44 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/terms',
+      name: 'terms',
+      component: () => import('../views/TermsView.vue'),
+    },
+    {
+      path: '/privacy',
+      name : 'privacy',
+      component: () => import('../views/PrivacyView.vue'),
+    },
+    {
       path: '/badges',
       name: 'badges',
       component: () => import('@/views/BadgeView.vue'),
       meta: { requiresAuth: true },
     },
     {
+      path: '/recipe/:id',
+      name : 'recipe-details',
+      component: () => import('../views/RecipeDetailsView.vue'),
+      props: true,
+    },
+    {
+      path: '/postRecipe',
+      name : 'postRecipe',
+      component: () => import('../views/PostRecipeView.vue'),
+      props: true,
+    },  
+    {  
       path: '/test-upload',
       name: 'test-upload',
       component: () => import('@/views/TestUploadView.vue'),
+    },
+    {
+      path: '/recipe/:id/edit',
+      name: 'recipe-edit',
+      component: () => import('../views/EditRecipeView.vue'),
+      props: true,
+      meta: { requiresAuth: true },
     },
     // {
     //   path: "/recipe/:id",
@@ -61,6 +90,9 @@ const router = createRouter({
     //   component: () => import("../views/RecipeView.vue"),
     // },
   ],
+  scrollBehavior() {
+    return { top: 0, behavior: 'smooth' }
+  }
 })
 
 router.beforeEach((to) => {

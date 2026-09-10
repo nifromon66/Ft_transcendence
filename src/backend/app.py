@@ -27,6 +27,7 @@ from memo_gamification import gamification_api
 # to be re-organized here
 from memo_recipe import recipes_api
 from models import User
+from recipe_management.routes import recipe_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
@@ -313,6 +314,7 @@ with app.app_context():
 
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
+app.register_blueprint(recipe_bp)
 app.register_blueprint(recipes_api)
 app.register_blueprint(friends_bp)
 

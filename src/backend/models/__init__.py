@@ -11,6 +11,7 @@ from .recipe import Recipe
 from .tag import Tag
 from .user import User
 from .utensil import Utensil
+from .recipe_step import RecipeStep
 
 __all__ = [
     "Badge",
@@ -20,6 +21,7 @@ __all__ = [
     "Ingredient",
     "Rating",
     "Recipe",
+    "RecipeStep",
     "RecipeIngredient",
     "Tag",
     "User",

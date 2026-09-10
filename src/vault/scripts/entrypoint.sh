@@ -16,7 +16,8 @@ mkdir -p \
     ${VAULT_INIT_DIR} \
     ${VAULT_TLS_DIR} \
     ${VAULT_STORAGE_DATA_DIR} \
-    ${VAULT_LOGS_DIR} \
+    ${VAULT_STORAGE_DATABASE_DIR} \
+	${VAULT_LOGS_DIR} \
     ${VAULT_APPROLE_ID_DIR}
 
 mkdir -p \

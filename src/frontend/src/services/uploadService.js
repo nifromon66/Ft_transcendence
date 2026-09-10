@@ -69,3 +69,88 @@ export function uploadAvatar(token, file, onProgress) {
 export function uploadDocument(token, file, onProgress) {
     return uploadFileToServer(token, file, '/api/upload/document', "le document", onProgress)
 }
+
+export function uploadRecipeImage(
+    token,
+    recipeId,
+    file,
+    onProgress,
+) {
+    return uploadFileToServer(
+        token,
+        file,
+        `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        "l'image de la recette",
+        onProgress,
+    )
+}
+
+export async function deleteRecipeImage(token, recipeId) {
+    const response = await fetch(
+        `/api/recipes/${encodeURIComponent(recipeId)}/image`,
+        {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            "Impossible de supprimer l'image de la recette.",
+        )
+    }
+
+    return data
+}
+
+export function uploadRecipeStepImage(
+    token,
+    recipeId,
+    stepId,
+    file,
+    onProgress,
+) {
+    return uploadFileToServer(
+        token,
+        file,
+        (
+            `/api/recipes/${encodeURIComponent(recipeId)}` +
+            `/steps/${encodeURIComponent(stepId)}/image`
+        ),
+        "l'image de l'étape",
+        onProgress,
+    )
+}
+
+export async function deleteRecipeStepImage(
+    token,
+    recipeId,
+    stepId,
+) {
+    const endpoint =
+        `/api/recipes/${encodeURIComponent(recipeId)}` +
+        `/steps/${encodeURIComponent(stepId)}/image`
+
+    const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            "Impossible de supprimer l'image de l'étape.",
+        )
+    }
+
+    return data
+}

@@ -27,3 +27,26 @@ def delete_file_physically(filename: str) -> None:
         current_app.logger.warning(
             f"Le fichier {file_path} n'a pas été trouvé sur le disque."
         )
+
+def delete_empty_parent_directory(filename: str) -> None:
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    parent_directory = os.path.dirname(file_path)
+
+    upload_root = os.path.abspath(UPLOAD_FOLDER)
+    parent_directory = os.path.abspath(parent_directory)
+
+    if parent_directory == upload_root:
+        return
+
+    if os.path.commonpath(
+        [upload_root, parent_directory]
+    ) != upload_root:
+        return
+
+    try:
+        os.rmdir(parent_directory)
+    except FileNotFoundError:
+        pass
+    except OSError:
+        # Le dossier contient encore un fichier : on le conserve.
+        pass

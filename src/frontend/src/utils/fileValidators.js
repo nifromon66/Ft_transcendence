@@ -61,3 +61,17 @@ export const validateDocument = (file) => {
         maxSizeLabel: "5 Mo"
     })
 }
+
+export const validateRecipeImage = (file) => {
+    return validateFile(file, {
+        typeName: "image",
+        allowedExtensions: ['png', 'jpg', 'jpeg', 'webp'],
+        allowedMimeTypes: [
+            'image/png',
+            'image/jpeg',
+            'image/webp',
+        ],
+        maxSize: 10 * 1024 * 1024,
+        maxSizeLabel: "10 Mo",
+    })
+}
