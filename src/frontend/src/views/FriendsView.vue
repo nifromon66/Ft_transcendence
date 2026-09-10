@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useFriends } from '@/composables/useFriends'
 import FriendAvatar from '@/components/FriendAvatar.vue'
+import { socket } from '@/services/socketService'
 
 const {
     friendsList,
@@ -20,7 +21,8 @@ const {
     acceptRequest,
     denyRequest,
     cancelRequest,
-    deleteFriend
+    deleteFriend,
+    updateUserStatus
 } = useFriends()
 
 const searchQuery = ref('')
@@ -38,6 +40,18 @@ onMounted(async () => {
         loadSentRequests(),
         loadDiscoverUsers()
     ])
+
+    if (socket) {
+        socket.on('user_status_changed', (data) => {
+            updateUserStatus(data.user_id, data.is_online)
+        })
+    }
+})
+
+onUnmounted(() => {
+    if (socket) {
+        socket.off('user_status_changed')
+    }
 })
 </script>
 
@@ -56,7 +70,7 @@ onMounted(async () => {
 
             <div class="flex gap-2 mb-6">
                 <input v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+                    class="flex-1 px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                     @keyup.enter="handleSearch" />
                 <button @click="handleSearch" :disabled="isLoading"
                     class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors disabled:opacity-50">
@@ -70,7 +84,13 @@ onMounted(async () => {
 
                     <div class="flex items-center gap-3">
                         <FriendAvatar :user="user" />
-                        <span class="font-medium text-gray-700">{{ user.username }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700">{{ user.username }}</span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="user.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
                     </div>
 
                     <div class="flex gap-2">
@@ -106,7 +126,14 @@ onMounted(async () => {
 
                     <div class="flex items-center gap-3">
                         <FriendAvatar :user="req" />
-                        <span class="font-medium text-gray-700">{{ req.username }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700">{{ req.username }}</span>
+
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="req.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
                     </div>
 
                     <div class="flex gap-2">
@@ -133,7 +160,14 @@ onMounted(async () => {
 
                     <div class="flex items-center gap-3">
                         <FriendAvatar :user="req" />
-                        <span class="font-medium text-gray-700">{{ req.username }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700">{{ req.username }}</span>
+
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="req.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
                     </div>
 
                     <button @click="cancelRequest(req.id)"
@@ -155,7 +189,14 @@ onMounted(async () => {
 
                         <div class="flex items-center gap-3">
                             <FriendAvatar :user="friend" />
-                            <span class="font-medium text-gray-700">{{ friend.username }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-700">{{ friend.username }}</span>
+
+                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                    :class="friend.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                    :title="friend.is_online ? 'En ligne' : 'Hors ligne'">
+                                </span>
+                            </div>
                         </div>
 
                         <button @click="deleteFriend(friend.id)"
@@ -175,7 +216,14 @@ onMounted(async () => {
 
                         <div class="flex items-center gap-3">
                             <FriendAvatar :user="user" />
-                            <span class="font-medium text-gray-700">{{ user.username }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-700">{{ user.username }}</span>
+
+                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                    :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                    :title="user.is_online ? 'En ligne' : 'Hors ligne'">
+                                </span>
+                            </div>
                         </div>
 
                         <button @click="addFriend(user.id)"

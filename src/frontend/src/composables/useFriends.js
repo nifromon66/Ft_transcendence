@@ -128,16 +128,25 @@ export function useFriends() {
             errorMessage.value = ''
 
             const discUser = discoverList.value.find(u => u.id === targetUserId)
+            const searchUser = searchResults.value.find(u => u.id === targetUserId)
+            const userToAdd = discUser || searchUser
+
             if (discUser) {
                 discoverList.value = discoverList.value.filter(u => u.id !== targetUserId)
             }
 
-            const searchUser = searchResults.value.find(u => u.id === targetUserId)
             if (searchUser) {
                 searchUser.friendship_status = 'pending_sent'
             }
 
-            await loadSentRequests()
+            if (userToAdd) {
+                if (!sentRequestsList.value.some(u => u.id === targetUserId)) {
+                    sentRequestsList.value.push({ ...userToAdd, friendship_status: 'pending_sent' })
+                }
+            } else {
+                await loadSentRequests()
+            }
+
         } catch (error) {
             errorMessage.value = error.message
             throw error
@@ -208,11 +217,17 @@ export function useFriends() {
             await cancelFriendRequest(targetUserId, token)
             errorMessage.value = ''
 
+            const userToRestore = sentRequestsList.value.find(req => req.id === targetUserId)
+
             sentRequestsList.value = sentRequestsList.value.filter(req => req.id !== targetUserId)
 
             const searchUser = searchResults.value.find(u => u.id === targetUserId)
             if (searchUser) {
                 searchUser.friendship_status = 'none'
+            }
+
+            if (userToRestore && !discoverList.value.some(u => u.id === targetUserId)) {
+                discoverList.value.unshift(userToRestore)
             }
         } catch (error) {
             errorMessage.value = error.message
@@ -249,6 +264,33 @@ export function useFriends() {
         }
     }
 
+    const updateUserStatus = (userId, isOnline) => {
+        const friend = friendsList.value.find(f => f.id === userId)
+        if (friend) {
+            friend.is_online = isOnline
+        }
+
+        const searchUser = searchResults.value.find(u => u.id === userId)
+        if (searchUser) {
+            searchUser.is_online = isOnline
+        }
+
+        const discoverUser = discoverList.value.find(u => u.id === userId)
+        if (discoverUser) {
+            discoverUser.is_online = isOnline
+        }
+
+        const sentUser = sentRequestsList.value.find(u => u.id === userId)
+        if (sentUser) {
+            sentUser.is_online = isOnline
+        }
+
+        const receivedUser = receivedRequestsList.value.find(u => u.id === userId)
+        if (receivedUser) {
+            receivedUser.is_online = isOnline
+        }
+    }
+
     return {
         friendsList,
         searchResults,
@@ -266,6 +308,7 @@ export function useFriends() {
         acceptRequest,
         denyRequest,
         cancelRequest,
-        deleteFriend
+        deleteFriend,
+        updateUserStatus
     }
 }

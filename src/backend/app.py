@@ -2,7 +2,7 @@ import os
 import uuid
 
 from file_upload_management.routes import delete_file_physically, upload_bp
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from friends_management.routes import friends_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,7 +14,7 @@ database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
 from dotenv import dotenv_values
-from extensions import bcrypt, db, jwt
+from extensions import bcrypt, db, jwt, online_users
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -35,8 +35,6 @@ app = Flask(__name__)
 env_frontend = dotenv_values(".env.frontend")
 frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
 socketio = SocketIO(app, cors_allowed_origins=[frontend_url])
-
-online_users = {}
 
 
 @socketio.on("connect")
@@ -60,6 +58,44 @@ def handle_disconnect():
                 "user_status_changed", {"user_id": user_id, "is_online": False}
             )
             break
+
+
+@socketio.on("request_initial_satus")
+def handle_initial_status(user_ids):
+
+    print(
+        f"👉 IDs reçus du front pour synchronisation ({request.sid}): {user_ids}",
+        flush=True,
+    )
+
+    if not user_ids:
+        return
+
+    for uid in user_ids:
+        try:
+            uid_int = int(uid)
+            if uid_int in online_users:
+                print(
+                    f"✅ Utilisateur {uid_int} est connecté. Envoi de l'info à {request.sid}",
+                    flush=True,
+                )
+                socketio.emit(
+                    "user_status_changed",
+                    {"user_id": uid_int, "is_online": True},
+                    to=request.sid,
+                )
+            else:
+                pass
+        except (ValueError, TypeError):
+            uid_str = str(uid)
+            if uid_str in online_users:
+                socketio.emit(
+                    "user_status_changed",
+                    {"user_id": uid_str, "is_online": True},
+                    to=request.sid,
+                )
+            print(f"⚠️ Type d'ID non convertible ou introuvable : {uid}", flush=True)
+            continue
 
 
 CORS(
@@ -344,4 +380,4 @@ app.register_blueprint(recipes_api)
 app.register_blueprint(friends_bp)
 
 if __name__ == "__main__":
-    socketio.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)
