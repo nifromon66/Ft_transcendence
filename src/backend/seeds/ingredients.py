@@ -1,7 +1,6 @@
 from extensions import db
 from models import Ingredient
 
-
 INGREDIENTS = [
     {"name": "tomate"},
     {"name": "oignon"},
@@ -50,14 +49,10 @@ def seed_ingredients():
         name = ingredient_data["name"].capitalize()
 
         ingredient = db.session.scalar(
-            db.select(Ingredient).where(
-                Ingredient.name.ilike(name)
-            )
+            db.select(Ingredient).where(Ingredient.name.ilike(name))
         )
 
         if ingredient is None:
-            db.session.add(
-                Ingredient(**ingredient_data)
-            )
+            db.session.add(Ingredient(**ingredient_data))
 
     db.session.commit()

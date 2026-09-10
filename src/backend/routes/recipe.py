@@ -1,15 +1,13 @@
 # for search func
 
+from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from sqlalchemy import or_
-
-from extensions import db
-from models.recipe import Recipe
-from models.ingredient import Ingredient
-from models.tag import Tag
 from models.category import Category
-
+from models.ingredient import Ingredient
+from models.recipe import Recipe
+from models.tag import Tag
+from sqlalchemy import or_
 
 recipes_bp = Blueprint("recipes_bp", __name__, url_prefix="/recipes")
 
@@ -53,8 +51,7 @@ def get_recipes():
         search_pattern = f"%{search}%"
 
         query = (
-            query
-            .outerjoin(Recipe.ingredients)
+            query.outerjoin(Recipe.ingredients)
             .outerjoin(Recipe.tags)
             .where(
                 or_(
@@ -68,37 +65,27 @@ def get_recipes():
         )
 
     if category:
-        query = (
-            query
-            .join(Recipe.category)
-            .where(Category.name.ilike(category))
-        )
+        query = query.join(Recipe.category).where(Category.name.ilike(category))
 
     if difficulty:
-        query = query.where(
-            Recipe.difficulty.ilike(difficulty)
-        )
+        query = query.where(Recipe.difficulty.ilike(difficulty))
 
     offset = (page - 1) * per_page
 
-    query = (
-        query
-        .offset(offset)
-        .limit(per_page)
-    )
+    query = query.offset(offset).limit(per_page)
 
     recipes = db.session.scalars(query).unique().all()
     print("recipes:", [recipe.id for recipe in recipes], flush=True)
 
-    return jsonify({
-        "recipes": [
-            recipe.to_dict()
-            for recipe in recipes
-        ],
-        "page": page,
-        "per_page": per_page,
-        "count": len(recipes),
-    }), 200
+    return jsonify(
+        {
+            "recipes": [recipe.to_dict() for recipe in recipes],
+            "page": page,
+            "per_page": per_page,
+            "count": len(recipes),
+        }
+    ), 200
+
 
 # @recipes_bp.route("/<int:recipe_id>", methods=["GET"])
 # def display_recipe(recipe_id: int | None = None):

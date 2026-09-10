@@ -7,8 +7,8 @@ from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import Recipe, RecipeStep, User
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.utils import secure_filename
 from werkzeug.security import safe_join
+from werkzeug.utils import secure_filename
 
 from .constants import (
     ALLOWED_AVATAR_EXTENSIONS,
@@ -99,14 +99,7 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
     except OSError as error:
         return (
             None,
-            jsonify(
-                {
-                    "error": (
-                        "System error while saving the file: "
-                        f"{error!s}"
-                    )
-                }
-            ),
+            jsonify({"error": (f"System error while saving the file: {error!s}")}),
             500,
         )
 
@@ -120,9 +113,7 @@ def upload_recipe_image(recipe_id: int):
         return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
 
     if "file" not in request.files:
-        return jsonify(
-            {"error": "No file part in the request"}
-        ), 400
+        return jsonify({"error": "No file part in the request"}), 400
 
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -148,9 +139,7 @@ def upload_recipe_image(recipe_id: int):
         return jsonify(
             {
                 "success": False,
-                "error": (
-                    "Tu ne peux modifier que tes propres recettes"
-                ),
+                "error": ("Tu ne peux modifier que tes propres recettes"),
             }
         ), 403
 
@@ -200,8 +189,7 @@ def upload_recipe_image(recipe_id: int):
             delete_file_physically(old_filename)
         except OSError as error:
             current_app.logger.error(
-                "L'ancienne image n'a pas pu être supprimée : "
-                f"{error!s}"
+                f"L'ancienne image n'a pas pu être supprimée : {error!s}"
             )
 
     return jsonify(
@@ -223,18 +211,11 @@ def upload_recipe_step_image(
 ):
     max_mb = MAX_RECIPE_IMAGE_SIZE // (1024 * 1024)
 
-    if (
-        request.content_length
-        and request.content_length > MAX_RECIPE_IMAGE_SIZE
-    ):
-        return jsonify(
-            {"error": f"File too large (Max {max_mb}MB)"}
-        ), 413
+    if request.content_length and request.content_length > MAX_RECIPE_IMAGE_SIZE:
+        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
 
     if "file" not in request.files:
-        return jsonify(
-            {"error": "No file part in the request"}
-        ), 400
+        return jsonify({"error": "No file part in the request"}), 400
 
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -260,9 +241,7 @@ def upload_recipe_step_image(
         return jsonify(
             {
                 "success": False,
-                "error": (
-                    "Tu ne peux modifier que tes propres recettes"
-                ),
+                "error": ("Tu ne peux modifier que tes propres recettes"),
             }
         ), 403
 
@@ -280,9 +259,7 @@ def upload_recipe_step_image(
 
     file_data, error_response, error_code = handle_file_upload(
         file,
-        subfolder=(
-            f"recipes/{recipe.id}/steps/{step.id}"
-        ),
+        subfolder=(f"recipes/{recipe.id}/steps/{step.id}"),
         allowed_extensions=ALLOWED_RECIPE_IMAGE_EXTENSIONS,
         allowed_mimetypes=ALLOWED_RECIPE_IMAGE_MIMETYPES,
     )
@@ -309,8 +286,7 @@ def upload_recipe_step_image(
             )
 
         current_app.logger.error(
-            "Impossible d'enregistrer l'image de l'étape : "
-            f"{error!s}"
+            f"Impossible d'enregistrer l'image de l'étape : {error!s}"
         )
 
         return jsonify(
@@ -325,8 +301,7 @@ def upload_recipe_step_image(
             delete_file_physically(old_filename)
         except OSError as error:
             current_app.logger.error(
-                "L'ancienne image de l'étape n'a pas pu être "
-                f"supprimée : {error!s}"
+                f"L'ancienne image de l'étape n'a pas pu être supprimée : {error!s}"
             )
 
     return jsonify(
@@ -370,9 +345,7 @@ def delete_recipe_step_image(
         return jsonify(
             {
                 "success": False,
-                "error": (
-                    "Tu ne peux modifier que tes propres recettes"
-                ),
+                "error": ("Tu ne peux modifier que tes propres recettes"),
             }
         ), 403
 
@@ -403,8 +376,7 @@ def delete_recipe_step_image(
         db.session.rollback()
 
         current_app.logger.error(
-            "Impossible de supprimer l'image de l'étape : "
-            f"{error!s}"
+            f"Impossible de supprimer l'image de l'étape : {error!s}"
         )
 
         return jsonify(
@@ -457,9 +429,7 @@ def delete_recipe_image(recipe_id: int):
         return jsonify(
             {
                 "success": False,
-                "error": (
-                    "Tu ne peux modifier que tes propres recettes"
-                ),
+                "error": ("Tu ne peux modifier que tes propres recettes"),
             }
         ), 403
 

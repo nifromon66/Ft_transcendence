@@ -22,12 +22,11 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
-
-# to be re-organized here
-from routes import recipes_bp, gamification_api
-
 from models import User
 from recipe_management.routes import recipe_bp
+
+# to be re-organized here
+from routes import gamification_api, recipes_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
@@ -316,7 +315,7 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
 app.register_blueprint(friends_bp)
-app.register_blueprint(recipes_bp) ##for search func
+app.register_blueprint(recipes_bp)  ##for search func
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

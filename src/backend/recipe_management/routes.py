@@ -1,35 +1,42 @@
 from extensions import db
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import Category, Ingredient, Recipe, RecipeIngredient, RecipeStep, Tag, User, Utensil
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from .validators import (
-    RecipeValidationError,
-    validate_recipe_payload,
-)
-from flask import Blueprint, current_app, jsonify, request
 from file_upload_management.services import (
     delete_empty_parent_directory,
     delete_file_physically,
 )
+from flask import Blueprint, current_app, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from models import (
+    Category,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    RecipeStep,
+    Tag,
+    User,
+    Utensil,
+)
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
+from .validators import (
+    RecipeValidationError,
+    validate_recipe_payload,
+)
 
 recipe_bp = Blueprint("recipes", __name__)
 
 
 @recipe_bp.route("/categories", methods=["GET"])
 def get_categories():
-    categories = db.session.execute(
-        select(Category).order_by(Category.name)
-    ).scalars().all()
+    categories = (
+        db.session.execute(select(Category).order_by(Category.name)).scalars().all()
+    )
 
     return jsonify(
         {
             "success": True,
             "categories": [
-                {"id": category.id, "name": category.name}
-                for category in categories
+                {"id": category.id, "name": category.name} for category in categories
             ],
         }
     ), 200
@@ -37,9 +44,9 @@ def get_categories():
 
 @recipe_bp.route("/ingredients", methods=["GET"])
 def get_ingredients():
-    ingredients = db.session.execute(
-        select(Ingredient).order_by(Ingredient.name)
-    ).scalars().all()
+    ingredients = (
+        db.session.execute(select(Ingredient).order_by(Ingredient.name)).scalars().all()
+    )
 
     return jsonify(
         {
@@ -57,9 +64,9 @@ def get_ingredients():
 
 @recipe_bp.route("/utensils", methods=["GET"])
 def get_utensils():
-    utensils = db.session.execute(
-        select(Utensil).order_by(Utensil.name)
-    ).scalars().all()
+    utensils = (
+        db.session.execute(select(Utensil).order_by(Utensil.name)).scalars().all()
+    )
 
     return jsonify(
         {
@@ -77,9 +84,7 @@ def get_utensils():
 
 @recipe_bp.route("/tags", methods=["GET"])
 def get_tags():
-    tags = db.session.execute(
-        select(Tag).order_by(Tag.name)
-    ).scalars().all()
+    tags = db.session.execute(select(Tag).order_by(Tag.name)).scalars().all()
 
     return jsonify(
         {
@@ -97,11 +102,11 @@ def get_tags():
 
 @recipe_bp.route("/recipes/latest", methods=["GET"])
 def get_latest_recipes():
-    recipes = db.session.execute(
-        select(Recipe)
-        .order_by(Recipe.created_at.desc())
-        .limit(4)
-    ).scalars().all()
+    recipes = (
+        db.session.execute(select(Recipe).order_by(Recipe.created_at.desc()).limit(4))
+        .scalars()
+        .all()
+    )
 
     return jsonify(
         {
@@ -243,10 +248,7 @@ def update_recipe(recipe_id: int):
     utensil_ids = validated["utensil_ids"]
     tag_ids = validated["tag_ids"]
 
-    selected_ingredient_ids = {
-        entry["ingredient_id"]
-        for entry in ingredient_entries
-    }
+    selected_ingredient_ids = {entry["ingredient_id"] for entry in ingredient_entries}
 
     selected_utensil_ids = set(utensil_ids)
     selected_tag_ids = set(tag_ids)
@@ -261,38 +263,31 @@ def update_recipe(recipe_id: int):
             }
         ), 404
 
-    ingredients = db.session.execute(
-        select(Ingredient).where(
-            Ingredient.id.in_(selected_ingredient_ids)
+    ingredients = (
+        db.session.execute(
+            select(Ingredient).where(Ingredient.id.in_(selected_ingredient_ids))
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
-    utensils = db.session.execute(
-        select(Utensil).where(
-            Utensil.id.in_(selected_utensil_ids)
-        )
-    ).scalars().all()
+    utensils = (
+        db.session.execute(select(Utensil).where(Utensil.id.in_(selected_utensil_ids)))
+        .scalars()
+        .all()
+    )
 
-    tags = db.session.execute(
-        select(Tag).where(
-            Tag.id.in_(selected_tag_ids)
-        )
-    ).scalars().all()
+    tags = (
+        db.session.execute(select(Tag).where(Tag.id.in_(selected_tag_ids)))
+        .scalars()
+        .all()
+    )
 
-    ingredients_by_id = {
-        ingredient.id: ingredient
-        for ingredient in ingredients
-    }
+    ingredients_by_id = {ingredient.id: ingredient for ingredient in ingredients}
 
-    utensils_by_id = {
-        utensil.id: utensil
-        for utensil in utensils
-    }
+    utensils_by_id = {utensil.id: utensil for utensil in utensils}
 
-    tags_by_id = {
-        tag.id: tag
-        for tag in tags
-    }
+    tags_by_id = {tag.id: tag for tag in tags}
 
     if selected_ingredient_ids - ingredients_by_id.keys():
         return jsonify(
@@ -318,28 +313,18 @@ def update_recipe(recipe_id: int):
             }
         ), 404
 
-    existing_steps_by_id = {
-        step.id: step
-        for step in recipe.steps
-    }
+    existing_steps_by_id = {step.id: step for step in recipe.steps}
 
     requested_step_ids = {
-        entry["id"]
-        for entry in step_entries
-        if entry["id"] is not None
+        entry["id"] for entry in step_entries if entry["id"] is not None
     }
 
-    missing_step_ids = (
-        requested_step_ids - existing_steps_by_id.keys()
-    )
+    missing_step_ids = requested_step_ids - existing_steps_by_id.keys()
 
     removed_step_images = [
         step.image_url
         for step_id, step in existing_steps_by_id.items()
-        if (
-            step_id not in requested_step_ids
-            and step.image_url
-        )
+        if (step_id not in requested_step_ids and step.image_url)
     ]
 
     if missing_step_ids:
@@ -347,8 +332,7 @@ def update_recipe(recipe_id: int):
             {
                 "success": False,
                 "error": (
-                    "Une ou plusieurs étapes sont introuvables "
-                    "pour cette recette"
+                    "Une ou plusieurs étapes sont introuvables pour cette recette"
                 ),
             }
         ), 404
@@ -392,15 +376,9 @@ def update_recipe(recipe_id: int):
             for entry in ingredient_entries
         ]
 
-        recipe.utensils = [
-            utensils_by_id[utensil_id]
-            for utensil_id in utensil_ids
-        ]
+        recipe.utensils = [utensils_by_id[utensil_id] for utensil_id in utensil_ids]
 
-        recipe.tags = [
-            tags_by_id[tag_id]
-            for tag_id in tag_ids
-        ]
+        recipe.tags = [tags_by_id[tag_id] for tag_id in tag_ids]
 
         db.session.add(recipe)
         db.session.commit()
@@ -467,10 +445,7 @@ def create_recipe():
     utensil_ids = validated["utensil_ids"]
     tag_ids = validated["tag_ids"]
 
-    selected_ingredient_ids = {
-        entry["ingredient_id"]
-        for entry in ingredient_entries
-    }
+    selected_ingredient_ids = {entry["ingredient_id"] for entry in ingredient_entries}
 
     selected_utensil_ids = set(utensil_ids)
     selected_tag_ids = set(tag_ids)
@@ -479,58 +454,43 @@ def create_recipe():
     try:
         user_id = int(user_id)
     except (TypeError, ValueError):
-        return jsonify(
-            {"success": False, "error": "Utilisateur non authentifié"}
-        ), 401
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
 
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify(
-            {"success": False, "error": "Utilisateur introuvable"}
-        ), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
 
     category = db.session.get(Category, category_id)
     if category is None:
-        return jsonify(
-            {"success": False, "error": "Catégorie introuvable"}
-        ), 404
+        return jsonify({"success": False, "error": "Catégorie introuvable"}), 404
 
-    ingredients = db.session.execute(
-        select(Ingredient).where(
-            Ingredient.id.in_(selected_ingredient_ids)
+    ingredients = (
+        db.session.execute(
+            select(Ingredient).where(Ingredient.id.in_(selected_ingredient_ids))
         )
-    ).scalars().all()
-
-    utensils = db.session.execute(
-        select(Utensil).where(
-            Utensil.id.in_(selected_utensil_ids)
-        )
-    ).scalars().all()
-
-    tags = db.session.execute(
-        select(Tag).where(
-            Tag.id.in_(selected_tag_ids)
-        )
-    ).scalars().all()
-
-    ingredients_by_id = {
-        ingredient.id: ingredient
-        for ingredient in ingredients
-    }
-
-    utensils_by_id = {
-        utensil.id: utensil
-        for utensil in utensils
-    }
-
-    tags_by_id = {
-        tag.id: tag
-        for tag in tags
-    }
-
-    missing_ingredient_ids = (
-        selected_ingredient_ids - ingredients_by_id.keys()
+        .scalars()
+        .all()
     )
+
+    utensils = (
+        db.session.execute(select(Utensil).where(Utensil.id.in_(selected_utensil_ids)))
+        .scalars()
+        .all()
+    )
+
+    tags = (
+        db.session.execute(select(Tag).where(Tag.id.in_(selected_tag_ids)))
+        .scalars()
+        .all()
+    )
+
+    ingredients_by_id = {ingredient.id: ingredient for ingredient in ingredients}
+
+    utensils_by_id = {utensil.id: utensil for utensil in utensils}
+
+    tags_by_id = {tag.id: tag for tag in tags}
+
+    missing_ingredient_ids = selected_ingredient_ids - ingredients_by_id.keys()
 
     if missing_ingredient_ids:
         return jsonify(
@@ -540,9 +500,7 @@ def create_recipe():
             }
         ), 404
 
-    missing_utensil_ids = (
-        selected_utensil_ids - utensils_by_id.keys()
-    )
+    missing_utensil_ids = selected_utensil_ids - utensils_by_id.keys()
 
     if missing_utensil_ids:
         return jsonify(
@@ -589,15 +547,9 @@ def create_recipe():
         for entry in ingredient_entries
     ]
 
-    recipe.utensils = [
-        utensils_by_id[utensil_id]
-        for utensil_id in utensil_ids
-    ]
+    recipe.utensils = [utensils_by_id[utensil_id] for utensil_id in utensil_ids]
 
-    recipe.tags = [
-        tags_by_id[tag_id]
-        for tag_id in tag_ids
-    ]
+    recipe.tags = [tags_by_id[tag_id] for tag_id in tag_ids]
 
     try:
         db.session.add(recipe)

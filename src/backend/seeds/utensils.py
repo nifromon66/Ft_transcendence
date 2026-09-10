@@ -1,5 +1,5 @@
-from models import Utensil
 from extensions import db
+from models import Utensil
 
 UTENSILS = [
     {"name": "Couteau"},
@@ -31,19 +31,14 @@ UTENSILS = [
     {"name": "Thermomètre de cuisine"},
 ]
 
+
 def seed_utensils():
     for utensil_data in UTENSILS:
         name = utensil_data["name"].capitalize()
 
-        utensil = db.session.scalar(
-            db.select(Utensil).where(
-                Utensil.name.ilike(name)
-            )
-        )
+        utensil = db.session.scalar(db.select(Utensil).where(Utensil.name.ilike(name)))
 
         if utensil is None:
-            db.session.add(
-                Utensil(**utensil_data)
-            )
+            db.session.add(Utensil(**utensil_data))
 
     db.session.commit()

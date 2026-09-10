@@ -20,6 +20,7 @@ CATEGORIES = [
     (CategoryType.BOISSONS, "Boissons"),
 ]
 
+
 def seed_categories():
     for category_id, name in CATEGORIES:
         category = db.session.get(Category, category_id)

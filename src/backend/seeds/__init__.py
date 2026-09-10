@@ -1,10 +1,10 @@
 from .badges import seed_badges
-from .users import seed_users
 from .categories import seed_categories
 from .ingredients import seed_ingredients
-from .utensils import seed_utensils
-from .tags import seed_tags
 from .recipes import seed_recipes
+from .tags import seed_tags
+from .users import seed_users
+from .utensils import seed_utensils
 
 
 def seed_database():
