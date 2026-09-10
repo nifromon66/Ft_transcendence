@@ -91,3 +91,34 @@ export async function fetchUserProfile(token) {
 
     return data.user || data
 }
+
+export const deleteAccount = async (password, token) => {
+    if (!navigator.onLine) {
+        throw new Error("Impossible de supprimer le compte : vous êtes hors ligne.")
+    }
+
+    if (!token) {
+        throw new Error("Impossible de supprimer le compte : vous n'êtes pas authentifié.")
+    }
+
+    const response = await fetch('/api/users/me/delete', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password })
+    })
+
+    const data = await response.json()
+
+    if (response.status === 401) {
+        throw new Error("SESSION_EXPIRED")
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.error || "Erreur lors de la suppression du compte.")
+    }
+
+    return data
+}

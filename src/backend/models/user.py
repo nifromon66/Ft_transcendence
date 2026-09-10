@@ -4,13 +4,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import DateTime, Integer, String, select
+from sqlalchemy import Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association import friend
 
 if TYPE_CHECKING:
-    from .association import UserBadge, friend
+    from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
     from .rating import Rating
@@ -28,6 +28,8 @@ class User(db.Model):
 
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
 
     avatar_url: Mapped[str | None] = mapped_column(String)
@@ -36,27 +38,17 @@ class User(db.Model):
 
     xp: Mapped[int | None] = mapped_column(Integer)
 
-    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user")
+    comments: Mapped[list[Comment]] = relationship(back_populates="user")
 
     badges: Mapped[list[UserBadge]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
+    favorites: Mapped[list[Favorite]] = relationship(back_populates="user")
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="user")
-
-    # who is my friend 
-    friends1: Mapped[list[User]] = relationship(secondary="friend",
-        primaryjoin=id == friend.c.user_id,
-        secondaryjoin=id == friend.c.friend_id,)
-
-    # i am a friend of whom
-    friends2: Mapped[list[User]] = relationship(secondary="friend",
-        primaryjoin=id == friend.c.friend_id,
-        secondaryjoin=id == friend.c.user_id,)
+    ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
@@ -64,7 +56,7 @@ class User(db.Model):
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
         if role != "user":
             self.role = role
-
+        self.is_active = True
 
     def check_password(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password_hash, password)
@@ -79,26 +71,16 @@ class User(db.Model):
             "avatar_url": full_avatar_path,
         }
 
-    from sqlalchemy import select
-
-    def get_mutual_friends(self) -> list["User"]:
-        # just for me cmt
-        # SELECT u1.*
-        # FROM users AS u1
-        # JOIN friend AS f1 ON u1.id = f1.user_id
-        # JOIN friend AS f2 ON f2.user_id = f1.friend_id
-        #                  AND f2.friend_id = f1.user_id
-        # WHERE u1.id = current_user_id;
-        f1 = friend.alias("f1")
-        f2 = friend.alias("f2")
+    def get_friends(self) -> list[User]:
         stmt = (
             select(User)
-            .join(f1, User.id == f1.c.friend_id)
             .join(
-                f2,
-                (f2.c.user_id == f1.c.friend_id)
-                & (f2.c.friend_id == f1.c.user_id),
+                friend,
+                or_(
+                    and_(User.id == friend.c.friend_id, friend.c.user_id == self.id),
+                    and_(User.id == friend.c.user_id, friend.c.friend_id == self.id),
+                ),
             )
-            .where(f1.c.user_id == self.id)
+            .where(friend.c.status == "accepted")
         )
         return db.session.scalars(stmt).all()

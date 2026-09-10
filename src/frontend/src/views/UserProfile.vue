@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
-import { fetchUserProfile } from '@/services/userService'
+import { fetchUserProfile, deleteAccount } from '@/services/userService'
 import { uploadAvatar } from '@/services/uploadService'
 import { fetchAvatarBlob } from '@/services/avatarService'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
+
 
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -22,6 +23,48 @@ const avatarImageSrc = ref(null)
 const avatarError = ref('')
 const selectedFile = ref(null)
 const previewImageSrc = ref(null)
+
+const isDeleteModalOpen = ref(false)
+const deletePassword = ref('')
+const deleteError = ref('')
+
+const openDeleteModal = () => {
+    isDeleteModalOpen.value = true
+    deleteError.value = ''
+}
+
+const closeDeleteModal = () => {
+    isDeleteModalOpen.value = false
+    deletePassword.value = ''
+    deleteError.value = ''
+}
+
+const confirmDelete = async () => {
+    if (!deletePassword.value) {
+        deleteError.value = "Veuillez renseigner votre mot de passe."
+        return
+    }
+    console.log("Mot de passe prêt à être envoyé :", deletePassword.value)
+    try {
+        const token = authStore.token
+
+        await deleteAccount(deletePassword.value, token)
+
+        closeDeleteModal()
+        authStore.clearAuth()
+        router.push('/')
+
+        alert("Votre compte a été supprimé avec succès.")
+    } catch (err) {
+        if (err.message === "SESSION_EXPIRED") {
+            closeDeleteModal()
+            authStore.clearAuth()
+            router.push('/login')
+        } else {
+            deleteError.value = err.message || "Impossible de supprimer le compte."
+        }
+    }
+}
 
 onMounted(async () => {
     try {
@@ -45,7 +88,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.logout()
+            authStore.clearAuth()
             router.push('/login')
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."
@@ -243,14 +286,56 @@ const cancelEdit = () => {
                     </div>
                 </div>
 
-                <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
-                <p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
+                <div v-if="avatarError || (errorMessage && authStore.user)" class="mt-4">
+                    <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
+                    <p v-if="errorMessage && authStore.user" class="text-sm text-red-500">{{ errorMessage }}</p>
+                </div>
+
+                <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
+                    <button @click="openDeleteModal"
+                        class="text-red-600 hover:text-red-800 font-medium text-sm underline transition-colors">
+                        Supprimer mon compte
+                    </button>
+                </div>
             </div>
 
             <div v-else class="text-red-500">
                 Impossible de charger le profil.
             </div>
+        </div>
 
+        <div v-if="isDeleteModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer mon compte</h3>
+
+                <p class="text-gray-700 mb-4 text-sm">
+                    Attention, cette action est définitive. Vos données personnelles et votre avatar seront effacés. Vos
+                    contributions seront conservées, mais anonymisées.
+                </p>
+
+                <div class="mb-6">
+                    <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
+                        Entrez votre mot de passe pour supprimer votre compte :
+                    </label>
+                    <input type="password" id="delete-password" v-model="deletePassword" placeholder="Mot de passe"
+                        autocomplete="current-password"
+                        class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                        @keyup.enter="confirmDelete">
+                    <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button @click="closeDeleteModal"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors">
+                        Annuler
+                    </button>
+                    <button @click="confirmDelete"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors">
+                        ⚠️ Supprimer mon compte
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 </template>

@@ -1,6 +1,10 @@
 import os
+import uuid
 
+from file_upload_management.routes import delete_file_physically, upload_bp
+from friends_management.routes import friends_bp
 from seeds import seed_database
+from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
 
 vault = VaultClient()
@@ -10,7 +14,6 @@ jwt_secrets = vault.get_secret("jwt")
 
 from dotenv import dotenv_values
 from extensions import bcrypt, db, jwt
-from file_upload_management.routes import upload_bp
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -19,11 +22,10 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
+from memo_gamification import gamification_api
 
 # to be re-organized here
 from memo_recipe import recipes_api
-from memo_gamification import gamification_api
-
 from models import User
 from recipe_management.routes import recipe_bp
 from sqlalchemy import select
@@ -36,14 +38,94 @@ frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
 CORS(
     app,
     resources={
-        r"/uploads/*": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
-        r"/upload": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
-        r"/users/avatar": {"origins": [frontend_url], "methods": ["DELETE", "OPTIONS"]},
-        r"/login": {"origins": [frontend_url], "methods": ["POST", "OPTIONS"]},
-        r"/me": {"origins": [frontend_url], "methods": ["GET", "OPTIONS"]},
-        r"/users*": {
+        r"/uploads/.*": {
             "origins": [frontend_url],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/upload/avatar": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/upload/document": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/login": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/me": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/users": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "OPTIONS"],
+        },
+        r"/users/\d+": {
+            "origins": [frontend_url],
+            "methods": ["PUT", "DELETE", "OPTIONS"],
+        },
+        r"/users/avatar": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/users/me/delete": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        #
+        r"/friends": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/search": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/discover": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/requests/received": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/requests/sent": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/friends/\d+": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/friends/request/\d+": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/friends/request/\d+/accept": {
+            "origins": [frontend_url],
+            "methods": ["PATCH", "OPTIONS"],
+        },
+        r"/friends/request/\d+/cancel": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/friends/request/\d+/deny": {
+            "origins": [frontend_url],
+            "methods": ["DELETE", "OPTIONS"],
+        },
+        r"/badges": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/getbadge": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/recipe/\d+": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
         },
     },
     supports_credentials=True,
@@ -129,6 +211,61 @@ def delete_user(user_id: int):
     return jsonify({"success": True, "message": "utilisateur supprimé"}), 200
 
 
+@app.route("/users/me/delete", methods=["POST"])
+@jwt_required()
+def delete_my_account():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+
+    data = request.get_json()
+    password = data.get("password", "") if data else ""
+
+    if not password:
+        return jsonify({"success": False, "error": "Le mot de passe est requis."}), 400
+
+    if not user.check_password(password):
+        return jsonify({"success": False, "error": "Mot de passe incorrect."}), 400
+
+    try:
+        if user.avatar_url:
+            try:
+                delete_file_physically(user.avatar_url)
+            except OSError as e:
+                app.logger.error(f"Erreur lors de la suppression de l'avatar: {e!s}")
+                return jsonify(
+                    {
+                        "sucess": False,
+                        "error": "Erreur lors de la suppression de l'avatar.",
+                    }
+                ), 500
+
+            user.avatar_url = None
+
+        user.is_active = False
+        user.username = "Utilisateur supprimé"
+        user.email = f"deleted_{uuid.uuid4().hex}@anonymized.invalid"
+        user.password_hash = "!"
+
+        db.session.commit()
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Votre compte a été supprimé avec succès.",
+            }
+        ), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        app.logger.error(f"Erreur lors de la suppression du compte : {e!s}")
+        return jsonify(
+            {"success": False, "error": "Erreur lors de la suppression du compte."}
+        ), 500
+
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -146,7 +283,7 @@ def login():
         select(User).where(User.email == data["email"])
     ).scalar_one_or_none()
 
-    if user is None or not user.check_password(data["password"]):
+    if user is None or not user.is_active or not user.check_password(data["password"]):
         return jsonify(
             {"success": False, "error": "email ou mot de passe incorrect"}
         ), 200
@@ -163,7 +300,7 @@ def me():
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
 
-    if user is None:
+    if user is None or not user.is_active:
         return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
 
     return jsonify({"success": True, **user.to_dict()}), 200
@@ -179,6 +316,7 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
 app.register_blueprint(recipes_api)
+app.register_blueprint(friends_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

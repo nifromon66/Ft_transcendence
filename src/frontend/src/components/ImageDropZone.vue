@@ -16,13 +16,6 @@ const props = defineProps({
 })
 
 const isDragging = ref(false)
-const fileInput = ref(null)
-
-const triggerFileInput = () => {
-    if (!props.disabled) {
-        fileInput.value.click()
-    }
-}
 
 const handleDrop = (event) => {
     isDragging.value = false
@@ -48,19 +41,14 @@ const handleFileSelect = (event) => {
 
 <template>
     <div class="w-full max-w-sm my-4">
-        <div class="border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-        ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
-            @drop.stop.prevent="handleDrop" @click="triggerFileInput">
-            <input
-                ref="fileInput"
-                type="file"
-                class="hidden"
-                :disabled="disabled"
-                :accept="accept"
-                @change="handleFileSelect"
-            />
+        <label for="avatar"
+            class="block border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
+                disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+            ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+            @drop.stop.prevent="handleDrop">
+            <input type="file" id="avatar" name="avatar" ref="fileInput" class="hidden" @change="handleFileSelect"
+                :disabled="disabled" accept=".png, .jpg, .jpeg, .gif, .webp" />
 
             <div class="text-gray-600">
                 <p class="mb-1 text-sm">Glissez-déposez un fichier ici</p>
@@ -68,6 +56,6 @@ const handleFileSelect = (event) => {
                     ou parcourir
                 </span>
             </div>
-        </div>
+        </label>
     </div>
 </template>
