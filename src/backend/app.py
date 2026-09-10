@@ -2,6 +2,7 @@ import os
 import uuid
 
 from file_upload_management.routes import delete_file_physically, upload_bp
+from flask_socketio import SocketIO, emit
 from friends_management.routes import friends_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
@@ -33,6 +34,33 @@ app = Flask(__name__)
 
 env_frontend = dotenv_values(".env.frontend")
 frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
+socketio = SocketIO(app, cors_allowed_origins=[frontend_url])
+
+online_users = {}
+
+
+@socketio.on("connect")
+def handle_connect():
+    user_id = request.args.get("user_id")
+    if user_id:
+        try:
+            uid = int(user_id)
+            online_users[uid] = request.sid
+            socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
+        except ValueError:
+            pass
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    for user_id, sid in list(online_users.items()):
+        if sid == request.sid:
+            del online_users[user_id]
+            socketio.emit(
+                "user_status_changed", {"user_id": user_id, "is_online": False}
+            )
+            break
+
 
 CORS(
     app,
@@ -73,7 +101,6 @@ CORS(
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
-        #
         r"/friends": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -317,4 +344,4 @@ app.register_blueprint(recipes_api)
 app.register_blueprint(friends_bp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(host="0.0.0.0", port=5000, debug=True)
