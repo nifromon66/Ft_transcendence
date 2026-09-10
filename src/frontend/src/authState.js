@@ -1,13 +1,19 @@
 import { defineStore } from 'pinia'
 import { fetchUserProfile } from '@/services/userService'
+import { connectSocket, disconnectSocket } from '@/services/socketService'
 
 export const useAuthStore = defineStore('auth', {
   state: () => {
     const rawUser = localStorage.getItem('user')
+    const parsedUser = (rawUser && rawUser !== 'undefined') ? JSON.parse(rawUser) : null
+
+    if (parsedUser && parsedUser.id) {
+      connectSocket(parsedUser.id)
+    }
 
     return {
       token: localStorage.getItem('token') || null,
-      user: (rawUser && rawUser !== 'undefined') ? JSON.parse(rawUser) : null
+      user: parsedUser
     }
   },
   actions: {
@@ -18,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
 
       if (user) {
         localStorage.setItem('user', JSON.stringify(user))
+        connectSocket(user.id)
       } else {
         localStorage.removeItem('user');
       }
@@ -27,6 +34,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      disconnectSocket()
     },
     async fetchUser() {
       if (!this.token) {

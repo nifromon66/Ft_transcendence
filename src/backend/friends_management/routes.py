@@ -1,4 +1,4 @@
-from extensions import db
+from extensions import db, online_users
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
@@ -225,7 +225,11 @@ def get_friends():
 
     friends_list = current_user.get_friends()
 
-    result = [f.to_dict() for f in friends_list]
+    result = []
+    for f in friends_list:
+        friend_data = f.to_dict()
+        friend_data["is_online"] = f.id in online_users
+        result.append(friend_data)
 
     return jsonify({"success": True, "friends": result}), 200
 
@@ -245,7 +249,12 @@ def get_received_requests():
 
     received_list = db.session.execute(stmt).scalars().all()
 
-    result = [u.to_dict() for u in received_list]
+    result = []
+    for u in received_list:
+        user_data = u.to_dict()
+
+        user_data["is_online"] = u.id in online_users
+        result.append(user_data)
 
     return jsonify({"success": True, "received_requests": result}), 200
 
@@ -262,6 +271,14 @@ def get_sent_requests():
     )
 
     sent_list = db.session.execute(stmt).scalars().all()
+
+    result = []
+    for u in sent_list:
+        user_data = u.to_dict()
+
+        user_data = u.to_dict()
+        user_data["is_online"] = u.id in online_users
+        result.append(user_data)
 
     result = [u.to_dict() for u in sent_list]
 
@@ -295,7 +312,12 @@ def discover_users():
     )
 
     users_to_discover = db.session.execute(stmt).scalars().all()
-    result = [u.to_dict() for u in users_to_discover]
+
+    result = []
+    for u in users_to_discover:
+        user_data = u.to_dict()
+        user_data["is_online"] = u.id in online_users
+        result.append(user_data)
 
     return jsonify({"success": True, "users": result}), 200
 
@@ -344,6 +366,10 @@ def search_users():
                 status = "pending_received"
         user_data = u.to_dict()
         user_data["friendship_status"] = status
+
+        user_data = u.to_dict()
+        user_data["friendship_status"] = status
+        user_data["is_online"] = u.id in online_users
         result.append(user_data)
 
     return jsonify({"success": True, "users": result}), 200
