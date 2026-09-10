@@ -112,5 +112,7 @@ recipes = [
 ]
 
 def seed_recipes():
+    if db.session.scalar(db.select(Recipe.id).limit(1)) is not None:
+        return
     db.session.add_all(recipes)
     db.session.commit()

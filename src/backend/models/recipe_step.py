@@ -47,3 +47,11 @@ class RecipeStep(db.Model):
         self.step_number = step_number
         self.description = description
         self.image_url = image_url
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "step_number": self.step_number,
+            "description": self.description,
+            "image_url": self.image_url,
+        }

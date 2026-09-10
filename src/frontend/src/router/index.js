@@ -84,11 +84,11 @@ const router = createRouter({
       props: true,
       meta: { requiresAuth: true },
     },
-    // {
-    //   path: "/recipe/:id",
-    //   name: "recipe",
-    //   component: () => import("../views/RecipeView.vue"),
-    // },
+    {
+        path: '/search',
+        name: 'search',
+        component: () => import('@/views/SearchResultsView.vue'),
+    },
   ],
   scrollBehavior() {
     return { top: 0, behavior: 'smooth' }

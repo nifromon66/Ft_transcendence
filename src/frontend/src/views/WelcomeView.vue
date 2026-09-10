@@ -3,11 +3,14 @@
   import RecipeCard from '@/components/RecipeCard.vue'
   import { computed, onMounted, ref } from 'vue'
   import { fetchLatestRecipes } from '@/services/recipeService'
+  import SearchBar from '@/components/SearchBar.vue'
 
   import tartePommeImage from '../assets/temp_assets/DSC01764.jpg'
   import carboImage from '../assets/temp_assets/carbonara-e1521461363147-1024x670.jpg'
   import soupeLegumeImage from '../assets/temp_assets/Soupe_jardiniere_aux_legumes.png.1200x627_q64.jpg'
   import soupePoissonImage from '../assets/temp_assets/poissonsoupe.jpg'
+
+  
   const recipes = [
     {
       id: 1,
@@ -72,6 +75,10 @@
       <h1 class="mb-8 text-3xl font-bold text-gray-900">
         Découvrez nos recettes
       </h1>
+
+      <section class="mb-10">
+        <SearchBar />
+      </section>
 
       <section class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <RecipeCard
