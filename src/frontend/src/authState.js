@@ -6,13 +6,14 @@ export const useAuthStore = defineStore('auth', {
   state: () => {
     const rawUser = localStorage.getItem('user')
     const parsedUser = (rawUser && rawUser !== 'undefined') ? JSON.parse(rawUser) : null
+    const token = localStorage.getItem('token') || null
 
-    if (parsedUser && parsedUser.id) {
-      connectSocket(parsedUser.id)
+    if (token) {
+      connectSocket(token)
     }
 
     return {
-      token: localStorage.getItem('token') || null,
+      token: token,
       user: parsedUser
     }
   },
@@ -24,7 +25,7 @@ export const useAuthStore = defineStore('auth', {
 
       if (user) {
         localStorage.setItem('user', JSON.stringify(user))
-        connectSocket(user.id)
+        connectSocket(token)
       } else {
         localStorage.removeItem('user');
       }

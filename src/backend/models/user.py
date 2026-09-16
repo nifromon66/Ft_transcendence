@@ -81,6 +81,6 @@ class User(db.Model):
                     and_(User.id == friend.c.user_id, friend.c.friend_id == self.id),
                 ),
             )
-            .where(friend.c.status == "accepted")
+            .where(and_(friend.c.status == "accepted", User.is_active == True))
         )
         return db.session.scalars(stmt).all()

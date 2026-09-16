@@ -53,7 +53,7 @@ export async function fetchUserProfile(token) {
     }
 
     if (!token) {
-        throw new Error("Token d'authentification manquant.")
+        throw new Error("Impossible de récupérer le profil : vous n'êtes pas authentifié.")
     }
 
     const baseUrl = import.meta.env.VITE_API_URL || '';
@@ -70,6 +70,10 @@ export async function fetchUserProfile(token) {
         throw new Error("SESSION_EXPIRED")
     }
 
+    if (response.status === 404) {
+        throw new Error("Utilisateur introuvable.")
+    }
+
     if (response.status >= 500) {
         throw new Error("Erreur interne du serveur. Veuillez réessayer.")
     }
@@ -81,11 +85,7 @@ export async function fetchUserProfile(token) {
 
     }
 
-    if (!response.ok) {
-        throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
-    }
-
-    if (data.success === false) {
+    if (!response.ok || data.success === false) {
         throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
     }
 
@@ -110,10 +110,19 @@ export const deleteAccount = async (password, token) => {
         body: JSON.stringify({ password })
     })
 
-    const data = await response.json()
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
 
     if (response.status === 401) {
         throw new Error("SESSION_EXPIRED")
+    }
+
+    if (response.status === 404) {
+        throw new Error("Utilisateur introuvable.")
     }
 
     if (!response.ok || data.success === false) {
@@ -121,4 +130,49 @@ export const deleteAccount = async (password, token) => {
     }
 
     return data
+}
+
+export async function fetchPublicProfile(userId, token) {
+    if (!navigator.onLine) {
+        throw new Error("Impossible de récupérer le profil : vous êtes hors ligne.")
+    }
+
+    if (!token) {
+        throw new Error("Impossible de récupérer le profil : vous n'êtes pas authentifié.")
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+
+    const response = await fetch(`${baseUrl}/api/users/${userId}/profile`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+        }
+    })
+
+    if (response.status === 401) {
+        throw new Error("SESSION_EXPIRED")
+    }
+
+    if (response.status === 404) {
+        throw new Error("Utilisateur introuvable.")
+    }
+
+    if (response.status >= 500) {
+        throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+    }
+
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.error || "Impossible de récupérer le profil utilisateur.")
+    }
+
+    return data.profile
 }

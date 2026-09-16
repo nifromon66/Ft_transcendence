@@ -2,8 +2,9 @@ import os
 import uuid
 
 from file_upload_management.routes import delete_file_physically, upload_bp
-from flask_socketio import SocketIO
+from flask_socketio import join_room
 from friends_management.routes import friends_bp
+from jwt import ExpiredSignatureError, InvalidTokenError
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -14,11 +15,12 @@ database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
 from dotenv import dotenv_values
-from extensions import bcrypt, db, jwt, online_users
+from extensions import bcrypt, db, jwt, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
     create_access_token,
+    decode_token,
     get_jwt_identity,
     jwt_required,
     set_access_cookies,
@@ -28,25 +30,67 @@ from recipe_management.routes import recipe_bp
 
 # to be re-organized here
 from routes import gamification_api, recipes_bp
+from routes.users import users_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
 
 env_frontend = dotenv_values(".env.frontend")
 frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
-socketio = SocketIO(app, cors_allowed_origins=[frontend_url])
 
 
 @socketio.on("connect")
-def handle_connect():
-    user_id = request.args.get("user_id")
-    if user_id:
-        try:
-            uid = int(user_id)
-            online_users[uid] = request.sid
-            socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
-        except ValueError:
-            pass
+def handle_connect(auth=None):
+    token = None
+    if auth and "token" in auth:
+        token = auth["token"]
+    elif request.args.get("token"):
+        token = request.args.get("token")
+
+    if not token:
+        print("Socket connection refused: No token provided by the client.", flush=True)
+        return False
+
+    try:
+        decoded = decode_token(token)
+        uid = int(decoded["sub"])
+
+        room_name = f"user_{uid}"
+        join_room(room_name)
+
+        online_users[uid] = request.sid
+        socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
+
+        print(
+            f"Socket connected: User {uid} joined {room_name}",
+            flush=True,
+        )
+        return True
+
+    except ExpiredSignatureError:
+        print(
+            "WebSocket connection refused: The token has expired.",
+            flush=True,
+        )
+        return False
+    except InvalidTokenError as e:
+        print(
+            f"WebSocket connection refused: Invalid token ({e}).",
+            flush=True,
+        )
+        return False
+    except KeyError:
+        print(
+            "WebSocket connection refused: The token does not contain a user ID (missing 'sub' key).",
+            flush=True,
+        )
+        return False
+    except ValueError:
+        print(
+            "Websocket connection refused: The user ID is not a valid number.",
+            flush=True,
+        )
+        return False
 
 
 @socketio.on("disconnect")
@@ -202,6 +246,7 @@ app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 jwt.init_app(app)
 db.init_app(app)
 bcrypt.init_app(app)
+socketio.init_app(app, cors_allowed_origins=[frontend_url])
 
 
 # R - Read : récupérer tous les utilisateurs
@@ -363,7 +408,7 @@ def me():
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     return jsonify({"success": True, **user.to_dict()}), 200
 
@@ -379,6 +424,7 @@ app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)  ##for search func
+app.register_blueprint(users_bp)
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

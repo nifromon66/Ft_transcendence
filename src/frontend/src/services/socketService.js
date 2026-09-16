@@ -2,7 +2,7 @@ import { io } from 'socket.io-client'
 
 export let socket = null
 
-export const connectSocket = (userId) => {
+export const connectSocket = (token) => {
     if (socket) {
         return socket
     }
@@ -11,7 +11,7 @@ export const connectSocket = (userId) => {
 
     socket = io(apiUrl, {
         path: '/socket.io',
-        query: { user_id: userId },
+        auth: { token: token },
         transports: ['websocket'],
         reconnectionAttempts: 3,
         reconnectionDelay: 2000

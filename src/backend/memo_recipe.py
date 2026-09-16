@@ -17,6 +17,6 @@ def display_recipe(recipe_id: int | None = None):
     recipe = db.session.scalar(db.select(Recipe).where(Recipe.id == recipe_id))
 
     if recipe is None:
-        return jsonify({"error": "resourse not found"}), 404
+        return jsonify({"error": "resource not found"}), 404
 
     return jsonify(recipe.to_dict()), 200

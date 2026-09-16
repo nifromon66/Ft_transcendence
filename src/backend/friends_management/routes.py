@@ -1,4 +1,4 @@
-from extensions import db, online_users
+from extensions import db, online_users, socketio
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
@@ -75,6 +75,12 @@ def send_friend_request(target_user_id):
     db.session.execute(stmt)
     db.session.commit()
 
+    socketio.emit(
+        "friendship_updated",
+        {"user_id": current_user_id, "status": "pending_received"},
+        room=f"user_{target_user_id}",
+    )
+
     return jsonify({"success": True, "message": "Demande d'ami envoyée."}), 201
 
 
@@ -82,6 +88,12 @@ def send_friend_request(target_user_id):
 @jwt_required()
 def accept_friend_request(sender_id):
     current_user_id = int(get_jwt_identity())
+
+    sender = db.session.get(User, sender_id)
+    if not sender or not sender.is_active:
+        return jsonify(
+            {"success": False, "error": "Cet utilisateur n'existe plus."}
+        ), 404
 
     stmt = select(friend).where(
         and_(
@@ -110,6 +122,12 @@ def accept_friend_request(sender_id):
     db.session.execute(update_stmt)
     db.session.commit()
 
+    socketio.emit(
+        "friendship_updated",
+        {"user_id": current_user_id, "status": "accepted"},
+        room=f"user_{sender_id}",
+    )
+
     return jsonify({"success": True, "message": "Demande d'ami acceptée !"}), 200
 
 
@@ -135,6 +153,12 @@ def cancel_friend_request(target_user_id):
                 "error": "Aucune demande d'ami envoyée et en attente trouvée pour cet utilisateur.",
             }
         ), 404
+
+    socketio.emit(
+        "friendship_updated",
+        {"user_id": current_user_id, "status": "none"},
+        room=f"user_{target_user_id}",
+    )
 
     return jsonify(
         {
@@ -166,6 +190,12 @@ def deny_friend_request(sender_id):
                 "error": "Aucune demande d'ami reçue et en attente trouvée de la part de cet utilisateur.",
             }
         ), 404
+
+    socketio.emit(
+        "friendship_updated",
+        {"user_id": current_user_id, "status": "none"},
+        room=f"user_{sender_id}",
+    )
 
     return jsonify(
         {
@@ -206,6 +236,12 @@ def remove_friend(target_user_id):
             }
         ), 404
 
+    socketio.emit(
+        "friendship_updated",
+        {"user_id": current_user_id, "status": "none"},
+        room=f"user_{target_user_id}",
+    )
+
     return jsonify(
         {
             "success": True,
@@ -243,7 +279,11 @@ def get_received_requests():
         select(User)
         .join(friend, User.id == friend.c.user_id)
         .where(
-            and_(friend.c.friend_id == current_user_id, friend.c.status == "pending")
+            and_(
+                friend.c.friend_id == current_user_id,
+                friend.c.status == "pending",
+                User.is_active == True,
+            )
         )
     )
 
@@ -267,7 +307,13 @@ def get_sent_requests():
     stmt = (
         select(User)
         .join(friend, User.id == friend.c.friend_id)
-        .where(and_(friend.c.user_id == current_user_id, friend.c.status == "pending"))
+        .where(
+            and_(
+                friend.c.user_id == current_user_id,
+                friend.c.status == "pending",
+                User.is_active == True,
+            )
+        )
     )
 
     sent_list = db.session.execute(stmt).scalars().all()
@@ -279,8 +325,6 @@ def get_sent_requests():
         user_data = u.to_dict()
         user_data["is_online"] = u.id in online_users
         result.append(user_data)
-
-    result = [u.to_dict() for u in sent_list]
 
     return jsonify({"success": True, "sent_requests": result}), 200
 
@@ -364,8 +408,6 @@ def search_users():
                 status = "pending_sent"
             else:
                 status = "pending_received"
-        user_data = u.to_dict()
-        user_data["friendship_status"] = status
 
         user_data = u.to_dict()
         user_data["friendship_status"] = status
