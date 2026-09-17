@@ -4,7 +4,17 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import db
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, and_, func, or_, select
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    and_,
+    func,
+    or_,
+    select,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -60,32 +70,32 @@ class Message(db.Model):
         nullable=False,
     )
 
-    sender: Mapped["User"] = relationship(
+    sender: Mapped[User] = relationship(
         foreign_keys=[sender_id],
         back_populates="sent_messages",
     )
 
-    receiver: Mapped["User"] = relationship(
+    receiver: Mapped[User] = relationship(
         foreign_keys=[receiver_id],
         back_populates="received_messages",
     )
 
     def __init__(
-    self,
-    *,
-    sender_id: int | None = None,
-    sender: User | None = None,
-    receiver_id: int | None = None,
-    receiver: User | None = None,
-    content: str | None = None,
-    file_url: str | None = None,
-    file_name: str | None = None,
-    file_type: str | None = None,
-    file_size: int | None = None,
+        self,
+        *,
+        sender_id: int | None = None,
+        sender: User | None = None,
+        receiver_id: int | None = None,
+        receiver: User | None = None,
+        content: str | None = None,
+        file_url: str | None = None,
+        file_name: str | None = None,
+        file_type: str | None = None,
+        file_size: int | None = None,
     ):
         if not content and not file_url:
             raise ValueError("Init message: Message must contain text or a file")
-        
+
         if sender_id is not None:
             self.sender_id = sender_id
         elif sender is not None:
@@ -114,13 +124,11 @@ class Message(db.Model):
             "file_name": self.file_name,
             "file_type": self.file_type,
             "file_size": self.file_size,
-            "created_at": self.created_at.isoformat()
-            if self.created_at
-            else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
-    
+
     @staticmethod
-    def get_conversation(user1_id: int, user2_id: int) -> list["Message"]:
+    def get_conversation(user1_id: int, user2_id: int) -> list[Message]:
         stmt = (
             select(Message)
             .where(

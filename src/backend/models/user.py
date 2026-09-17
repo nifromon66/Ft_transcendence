@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
+    from .message import Message
     from .rating import Rating
     from .recipe import Recipe
-    from .message import Message
 
 
 class User(db.Model):
@@ -51,14 +51,14 @@ class User(db.Model):
 
     ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
-    sent_messages: Mapped[list["Message"]] = relationship(
-    foreign_keys="Message.sender_id",
-    back_populates="sender",
+    sent_messages: Mapped[list[Message]] = relationship(
+        foreign_keys="Message.sender_id",
+        back_populates="sender",
     )
 
-    received_messages: Mapped[list["Message"]] = relationship(
-    foreign_keys="Message.receiver_id",
-    back_populates="receiver",
+    received_messages: Mapped[list[Message]] = relationship(
+        foreign_keys="Message.receiver_id",
+        back_populates="receiver",
     )
 
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):

@@ -1,11 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
+import { useChatStore } from './chatState.js'
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import OfflineBanner from './components/OfflineBanner.vue'
+import { useAuthStore } from './authState.js'
 
+const authStore = useAuthStore()
+const chatStore = useChatStore()
 const menuOpen = ref(false)
 
 function toggleMenu() {
@@ -15,6 +19,21 @@ function toggleMenu() {
 function closeMenu() {
   menuOpen.value = false
 }
+
+onMounted(() => {
+  if (authStore.token) {
+    chatStore.initializeSocketListeners()
+  }
+})
+
+watch(() => authStore.token, (newToken) => {
+  if (newToken) {
+    setTimeout(() => {
+      chatStore.initializeSocketListeners()
+    }, 100)
+  }
+})
+
 </script>
 
 <template>
