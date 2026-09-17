@@ -12,7 +12,6 @@ export const connectSocket = (token) => {
     socket = io(apiUrl, {
         path: '/socket.io',
         auth: { token: token },
-        transports: ['websocket'],
         reconnectionAttempts: 3,
         reconnectionDelay: 2000
     })

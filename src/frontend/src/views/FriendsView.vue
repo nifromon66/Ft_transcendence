@@ -50,6 +50,24 @@ const handleFriendshipUpdated = async () => {
     }
 }
 
+const handleProfileUpdated = (data) => {
+    const updateNameInList = (listRef) => {
+        if (!listRef.value) {
+            return
+        }
+        const user = listRef.value.find(u => u.id === data.user_id)
+        if (user) {
+            user.username = data.new_username
+        }
+    }
+
+    updateNameInList(friendsList)
+    updateNameInList(receivedRequestsList)
+    updateNameInList(sentRequestsList)
+    updateNameInList(discoverList)
+    updateNameInList(searchResults)
+}
+
 onMounted(async () => {
     await Promise.all([
         loadFriends(),
@@ -61,6 +79,7 @@ onMounted(async () => {
     if (socket) {
         socket.on('user_status_changed', handleStatusChange)
         socket.on('friendship_updated', handleFriendshipUpdated)
+        socket.on('user_profile_updated', handleProfileUpdated)
     }
 })
 
@@ -68,6 +87,7 @@ onUnmounted(() => {
     if (socket) {
         socket.off('user_status_changed', handleStatusChange)
         socket.off('friendship_updated', handleFriendshipUpdated)
+        socket.off('user_profile_updated', handleProfileUpdated)
     }
 })
 </script>

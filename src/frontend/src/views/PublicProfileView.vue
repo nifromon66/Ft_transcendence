@@ -40,6 +40,12 @@ const handleFriendshipUpdated = (data) => {
     }
 }
 
+const handleProfileUpdated = (data) => {
+    if (profile.value && data.user_id == props.id) {
+        profile.value.username = data.new_username
+    }
+}
+
 const handleFriendAction = async (apiFunction, newStatus) => {
     if (isActionLoading.value) {
         return
@@ -106,6 +112,7 @@ onMounted(async () => {
     if (socket) {
         socket.on('user_status_changed', handleUserStatusChange)
         socket.on('friendship_updated', handleFriendshipUpdated)
+        socket.on('user_profile_updated', handleProfileUpdated)
     }
 })
 
@@ -117,6 +124,7 @@ onUnmounted(() => {
     if (socket) {
         socket.off('user_status_changed', handleUserStatusChange)
         socket.off('friendship_updated', handleFriendshipUpdated)
+        socket.off('user_profile_updated', handleProfileUpdated)
     }
 })
 </script>

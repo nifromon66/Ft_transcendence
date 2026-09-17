@@ -177,6 +177,10 @@ CORS(
             "origins": [frontend_url],
             "methods": ["DELETE", "OPTIONS"],
         },
+        r"/users/me": {
+            "origins": [frontend_url],
+            "methods": ["PUT", "OPTIONS"],
+        },
         r"/users/me/delete": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
@@ -290,19 +294,72 @@ def create_user():
 
 
 # U - Update : modifier un utilisateur existant
-@app.route("/users/<int:user_id>", methods=["PUT"])
-def update_user(user_id: int):
+@app.route("/users/me", methods=["PUT"])
+@jwt_required()
+def update_my_profile():
+    user_id = int(get_jwt_identity())
     user = db.session.get(User, user_id)
 
-    if user is None:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+    if user is None or not user.is_active:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     data = request.get_json()
-    if "username" in data:
-        user.username = data["username"]
+    if not data:
+        return jsonify({"success": False, "error": "Aucune donnée fournie."}), 400
 
-    db.session.commit()
-    return jsonify({"success": True, **user.to_dict()}), 200
+    new_username = data.get("username", "").strip()
+    new_email = data.get("email", "").strip()
+
+    has_changed = False
+
+    if new_email and new_email != user.email:
+        existing_email = db.session.execute(
+            select(User).where(User.email == new_email)
+        ).scalar_one_or_none()
+
+        if existing_email:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Cet email est déjà utilisé par un autre compte.",
+                }
+            ), 400
+
+        user.email = new_email
+        has_changed = True
+
+    if new_username and new_username != user.username:
+        existing_username = db.session.execute(
+            select(User).where(User.username == new_username)
+        ).scalar_one_or_none()
+
+        if existing_username:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Ce pseudo est déjà utilisé par un autre compte.",
+                }
+            ), 400
+
+        user.username = new_username
+        has_changed = True
+
+    if has_changed:
+        db.session.commit()
+
+        from extensions import socketio
+
+        socketio.emit(
+            "user_profile_updated", {"user_id": user.id, "new_username": user.username}
+        )
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "Profil mis à jour avec succès.",
+            "user": user.to_dict(),
+        }
+    ), 200
 
 
 # D - Delete : supprimer un utilisateur
@@ -310,7 +367,7 @@ def update_user(user_id: int):
 def delete_user(user_id: int):
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     db.session.delete(user)
     db.session.commit()

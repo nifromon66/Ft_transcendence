@@ -8,7 +8,7 @@
  * @throws {Error} If the server fails or registration is unsuccessful.
  */
 export async function registerUser(userData) {
-    let response;
+    let response
     try {
         response = await fetch('/api/users', {
             method: 'POST',
@@ -56,7 +56,7 @@ export async function fetchUserProfile(token) {
         throw new Error("Impossible de récupérer le profil : vous n'êtes pas authentifié.")
     }
 
-    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const baseUrl = import.meta.env.VITE_API_URL || ''
 
     const response = await fetch(`${baseUrl}/api/me`, {
         method: 'GET',
@@ -141,7 +141,7 @@ export async function fetchPublicProfile(userId, token) {
         throw new Error("Impossible de récupérer le profil : vous n'êtes pas authentifié.")
     }
 
-    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const baseUrl = import.meta.env.VITE_API_URL || ''
 
     const response = await fetch(`${baseUrl}/api/users/${userId}/profile`, {
         method: 'GET',
@@ -175,4 +175,55 @@ export async function fetchPublicProfile(userId, token) {
     }
 
     return data.profile
+}
+
+export async function updateMyProfile(userData, token) {
+    if (!navigator.onLine) {
+        throw new Error("Impossible de modifier le profil : vous êtes hors ligne.")
+    }
+
+    if (!token) {
+        throw new Error("Impossible de modifier le profil : vous n'êtes pas authentifié.")
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+
+    let response
+    try {
+        response = await fetch(`${baseUrl}/api/users/me`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        })
+    } catch (e) {
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+    }
+    if (response.status === 401) {
+        throw new Error("SESSION_EXPIRED")
+    }
+
+    if (response.status === 404) {
+        throw new Error("Utilisateur introuvable.")
+    }
+
+    if (response.status >= 500) {
+        throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+    }
+
+    let data = {}
+    try {
+        data = await response.json()
+    } catch (e) {
+
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.error || "Ereur lors de la mise à jour du profil.")
+    }
+
+    return data.user || data
 }

@@ -54,6 +54,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
+# core (dump)
+core
+
 # IDE files
 .vscode/
 .idea/
