@@ -1,5 +1,7 @@
 <script setup>
   import { RouterLink } from 'vue-router'
+  import StarRating from '@/components/StarRating.vue'
+
 
   defineProps({
     recipe: {
@@ -47,7 +49,10 @@
 
         <div class="mt-auto pt-4 flex justify-between text-sm font-semibold text-primary-dark">
           <span>{{ recipe.cookingTime }}</span>
-          <span>{{ recipe.likes }} likes</span>
+          <span v-if="recipe.rating != null">
+            <StarRating :rating="recipe.rating" />
+          </span>
+          <span v-else>Pas encore notée</span>
         </div>
       </div>
     </article>

@@ -121,6 +121,11 @@ class Recipe(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
+            "rating": (
+                round(sum(rating.score for rating in self.ratings) / len(self.ratings), 1)
+                if self.ratings
+                else None
+            ),
             "cooking_time": self.cooking_time,
             "difficulty": self.difficulty,
             "image_url": self.image_url,
@@ -137,6 +142,10 @@ class Recipe(db.Model):
             "author": {
                 "id": self.user.id,
                 "username": self.user.username,
+                "avatar_url": (
+                    f"/uploads/{self.user.avatar_url}"
+                    if self.user.avatar_url else None
+                ),
             },
             "steps": [
                 step.to_dict()

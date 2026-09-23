@@ -123,6 +123,30 @@ export async function updateRecipe(token, id, recipeData) {
   return data
 }
 
+export async function deleteRecipe(token, id) {
+  const response = await fetch(
+    `/api/recipes/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+      data.msg ||
+      'Impossible de supprimer la recette.'
+    )
+  }
+
+  return data
+}
+
 export async function fetchLatestRecipes() {
   const response = await fetch('/api/recipes/latest')
   const data = await response.json()
@@ -142,13 +166,18 @@ export async function fetchLatestRecipes() {
         ? `${recipe.cooking_time} min`
         : 'Non renseigné',
     imageUrl: getRecipeImageUrl(recipe.image_url),
-    likes: recipe.likes,
+    rating: recipe.rating,
   }))
 }
 
-export async function fetchRecipeById(id) {
+export async function fetchRecipeById(id, token = null) {
   const response = await fetch(
-    `/api/recipes/${encodeURIComponent(id)}`
+    `/api/recipes/${encodeURIComponent(id)}`,
+    {
+      headers: token
+        ? { Authorization: `Bearer ${token}` }
+        : {},
+    },
   )
 
   const data = await response.json()
@@ -163,6 +192,7 @@ export async function fetchRecipeById(id) {
 
   return {
     id: recipe.id,
+    myRating: recipe.my_rating,
     title: recipe.title,
     description: recipe.description,
     cookingTime: recipe.cooking_time,
@@ -225,3 +255,73 @@ console.log('Recipe IDs:', data.recipes.map(recipe => recipe.id))
   return data.recipes
 }
 
+
+export async function rateRecipe(token, recipeId, score) {
+  const response = await fetch(
+    `/api/recipes/${encodeURIComponent(recipeId)}/ratings`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ score }),
+    },
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || data.msg || 'Impossible de noter la recette.',
+    )
+  }
+
+  return data
+}
+
+export async function deleteRecipeRating(token, recipeId) {
+  const response = await fetch(
+    `/api/recipes/${encodeURIComponent(recipeId)}/ratings`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || data.msg || 'Impossible de supprimer la note.',
+    )
+  }
+
+  return data
+}
+
+export async function updateRecipeRating(token, recipeId, score) {
+  const response = await fetch(
+    `/api/recipes/${encodeURIComponent(recipeId)}/ratings`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ score }),
+    },
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || data.msg || 'Impossible de modifier la note.',
+    )
+  }
+
+  return data
+}
