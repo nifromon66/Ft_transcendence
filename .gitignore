@@ -67,3 +67,6 @@ open-editor.sh
 
 # uploads
 uploads/
+
+# other
+AGENTS.md
