@@ -51,7 +51,7 @@ class Recipe(db.Model):
 
     category: Mapped[Category] = relationship(back_populates="recipes")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="recipe")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
@@ -59,9 +59,9 @@ class Recipe(db.Model):
 
     tags: Mapped[list["Tag"]] = relationship(secondary="recipe_tag", back_populates="recipes")
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="recipe")
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe")
+    ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
     def __init__(self, *,
         user_id: int | None = None, user: User | None = None,
