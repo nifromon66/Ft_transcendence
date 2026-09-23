@@ -318,7 +318,9 @@ onMounted(async () => {
 
 <template>
   <form class="space-y-8" @submit.prevent="submitForm">
-        <section aria-labelledby="main-information-title">
+        <section aria-labelledby="main-information-title"
+          class="bg-white p-6 rounded-xl shadow-md"
+        >
           <h2 id="main-information-title" class="mb-4 text-xl font-semibold">
             Informations principales
           </h2>
@@ -451,7 +453,9 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section aria-labelledby="preparation-title">
+        <section aria-labelledby="preparation-title"
+          class="bg-white p-6 rounded-xl shadow-md"
+        >
           <h2 id="preparation-title" class="mb-4 text-xl font-semibold">
             Préparation
           </h2>
@@ -607,7 +611,9 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section aria-labelledby="ingredients-title">
+        <section aria-labelledby="ingredients-title"
+          class="bg-white p-6 rounded-xl shadow-md"
+        >
           <h2 id="ingredients-title" class="mb-4 text-xl font-semibold">
             Ingrédients
           </h2>
@@ -667,7 +673,9 @@ onMounted(async () => {
           </button>
         </section>
 
-        <section aria-labelledby="utensils-title">
+        <section aria-labelledby="utensils-title"
+          class="bg-white p-6 rounded-xl shadow-md"
+        >
           <h2 id="utensils-title" class="mb-4 text-xl font-semibold">
             Ustensiles
           </h2>
@@ -721,7 +729,9 @@ onMounted(async () => {
           </button>
         </section>
 
-        <section aria-labelledby="tags-title">
+        <section aria-labelledby="tags-title"
+          class="bg-white p-6 rounded-xl shadow-md"
+        >
           <h2 id="tags-title" class="mb-4 text-xl font-semibold">Tags</h2>
 
           <div class="space-y-3">
@@ -772,34 +782,34 @@ onMounted(async () => {
             Ajouter un tag
           </button>
         </section>
-
-        <button
-          type="submit"
-          :disabled="isSubmitting || isLoadingOptions"
-          class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-dark
-              disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {{ isSubmitting ? 'Enregistrement...' : submitLabel }}
-        </button>
-
-        <button
-          type="button"
-          class="w-full rounded-md border border-gray-300 px-4 py-3
-                font-semibold text-gray-700 hover:bg-gray-100
+        <section class="bg-white p-6 rounded-xl shadow-md space-y-3">
+          <button
+            type="submit"
+            :disabled="isSubmitting || isLoadingOptions"
+            class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-dark
                 disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="isSubmitting"
-          @click="router.back()"
-        >
-          Annuler
-        </button>
+          >
+            {{ isSubmitting ? 'Enregistrement...' : submitLabel }}
+          </button>
 
-        <p
-          v-if="errorMessage"
-          role="alert"
-          class="rounded-md bg-red-50 p-3 text-red-700"
-        >
-          {{ errorMessage }}
-        </p>
+          <button
+            type="button"
+            class="w-full rounded-md border border-gray-300 px-4 py-3
+                  font-semibold text-gray-700 hover:bg-gray-100
+                  disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="isSubmitting"
+            @click="router.back()"
+          >
+            Annuler
+          </button>
 
+          <p
+            v-if="errorMessage"
+            role="alert"
+            class="rounded-md bg-red-50 p-3 text-red-700"
+          >
+            {{ errorMessage }}
+          </p>
+        </section>
     </form>
 </template>

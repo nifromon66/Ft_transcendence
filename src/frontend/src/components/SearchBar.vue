@@ -31,16 +31,16 @@ function submitSearch() {
       type="search"
       placeholder="Rechercher une recette..."
       aria-label="Rechercher une recette"
-      class="flex-1 rounded-lg border border-gray-300 px-4 py-3
+      class="flex-1 rounded-lg border bg-white shadow-md border-gray-300 px-4 py-3
              text-gray-900 outline-none
              focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
     />
 
     <button
       type="submit"
-      class="rounded-lg bg-gray-900 px-6 py-3
+      class="rounded-lg bg-primary shadow-md px-6 py-3
              font-medium text-white
-             hover:bg-gray-700"
+             hover:bg-primary-dark"
     >
       Rechercher
     </button>

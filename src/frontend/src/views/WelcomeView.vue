@@ -72,14 +72,12 @@
 <template>
   <main class="flex-1 px-6 py-8">
     <div class="mx-auto max-w-7xl">
+      <section class="mb-5 flex justify-center">
+        <SearchBar />
+      </section>
       <h1 class="mb-8 text-3xl font-bold text-gray-900">
         Découvrez nos recettes
       </h1>
-
-      <section class="mb-10">
-        <SearchBar />
-      </section>
-
       <section class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <RecipeCard
           v-for="recipe in recipes"

@@ -202,7 +202,7 @@ watch(
 
     <div
         v-else-if="formRecipe"
-        class="rounded-lg bg-white p-6 text-gray-800 shadow"
+        class="rounded-lg p-6 text-gray-800"
         >
         <h1 class="mb-6 text-3xl font-bold">Modifier la recette</h1>
 

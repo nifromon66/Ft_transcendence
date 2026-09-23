@@ -95,7 +95,7 @@ const submitRecipe = async (
 
 <template>
   <main class="mx-auto min-h-screen w-full max-w-4xl px-6 py-10">
-    <div class="rounded-lg bg-white p-6 text-gray-800 shadow">
+    <div class="rounded-lg p-6 text-gray-800">
       <h1 class="mb-6 text-3xl font-bold">Publier une recette</h1>
 
       <RecipeForm
