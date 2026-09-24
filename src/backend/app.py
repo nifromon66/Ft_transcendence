@@ -2,7 +2,9 @@ import os
 import uuid
 
 from file_upload_management.routes import delete_file_physically, upload_bp
+from flask_socketio import join_room
 from friends_management.routes import friends_bp
+from jwt import ExpiredSignatureError, InvalidTokenError
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -13,27 +15,209 @@ database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
 from dotenv import dotenv_values
-from extensions import bcrypt, db, jwt
+from extensions import bcrypt, db, jwt, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
     create_access_token,
+    decode_token,
     get_jwt_identity,
     jwt_required,
     set_access_cookies,
 )
+from messages_management.routes import messages_bp
+from models import User
+from models.message import Message
+from recipe_management.routes import recipe_bp
 
 # to be re-organized here
-from routes import recipes_bp, gamification_api
-
-from models import User
-from recipe_management.routes import recipe_bp
+from routes import gamification_api, recipes_bp
+from routes.users import users_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
 
 env_frontend = dotenv_values(".env.frontend")
 frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
+
+
+@socketio.on("connect")
+def handle_connect(auth=None):
+    token = None
+    if auth and "token" in auth:
+        token = auth["token"]
+    elif request.args.get("token"):
+        token = request.args.get("token")
+
+    if not token:
+        print("Socket connection refused: No token provided by the client.", flush=True)
+        return False
+
+    try:
+        decoded = decode_token(token)
+        uid = int(decoded["sub"])
+
+        room_name = f"user_{uid}"
+        join_room(room_name)
+
+        online_users[uid] = request.sid
+        socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
+
+        print(
+            f"Socket connected: User {uid} joined {room_name}",
+            flush=True,
+        )
+        return True
+
+    except ExpiredSignatureError:
+        print(
+            "WebSocket connection refused: The token has expired.",
+            flush=True,
+        )
+        return False
+    except InvalidTokenError as e:
+        print(
+            f"WebSocket connection refused: Invalid token ({e}).",
+            flush=True,
+        )
+        return False
+    except KeyError:
+        print(
+            "WebSocket connection refused: The token does not contain a user ID (missing 'sub' key).",
+            flush=True,
+        )
+        return False
+    except ValueError:
+        print(
+            "Websocket connection refused: The user ID is not a valid number.",
+            flush=True,
+        )
+        return False
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    for user_id, sid in list(online_users.items()):
+        if sid == request.sid:
+            del online_users[user_id]
+            socketio.emit(
+                "user_status_changed", {"user_id": user_id, "is_online": False}
+            )
+            break
+
+
+@socketio.on("request_initial_satus")
+def handle_initial_status(user_ids):
+
+    print(
+        f"👉 IDs reçus du front pour synchronisation ({request.sid}): {user_ids}",
+        flush=True,
+    )
+
+    if not user_ids:
+        return
+
+    for uid in user_ids:
+        try:
+            uid_int = int(uid)
+            if uid_int in online_users:
+                print(
+                    f"✅ Utilisateur {uid_int} est connecté. Envoi de l'info à {request.sid}",
+                    flush=True,
+                )
+                socketio.emit(
+                    "user_status_changed",
+                    {"user_id": uid_int, "is_online": True},
+                    to=request.sid,
+                )
+            else:
+                pass
+        except (ValueError, TypeError):
+            uid_str = str(uid)
+            if uid_str in online_users:
+                socketio.emit(
+                    "user_status_changed",
+                    {"user_id": uid_str, "is_online": True},
+                    to=request.sid,
+                )
+            print(f"⚠️ Type d'ID non convertible ou introuvable : {uid}", flush=True)
+            continue
+
+
+@socketio.on("send_message")
+def handle_new_message(data):
+    sender_id = next(
+        (uid for uid, sid in online_users.items() if sid == request.sid), None
+    )
+
+    if not sender_id:
+        socketio.emit(
+            "message_error",
+            {"error": "Non authentifié (ou session expirée)."},
+            to=request.sid,
+        )
+        return
+
+    receiver_id = data.get("receiver_id")
+    content = data.get("content")
+    file_url = data.get("file_url")
+    file_name = data.get("file_name")
+    file_type = data.get("file_type")
+    file_size = data.get("file_size")
+
+    if not receiver_id:
+        socketio.emit("message_error", {"Le destinataire est invalide"}, to=request.sid)
+        return
+
+    if not content and not file_url:
+        socketio.emit(
+            "message_error",
+            {"error": "Le message doit contenir du texte ou un fichier pdf."},
+            to=request.sid,
+        )
+        return
+
+    sender = db.session.get(User, sender_id)
+    if not sender or not sender.is_active:
+        socketio.emit(
+            "nessage_error", {"error": "Votre compte est inactif."}, to=request.sid
+        )
+        return
+
+    friends_list = sender.get_friends()
+    is_friend = any(f.id == receiver_id for f in friends_list)
+
+    if not is_friend:
+        socketio.emit(
+            "message_error",
+            {"error": "Cet utilisateur ne fait plus partier de vos amis."},
+            to=request.sid,
+        )
+        return
+
+    try:
+        new_message = Message(
+            sender_id=sender_id,
+            receiver_id=receiver_id,
+            content=content,
+            file_url=file_url,
+            file_name=file_name,
+            file_type=file_type,
+            file_size=file_size,
+        )
+        db.session.add(new_message)
+        db.session.commit()
+
+        message_data = new_message.to_dict()
+
+        socketio.emit("receive_message", message_data, room=f"user_{receiver_id}")
+        socketio.emit("receive_message", message_data, to=request.sid)
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        app.logger.error(f"Database error: {e!s}")
+        socketio.emit("message_error", {"error": "Erreur serveur."}, to=request.sid)
+
 
 CORS(
     app,
@@ -70,11 +254,14 @@ CORS(
             "origins": [frontend_url],
             "methods": ["DELETE", "OPTIONS"],
         },
+        r"/users/me": {
+            "origins": [frontend_url],
+            "methods": ["PUT", "OPTIONS"],
+        },
         r"/users/me/delete": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
-        #
         r"/friends": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -127,6 +314,10 @@ CORS(
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
+        r"/messages/\d+": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
     },
     supports_credentials=True,
     allow_headers=["Authorization", "Content-Type"],
@@ -140,6 +331,7 @@ app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 jwt.init_app(app)
 db.init_app(app)
 bcrypt.init_app(app)
+socketio.init_app(app, cors_allowed_origins=[frontend_url])
 
 
 # R - Read : récupérer tous les utilisateurs
@@ -183,19 +375,72 @@ def create_user():
 
 
 # U - Update : modifier un utilisateur existant
-@app.route("/users/<int:user_id>", methods=["PUT"])
-def update_user(user_id: int):
+@app.route("/users/me", methods=["PUT"])
+@jwt_required()
+def update_my_profile():
+    user_id = int(get_jwt_identity())
     user = db.session.get(User, user_id)
 
-    if user is None:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+    if user is None or not user.is_active:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     data = request.get_json()
-    if "username" in data:
-        user.username = data["username"]
+    if not data:
+        return jsonify({"success": False, "error": "Aucune donnée fournie."}), 400
 
-    db.session.commit()
-    return jsonify({"success": True, **user.to_dict()}), 200
+    new_username = data.get("username", "").strip()
+    new_email = data.get("email", "").strip()
+
+    has_changed = False
+
+    if new_email and new_email != user.email:
+        existing_email = db.session.execute(
+            select(User).where(User.email == new_email)
+        ).scalar_one_or_none()
+
+        if existing_email:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Cet email est déjà utilisé par un autre compte.",
+                }
+            ), 400
+
+        user.email = new_email
+        has_changed = True
+
+    if new_username and new_username != user.username:
+        existing_username = db.session.execute(
+            select(User).where(User.username == new_username)
+        ).scalar_one_or_none()
+
+        if existing_username:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Ce pseudo est déjà utilisé par un autre compte.",
+                }
+            ), 400
+
+        user.username = new_username
+        has_changed = True
+
+    if has_changed:
+        db.session.commit()
+
+        from extensions import socketio
+
+        socketio.emit(
+            "user_profile_updated", {"user_id": user.id, "new_username": user.username}
+        )
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "Profil mis à jour avec succès.",
+            "user": user.to_dict(),
+        }
+    ), 200
 
 
 # D - Delete : supprimer un utilisateur
@@ -203,7 +448,7 @@ def update_user(user_id: int):
 def delete_user(user_id: int):
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     db.session.delete(user)
     db.session.commit()
@@ -301,7 +546,7 @@ def me():
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"success": False, "error": "utilisateur introuvable"}), 200
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     return jsonify({"success": True, **user.to_dict()}), 200
 
@@ -316,7 +561,9 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
 app.register_blueprint(friends_bp)
-app.register_blueprint(recipes_bp) ##for search func
+app.register_blueprint(recipes_bp)  ##for search func
+app.register_blueprint(users_bp)
+app.register_blueprint(messages_bp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

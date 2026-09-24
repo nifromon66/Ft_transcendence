@@ -7,9 +7,7 @@ ALLOWED_DIFFICULTIES = {"facile", "moyen", "difficile"}
 
 def validate_recipe_fields(data):
     if not isinstance(data, dict):
-        raise RecipeValidationError(
-            "Aucune donnée JSON valide fournie"
-        )
+        raise RecipeValidationError("Aucune donnée JSON valide fournie")
 
     title = data.get("title")
 
@@ -19,9 +17,7 @@ def validate_recipe_fields(data):
     title = title.strip()
 
     if len(title) > 150:
-        raise RecipeValidationError(
-            "Le titre ne peut pas dépasser 150 caractères"
-        )
+        raise RecipeValidationError("Le titre ne peut pas dépasser 150 caractères")
 
     category_id = data.get("category_id")
 
@@ -32,9 +28,7 @@ def validate_recipe_fields(data):
 
     if description is not None:
         if not isinstance(description, str):
-            raise RecipeValidationError(
-                "La description doit être du texte"
-            )
+            raise RecipeValidationError("La description doit être du texte")
 
         description = description.strip() or None
 
@@ -61,8 +55,7 @@ def validate_recipe_fields(data):
         difficulty = None
 
     if difficulty is not None and (
-        not isinstance(difficulty, str)
-        or difficulty not in ALLOWED_DIFFICULTIES
+        not isinstance(difficulty, str) or difficulty not in ALLOWED_DIFFICULTIES
     ):
         raise RecipeValidationError("La difficulté est invalide")
 
@@ -79,18 +72,14 @@ def validate_steps(data):
     steps_data = data.get("steps")
 
     if not isinstance(steps_data, list) or not steps_data:
-        raise RecipeValidationError(
-            "La recette doit contenir au moins une étape"
-        )
+        raise RecipeValidationError("La recette doit contenir au moins une étape")
 
     entries = []
     persisted_ids = set()
 
     for index, step_data in enumerate(steps_data, start=1):
         if not isinstance(step_data, dict):
-            raise RecipeValidationError(
-                f"L'étape {index} est invalide"
-            )
+            raise RecipeValidationError(f"L'étape {index} est invalide")
 
         step_id = step_data.get("id")
 
@@ -132,28 +121,19 @@ def validate_ingredients(data):
     ingredients_data = data.get("ingredients")
 
     if not isinstance(ingredients_data, list) or not ingredients_data:
-        raise RecipeValidationError(
-            "La recette doit contenir au moins un ingrédient"
-        )
+        raise RecipeValidationError("La recette doit contenir au moins un ingrédient")
 
     entries = []
     selected_ids = set()
 
     for index, ingredient_data in enumerate(ingredients_data, start=1):
         if not isinstance(ingredient_data, dict):
-            raise RecipeValidationError(
-                f"L'ingrédient {index} est invalide"
-            )
+            raise RecipeValidationError(f"L'ingrédient {index} est invalide")
 
         ingredient_id = ingredient_data.get("ingredient_id")
 
-        if (
-            not isinstance(ingredient_id, int)
-            or isinstance(ingredient_id, bool)
-        ):
-            raise RecipeValidationError(
-                f"L'ingrédient {index} est requis"
-            )
+        if not isinstance(ingredient_id, int) or isinstance(ingredient_id, bool):
+            raise RecipeValidationError(f"L'ingrédient {index} est requis")
 
         if ingredient_id in selected_ids:
             raise RecipeValidationError(
@@ -172,10 +152,12 @@ def validate_ingredients(data):
 
         selected_ids.add(ingredient_id)
 
-        entries.append({
-            "ingredient_id": ingredient_id,
-            "quantity": quantity,
-        })
+        entries.append(
+            {
+                "ingredient_id": ingredient_id,
+                "quantity": quantity,
+            }
+        )
 
     return entries
 
@@ -193,8 +175,7 @@ def validate_id_list(
         raise RecipeValidationError(empty_message)
 
     if any(
-        not isinstance(item_id, int) or isinstance(item_id, bool)
-        for item_id in ids
+        not isinstance(item_id, int) or isinstance(item_id, bool) for item_id in ids
     ):
         raise RecipeValidationError(invalid_message)
 
@@ -210,11 +191,8 @@ def validate_recipe_payload(data):
     step_entries = validate_steps(data)
 
     validated["steps"] = step_entries
-    validated["step_descriptions"] = [
-        entry["description"]
-        for entry in step_entries
-    ]
-    
+    validated["step_descriptions"] = [entry["description"] for entry in step_entries]
+
     validated["ingredients"] = validate_ingredients(data)
 
     validated["utensil_ids"] = validate_id_list(

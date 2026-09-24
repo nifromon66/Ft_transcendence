@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
+    from .message import Message
     from .rating import Rating
     from .recipe import Recipe
 
@@ -50,6 +51,16 @@ class User(db.Model):
 
     ratings: Mapped[list[Rating]] = relationship(back_populates="user")
 
+    sent_messages: Mapped[list[Message]] = relationship(
+        foreign_keys="Message.sender_id",
+        back_populates="sender",
+    )
+
+    received_messages: Mapped[list[Message]] = relationship(
+        foreign_keys="Message.receiver_id",
+        back_populates="receiver",
+    )
+
     def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
         self.username = username
         self.email = email
@@ -81,6 +92,6 @@ class User(db.Model):
                     and_(User.id == friend.c.user_id, friend.c.friend_id == self.id),
                 ),
             )
-            .where(friend.c.status == "accepted")
+            .where(and_(friend.c.status == "accepted", User.is_active == True))
         )
         return db.session.scalars(stmt).all()

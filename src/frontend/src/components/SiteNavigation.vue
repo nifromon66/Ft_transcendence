@@ -53,9 +53,14 @@
           </template>
 
           <template v-else>
+            <RouterLink v-if="authStore.user" :to="`/user/${authStore.user.id}`"
+              class="block rounded-full px-4 py-2 hover:bg-primary-light" @click="accountMenuOpen = false">
+              Mon profil
+            </RouterLink>
+
             <RouterLink :to="{ name: 'profile' }" class="block rounded-full px-4 py-2 hover:bg-primary-light"
               @click="accountMenuOpen = false">
-              Mon profil
+              Mon compte
             </RouterLink>
 
             <button type="button" class="w-full rounded-full px-4 py-2 text-left hover:bg-primary-light"

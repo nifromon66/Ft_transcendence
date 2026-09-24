@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
-import { fetchUserProfile, deleteAccount } from '@/services/userService'
+import { fetchUserProfile, deleteAccount, updateMyProfile } from '@/services/userService'
 import { uploadAvatar } from '@/services/uploadService'
 import { fetchAvatarBlob } from '@/services/avatarService'
 import { validateAvatar } from '@/utils/fileValidators'
@@ -27,6 +27,58 @@ const previewImageSrc = ref(null)
 const isDeleteModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
+
+const isEditingInfo = ref(false)
+const isInfoUpdating = ref(false)
+const infoSuccessMessage = ref('')
+const infoErrorMessage = ref('')
+const editForm = ref({
+    username: '',
+    email: ''
+})
+
+const openEditInfo = () => {
+    editForm.value.username = authStore.user.username
+    editForm.value.email = authStore.user.email
+    isEditingInfo.value = true
+    infoSuccessMessage.value = ''
+    infoErrorMessage.value = ''
+}
+
+const cancelEditInfo = () => {
+    isEditingInfo.value = false
+}
+
+const saveProfileInfo = async () => {
+    if (isInfoUpdating.value) {
+        return
+    }
+    isInfoUpdating.value = true
+    infoSuccessMessage.value = ''
+    infoErrorMessage.value = ''
+
+    try {
+        const token = authStore.token
+        const updatedUser = await updateMyProfile(editForm.value, token)
+
+        authStore.user.username = updatedUser.username
+        authStore.user.email = updatedUser.email
+
+        infoSuccessMessage.value = "Vos informations ont été mises à jout avec succès !"
+        isEditingInfo.value = false
+
+        setTimeout(() => infoSuccessMessage.value = '', 3000)
+    } catch (err) {
+        if (err.message === "SESSION_EXPIRED") {
+            authStore.clearAuth()
+            router.push('/login')
+        } else {
+            infoErrorMessage.value = err.message
+        }
+    } finally {
+        isInfoUpdating.value = false
+    }
+}
 
 const openDeleteModal = () => {
     isDeleteModalOpen.value = true
@@ -239,15 +291,63 @@ const cancelEdit = () => {
                 </div>
 
                 <div class="flex-1 w-full">
+
+                    <div v-if="infoSuccessMessage"
+                        class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
+                        {{ infoSuccessMessage }}
+                    </div>
+                    <div v-if="infoErrorMessage"
+                        class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium border border-red-200">
+                        {{ infoErrorMessage }}
+                    </div>
+
                     <div class="flex flex-col space-y-2">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-400">Nom d'utilisateur</span>
-                            <p class="text-xl font-bold text-gray-800">{{ authStore.user.username }}</p>
+
+                        <div v-if="!isEditingInfo" class="flex justify-between items-start">
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-400">Nom d'utilisateur</span>
+                                    <p class="text-xl font-bold text-gray-800">{{ authStore.user.username }}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-400">Email</span>
+                                    <p class="text-lg text-gray-600">{{ authStore.user.email }}</p>
+                                </div>
+                            </div>
+                            <button @click="openEditInfo"
+                                class="text-sm font-medium text-blue-500 hover:text-blue-700 hover:underline transition-colors">
+                                Modifier mes infos
+                            </button>
                         </div>
-                        <div>
-                            <span class="text-sm font-semibold text-gray-400">Email</span>
-                            <p class="text-lg text-gray-600">{{ authStore.user.email }}</p>
+
+                        <div v-else class="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm animate-fade-in">
+                            <h2 class="mb-4 text-lg font-semibold text-gray-700">Modifier mes informations</h2>
+                            <form @submit.prevent="saveProfileInfo" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
+                                    <input v-model="editForm.username" type="text" required
+                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input v-model="editForm.email" type="email" required
+                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                </div>
+
+                                <div class="flex space-x-3 pt-2">
+                                    <button type="submit" :disabled="isInfoUpdating"
+                                        class="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-colors">
+                                        {{ isInfoUpdating ? 'Enregistrement des modifications...' : 'Enregistrer' }}
+                                    </button>
+                                    <button type="button" @click="cancelEditInfo" :disabled="isInfoUpdating" class="px-4 py-2
+                                        bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300
+                                        transition-colors">
+                                        Annuler
+                                    </button>
+                                </div>
+                            </form>
                         </div>
+
                     </div>
 
                     <div v-if="isEditingAvatar" class="animate-fade-in mb-4 p-4 border rounded-xl bg-gray-50 mt-4">

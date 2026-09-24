@@ -69,4 +69,57 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/friends': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/users': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/messages': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/badges': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/getbadge': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/recipe': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/upload': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/login': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/me': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
+      '/socket.io': {
+        target: 'http://backend:5000',
+        ws: true,
+        changeOrigin: true
+      }
+    }
+  }
 })

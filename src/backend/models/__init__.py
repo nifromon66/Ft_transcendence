@@ -13,6 +13,7 @@ from .tag import Tag
 from .user import User
 from .utensil import Utensil
 from .recipe_step import RecipeStep
+from .message import Message
 
 __all__ = [
     "Badge",
@@ -32,4 +33,5 @@ __all__ = [
     "db",
     "recipe_tag",
     "recipe_utensil",
+    "Message",
 ]

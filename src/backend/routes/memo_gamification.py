@@ -4,12 +4,12 @@
 
 # routers : maybe later move functions routers in the folder backend/routers
 
+from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import UserBadge, User, Badge
-from extensions import db
+from models import Badge, User, UserBadge
 
-gamification_api = Blueprint('gamification_api', __name__)
+gamification_api = Blueprint("gamification_api", __name__)
 
 """
 Award a badge to a user
@@ -18,10 +18,15 @@ Returns:
 	True  -> user successfully awarded a badge
 	False -> user has already have it
 """
-def award_badge(*,
-                user_id: int | None = None, user: User | None = None,
-                badge_id: int | None = None, badge: Badge | None = None,
-                ) -> bool:
+
+
+def award_badge(
+    *,
+    user_id: int | None = None,
+    user: User | None = None,
+    badge_id: int | None = None,
+    badge: Badge | None = None,
+) -> bool:
 
     if user is None:
         user = db.session.get(User, user_id)
@@ -37,20 +42,19 @@ def award_badge(*,
     badge_id = badge.id
     existing = db.session.scalar(
         db.select(UserBadge).where(
-            UserBadge.user_id == user_id,
-            UserBadge.badge_id == badge_id)
+            UserBadge.user_id == user_id, UserBadge.badge_id == badge_id
+        )
     )
 
     if existing is not None:
         return False
 
-    user_badge = UserBadge(
-        user_id=user_id,
-        badge_id=badge_id)
+    user_badge = UserBadge(user_id=user_id, badge_id=badge_id)
 
     db.session.add(user_badge)
 
     return True
+
 
 @gamification_api.route("/getbadge", methods=["POST"])
 @jwt_required()
@@ -59,25 +63,19 @@ def getbadge():
 
     data = request.get_json()
     if not data or "badge_id" not in data:
-        return jsonify({
-            "error": "badge_id is required"
-        }), 400
+        return jsonify({"error": "badge_id is required"}), 400
     badge_id = data["badge_id"]
     badge = db.session.get(Badge, badge_id)
     if badge is None:
-        return jsonify({
-            "error": "Badge not found"
-        }), 404
+        return jsonify({"error": "Badge not found"}), 404
 
     eligible = check_badge_eligibility(
-            user_id = user_id,
-            badge = badge,
-        )
+        user_id=user_id,
+        badge=badge,
+    )
     # todo
     if not eligible:
-        return jsonify({
-            "error": "User is not eligible for this badge"
-        }), 403
+        return jsonify({"error": "User is not eligible for this badge"}), 403
 
     awarded = award_badge(
         user_id=user_id,
@@ -85,28 +83,27 @@ def getbadge():
     )
 
     if not awarded:
-        return jsonify({
-            "error": "Badge already owned"
-        }), 409
+        return jsonify({"error": "Badge already owned"}), 409
 
     db.session.commit()
 
-    return jsonify({
-        "message": "Badge awarded",
-        "badge": {
-            "id": badge.id,
-            "name": badge.name,
-        },
-    }), 201
+    return jsonify(
+        {
+            "message": "Badge awarded",
+            "badge": {
+                "id": badge.id,
+                "name": badge.name,
+            },
+        }
+    ), 201
+
 
 @gamification_api.route("/badges", methods=["GET"])
 @jwt_required()
 def display_badges():
     user_id = get_jwt_identity()
 
-    badges = db.session.scalars(
-        db.select(Badge)
-    ).all()
+    badges = db.session.scalars(db.select(Badge)).all()
 
     result = []
 
@@ -125,15 +122,18 @@ def display_badges():
             badge=badge,
         )
 
-        result.append({
-            "id": badge.id,
-            "name": badge.name,
-            "description": badge.description,
-            "eligible": eligible,
-            "owned": existing is not None,
-        })
+        result.append(
+            {
+                "id": badge.id,
+                "name": badge.name,
+                "description": badge.description,
+                "eligible": eligible,
+                "owned": existing is not None,
+            }
+        )
 
     return jsonify(result), 200
+
 
 def check_badge_eligibility(
     *,

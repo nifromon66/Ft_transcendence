@@ -4,7 +4,6 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import HomeView from '../views/HomeView.vue'
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -31,7 +30,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/UserProfile.vue')
+      component: () => import('@/views/UserProfileView.vue')
     },
     {
       path: '/about',
@@ -51,7 +50,7 @@ const router = createRouter({
     },
     {
       path: '/privacy',
-      name : 'privacy',
+      name: 'privacy',
       component: () => import('../views/PrivacyView.vue'),
     },
     {
@@ -62,17 +61,17 @@ const router = createRouter({
     },
     {
       path: '/recipe/:id',
-      name : 'recipe-details',
+      name: 'recipe-details',
       component: () => import('../views/RecipeDetailsView.vue'),
       props: true,
     },
     {
       path: '/postRecipe',
-      name : 'postRecipe',
+      name: 'postRecipe',
       component: () => import('../views/PostRecipeView.vue'),
       props: true,
-    },  
-    {  
+    },
+    {
       path: '/test-upload',
       name: 'test-upload',
       component: () => import('@/views/TestUploadView.vue'),
@@ -85,10 +84,23 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-        path: '/search',
-        name: 'search',
-        component: () => import('@/views/SearchResultsView.vue'),
+      path: '/search',
+      name: 'search',
+      component: () => import('@/views/SearchResultsView.vue'),
     },
+    {
+      path: '/user/:id',
+      name: 'public-profile',
+      component: () => import('@/views/PublicProfileView.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { requiresAuth: true },
+    }
   ],
   scrollBehavior() {
     return { top: 0, behavior: 'smooth' }

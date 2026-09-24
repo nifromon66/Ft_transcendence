@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useFriends } from '@/composables/useFriends'
 import FriendAvatar from '@/components/FriendAvatar.vue'
+import { socket } from '@/services/socketService'
 
 const {
     friendsList,
@@ -20,7 +21,8 @@ const {
     acceptRequest,
     denyRequest,
     cancelRequest,
-    deleteFriend
+    deleteFriend,
+    updateUserStatus
 } = useFriends()
 
 const searchQuery = ref('')
@@ -31,6 +33,41 @@ const handleSearch = async () => {
     }
 }
 
+const handleStatusChange = (data) => {
+    updateUserStatus(data.user_id, data.is_online)
+}
+
+const handleFriendshipUpdated = async () => {
+    await Promise.all([
+        loadFriends(),
+        loadReceivedRequests(),
+        loadSentRequests(),
+        loadDiscoverUsers()
+    ])
+
+    if (searchQuery.value.trim() !== '') {
+        await performSearch(searchQuery.value)
+    }
+}
+
+const handleProfileUpdated = (data) => {
+    const updateNameInList = (listRef) => {
+        if (!listRef.value) {
+            return
+        }
+        const user = listRef.value.find(u => u.id === data.user_id)
+        if (user) {
+            user.username = data.new_username
+        }
+    }
+
+    updateNameInList(friendsList)
+    updateNameInList(receivedRequestsList)
+    updateNameInList(sentRequestsList)
+    updateNameInList(discoverList)
+    updateNameInList(searchResults)
+}
+
 onMounted(async () => {
     await Promise.all([
         loadFriends(),
@@ -38,6 +75,20 @@ onMounted(async () => {
         loadSentRequests(),
         loadDiscoverUsers()
     ])
+
+    if (socket) {
+        socket.on('user_status_changed', handleStatusChange)
+        socket.on('friendship_updated', handleFriendshipUpdated)
+        socket.on('user_profile_updated', handleProfileUpdated)
+    }
+})
+
+onUnmounted(() => {
+    if (socket) {
+        socket.off('user_status_changed', handleStatusChange)
+        socket.off('friendship_updated', handleFriendshipUpdated)
+        socket.off('user_profile_updated', handleProfileUpdated)
+    }
 })
 </script>
 
@@ -56,7 +107,7 @@ onMounted(async () => {
 
             <div class="flex gap-2 mb-6">
                 <input v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+                    class="flex-1 px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                     @keyup.enter="handleSearch" />
                 <button @click="handleSearch" :disabled="isLoading"
                     class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors disabled:opacity-50">
@@ -68,10 +119,19 @@ onMounted(async () => {
                 <li v-for="user in searchResults" :key="user.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                    <div class="flex items-center gap-3">
-                        <FriendAvatar :user="user" />
-                        <span class="font-medium text-gray-700">{{ user.username }}</span>
-                    </div>
+                    <RouterLink :to="{ name: 'public-profile', params: { id: user.id } }"
+                        class="flex items-center gap-3 group cursor-pointer">
+                        <FriendAvatar :user="user" class="transition-transform group-hover:scale-105" />
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                {{ user.username }}
+                            </span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="user.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
+                    </RouterLink>
 
                     <div class="flex gap-2">
                         <button v-if="user.friendship_status === 'none'" @click="addFriend(user.id)"
@@ -84,7 +144,8 @@ onMounted(async () => {
                             class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">Accepter
                             la demande d'ami
                         </button>
-                        <button v-if="user.friendship_status === 'accepted'" @click="deleteFriend(user.id)"
+                        <button v-if="user.friendship_status === 'accepted'"
+                            @click="deleteFriend(user.id, user.username)"
                             class="px-4 py-2 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
                             l'ami
                         </button>
@@ -104,10 +165,19 @@ onMounted(async () => {
                 <li v-for="req in receivedRequestsList" :key="req.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                    <div class="flex items-center gap-3">
-                        <FriendAvatar :user="req" />
-                        <span class="font-medium text-gray-700">{{ req.username }}</span>
-                    </div>
+                    <RouterLink :to="{ name: 'public-profile', params: { id: req.id } }"
+                        class="flex items-center gap-3 group cursor-pointer">
+                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105" />
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                {{ req.username }}
+                            </span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="req.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
+                    </RouterLink>
 
                     <div class="flex gap-2">
                         <button @click="acceptRequest(req.id)"
@@ -131,10 +201,19 @@ onMounted(async () => {
                 <li v-for="req in sentRequestsList" :key="req.id"
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                    <div class="flex items-center gap-3">
-                        <FriendAvatar :user="req" />
-                        <span class="font-medium text-gray-700">{{ req.username }}</span>
-                    </div>
+                    <RouterLink :to="{ name: 'public-profile', params: { id: req.id } }"
+                        class="flex items-center gap-3 group cursor-pointer">
+                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105" />
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                {{ req.username }}
+                            </span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                :title="req.is_online ? 'En ligne' : 'Hors ligne'">
+                            </span>
+                        </div>
+                    </RouterLink>
 
                     <button @click="cancelRequest(req.id)"
                         class="px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">
@@ -153,12 +232,21 @@ onMounted(async () => {
                     <li v-for="friend in friendsList" :key="friend.id"
                         class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                        <div class="flex items-center gap-3">
-                            <FriendAvatar :user="friend" />
-                            <span class="font-medium text-gray-700">{{ friend.username }}</span>
-                        </div>
+                        <RouterLink :to="{ name: 'public-profile', params: { id: friend.id } }"
+                            class="flex items-center gap-3 group cursor-pointer">
+                            <FriendAvatar :user="friend" class="transition-transform group-hover:scale-105" />
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ friend.username }}
+                                </span>
+                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                    :class="friend.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                    :title="friend.is_online ? 'En ligne' : 'Hors ligne'">
+                                </span>
+                            </div>
+                        </RouterLink>
 
-                        <button @click="deleteFriend(friend.id)"
+                        <button @click="deleteFriend(friend.id, friend.username)"
                             class="px-3 py-1.5 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
                             cet ami</button>
                     </li>
@@ -173,10 +261,19 @@ onMounted(async () => {
                     <li v-for="user in discoverList" :key="user.id"
                         class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                        <div class="flex items-center gap-3">
-                            <FriendAvatar :user="user" />
-                            <span class="font-medium text-gray-700">{{ user.username }}</span>
-                        </div>
+                        <RouterLink :to="{ name: 'public-profile', params: { id: user.id } }"
+                            class="flex items-center gap-3 group cursor-pointer">
+                            <FriendAvatar :user="user" class="transition-transform group-hover:scale-105" />
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ user.username }}
+                                </span>
+                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                                    :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                                    :title="user.is_online ? 'En ligne' : 'Hors ligne'">
+                                </span>
+                            </div>
+                        </RouterLink>
 
                         <button @click="addFriend(user.id)"
                             class="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium rounded-md hover:bg-blue-100 transition">

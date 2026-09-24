@@ -1,7 +1,6 @@
+from extensions import db
 from models.recipe import Recipe
 from models.recipe_step import RecipeStep
-from extensions import db
-
 
 recipes = [
     Recipe(
@@ -40,7 +39,6 @@ recipes = [
             ),
         ],
     ),
-
     Recipe(
         user_id=1,
         category_id=1,
@@ -72,7 +70,6 @@ recipes = [
             ),
         ],
     ),
-
     Recipe(
         user_id=1,
         category_id=1,
@@ -110,6 +107,7 @@ recipes = [
         ],
     ),
 ]
+
 
 def seed_recipes():
     if db.session.scalar(db.select(Recipe.id).limit(1)) is not None:
