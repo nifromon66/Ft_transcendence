@@ -6,6 +6,7 @@ from .category import Category
 from .comment import Comment
 from .favorite import Favorite
 from .ingredient import Ingredient
+from .ingredient_category import IngredientCategory
 from .rating import Rating
 from .recipe import Recipe
 from .tag import Tag
@@ -19,6 +20,7 @@ __all__ = [
     "Comment",
     "Favorite",
     "Ingredient",
+    "IngredientCategory",
     "Rating",
     "Recipe",
     "RecipeStep",

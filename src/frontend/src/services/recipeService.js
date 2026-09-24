@@ -10,12 +10,36 @@ async function fetchRecipeOptions(endpoint, key, errorMessage) {
   return data[key]
 }
 
+export function fetchIngredientCategories() {
+  return fetchRecipeOptions(
+    'ingredient-categories',
+    'ingredient_categories',
+    'Impossible de récupérer les catégories d’ingrédients.',
+  )
+}
+
 export function fetchIngredients() {
   return fetchRecipeOptions(
     'ingredients',
     'ingredients',
     'Impossible de récupérer les ingrédients.',
   )
+}
+
+export async function createIngredient(token, ingredientData) {
+  const response = await fetch('/api/ingredients', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(ingredientData),
+  })
+  const data = await response.json()
+  if (!response.ok) {
+    throw new Error(data.error || data.msg || 'Impossible de créer l’ingrédient.')
+  }
+  return data.ingredient
 }
 
 export function fetchUtensils() {

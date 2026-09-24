@@ -1,8 +1,8 @@
 from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from models import Category, Ingredient, Recipe, RecipeIngredient, RecipeStep, Tag, User, Utensil, Rating
-from sqlalchemy import select
+from models import IngredientCategory, Category, Ingredient, Recipe, RecipeIngredient, RecipeStep, Tag, User, Utensil, Rating
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from .validators import (
     RecipeValidationError,
@@ -35,6 +35,14 @@ def get_categories():
     ), 200
 
 
+@recipe_bp.route("/ingredient-categories", methods=["GET"])
+def get_ingredient_categories():
+    categories = db.session.scalars(select(IngredientCategory).order_by(IngredientCategory.name)).all()
+    return jsonify({"success": True, "ingredient_categories": [
+        {"id": category.id, "name": category.name} for category in categories
+    ]}), 200
+
+
 @recipe_bp.route("/ingredients", methods=["GET"])
 def get_ingredients():
     ingredients = db.session.execute(
@@ -48,11 +56,49 @@ def get_ingredients():
                 {
                     "id": ingredient.id,
                     "name": ingredient.name,
+                    "category_id": ingredient.category_id,
                 }
                 for ingredient in ingredients
             ],
         }
     ), 200
+
+
+@recipe_bp.route("/ingredients", methods=["POST"])
+@jwt_required()
+def create_ingredient():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Données invalides"}), 400
+    name = data.get("name")
+    category_id = data.get("category_id")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 100:
+        return jsonify({"error": "Le nom doit contenir entre 1 et 100 caractères"}), 400
+    if not isinstance(category_id, int) or isinstance(category_id, bool):
+        return jsonify({"error": "Catégorie invalide"}), 400
+    if db.session.get(IngredientCategory, category_id) is None:
+        return jsonify({"error": "Catégorie introuvable"}), 400
+    name = name.strip().capitalize()
+    existing = db.session.scalar(
+        select(Ingredient).where(func.lower(Ingredient.name) == name.lower())
+    )
+    if existing is not None:
+        return jsonify({"error": "Cet ingrédient existe déjà"}), 409
+    ingredient = Ingredient(name=name, category_id=category_id)
+    try:
+        db.session.add(ingredient)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Cet ingrédient existe déjà"}), 409
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify({"error": "Impossible de créer l'ingrédient"}), 500
+    return jsonify({"ingredient": {
+        "id": ingredient.id,
+        "name": ingredient.name,
+        "category_id": ingredient.category_id,
+    }}), 201
 
 
 @recipe_bp.route("/utensils", methods=["GET"])

@@ -1,5 +1,6 @@
 from extensions import db
-from models import Ingredient
+from models import Ingredient, IngredientCategory
+from .ingredient_categories import category_name_for
 
 
 INGREDIENTS = [
@@ -46,6 +47,7 @@ INGREDIENTS = [
 
 
 def seed_ingredients():
+    categories = {category.name: category.id for category in db.session.scalars(db.select(IngredientCategory))}
     for ingredient_data in INGREDIENTS:
         name = ingredient_data["name"].capitalize()
 
@@ -57,7 +59,7 @@ def seed_ingredients():
 
         if ingredient is None:
             db.session.add(
-                Ingredient(**ingredient_data)
+                Ingredient(**ingredient_data, category_id=categories[category_name_for(name)])
             )
 
     db.session.commit()
