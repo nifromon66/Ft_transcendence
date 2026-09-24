@@ -14,7 +14,6 @@ vault = VaultClient()
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
-from dotenv import dotenv_values
 from extensions import bcrypt, db, jwt, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -37,8 +36,7 @@ from sqlalchemy import select
 
 app = Flask(__name__)
 
-env_frontend = dotenv_values(".env.frontend")
-frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
+frontend_url = os.environ.get("VITE_API_URL")
 
 
 @socketio.on("connect")
