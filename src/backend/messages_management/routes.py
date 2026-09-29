@@ -1,4 +1,7 @@
 from extensions import db
+from file_upload_management.services import (
+    delete_file_physically,
+)
 from flask import Blueprint, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
@@ -46,10 +49,48 @@ def get_chat_history(friend_id):
             }
         ), 200
 
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         return jsonify(
             {
                 "success": False,
                 "error": "Erreur lors de la récupération de l'historique de la conversation.",
             }
+        ), 500
+
+
+@messages_bp.route("/messages/<int:message_id>", methods=["DELETE"])
+@jwt_required()
+def delete_message(message_id):
+    current_user_id = int(get_jwt_identity())
+    message = db.session.get(Message, message_id)
+
+    if not message:
+        return jsonify({"success": False, "error": "Message introuvable."}), 404
+
+    if message.sender_id != current_user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Vous ne pouvez supprimer que vos propres messages.",
+            }
+        ), 403
+
+    file_url = message.file_url
+
+    try:
+        db.session.delete(message)
+        db.session.commit()
+
+        if file_url:
+            filename = file_url.replace("/uploads/", "", 1).lstrip("/")
+            delete_file_physically(filename)
+
+        return jsonify(
+            {"success": True, "message": "Message supprimé avec succès."}
+        ), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify(
+            {"success": False, "error": "Erreur serveur lors de la suppression."}
         ), 500

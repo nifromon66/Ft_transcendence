@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { useAuthStore } from './authState'
 import { socket } from './services/socketService'
-import { fetchFriends } from './services/friendService'
-
 
 export const useChatStore = defineStore('chat', {
     state: () => ({
@@ -70,7 +68,7 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        sendMessage(content, fileData = null) {
+        async sendMessage(content, fileData = null) {
             if (!this.activeContact) {
                 return
             }
@@ -80,17 +78,55 @@ export const useChatStore = defineStore('chat', {
                 return
             }
 
-            const payload = {
-                receiver_id: this.activeContact.id,
-                content: content
-            }
+            let uploadedFileUrl = null
+            let uploadedFileName = null
+            let uploadedFileSize = null
+            let uploadedFileType = null
 
             if (fileData) {
-                Object.assign(payload, fileData)
+                const authStore = useAuthStore()
+                const token = authStore.token || localStorage.getItem('token')
+
+                const formData = new FormData()
+                formData.append('file', fileData)
+
+                try {
+                    const response = await fetch('/upload/document', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    })
+
+                    const result = await response.json()
+
+                    if (!response.ok || !result.success) {
+                        this.chatError = result.error || "Erreur lors de l'upload du document."
+                        return
+                    }
+
+                    uploadedFileName = result.filename
+                    uploadedFileSize = fileData.size
+                    uploadedFileType = fileData.mime_type || fileData.mime_type
+                    uploadedFileUrl = `/uploads/${uploadedFileName}`
+
+                } catch (error) {
+                    this.chatError = "Erreur réseau lors de l'envoi du document."
+                    return
+                }
+            }
+
+            const payload = {
+                receiver_id: this.activeContact.id,
+                content: content,
+                file_url: uploadedFileUrl,
+                file_name: fileData ? fileData.name : null,
+                file_type: uploadedFileType,
+                file_size: uploadedFileSize
             }
 
             socket.emit('send_message', payload)
-
         },
 
         initializeSocketListeners() {

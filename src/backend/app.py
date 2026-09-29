@@ -158,6 +158,7 @@ def handle_new_message(data):
 
     receiver_id = data.get("receiver_id")
     content = data.get("content")
+
     file_url = data.get("file_url")
     file_name = data.get("file_name")
     file_type = data.get("file_type")

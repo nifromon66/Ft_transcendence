@@ -1,8 +1,10 @@
 <script setup>
+import { useRouter } from 'vue-router'
+import { useChatStore } from '@/chatState'
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/authState';
-import { fetchPublicProfile } from '@/services/userService';
-import { fetchAvatarBlob } from '@/services/avatarService';
+import { useAuthStore } from '@/authState'
+import { fetchPublicProfile } from '@/services/userService'
+import { fetchAvatarBlob } from '@/services/avatarService'
 
 import {
     sendFriendRequest,
@@ -11,7 +13,15 @@ import {
     denyFriendRequest,
     removeFriend
 } from '@/services/friendService'
-import { socket } from '@/services/socketService';
+import { socket } from '@/services/socketService'
+
+const router = useRouter()
+const chatStore = useChatStore()
+
+const openChat = (friend) => {
+    chatStore.setActiveContact(friend)
+    router.push('/chat')
+}
 
 const props = defineProps({
     id: {
@@ -185,7 +195,7 @@ onUnmounted(() => {
                         </div>
 
                         <template v-else-if="profile.friendship_status === 'accepted'">
-                            <button
+                            <button @click="openChat(friend)"
                                 class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors">
                                 Envoyer un message à cet ami
                             </button>
