@@ -8,13 +8,14 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 vault = VaultClient()
 
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
-from extensions import bcrypt, db, jwt, online_users, socketio
+from extensions import bcrypt, db, init_oauth, jwt, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -31,12 +32,21 @@ from recipe_management.routes import recipe_bp
 
 # to be re-organized here
 from routes import gamification_api, recipes_bp
+from routes.auth_oauth import auth_oauth_bp
 from routes.users import users_bp
 from sqlalchemy import select
 
 app = Flask(__name__)
 
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+
 frontend_url = os.environ.get("VITE_API_URL")
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+app.config["SESSION_COOKIE_SECURE"] = False
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 
 @socketio.on("connect")
@@ -331,6 +341,7 @@ jwt.init_app(app)
 db.init_app(app)
 bcrypt.init_app(app)
 socketio.init_app(app, cors_allowed_origins=[frontend_url])
+init_oauth(app)
 
 
 # R - Read : récupérer tous les utilisateurs
@@ -563,6 +574,7 @@ app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)  ##for search func
 app.register_blueprint(users_bp)
 app.register_blueprint(messages_bp)
+app.register_blueprint(auth_oauth_bp)
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

@@ -3,6 +3,7 @@ import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import HomeView from '../views/HomeView.vue'
+import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -100,6 +101,11 @@ const router = createRouter({
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/oauth-success',
+      name: 'OAuthSuccess',
+      component: OAuthSuccessView
     }
   ],
   scrollBehavior() {

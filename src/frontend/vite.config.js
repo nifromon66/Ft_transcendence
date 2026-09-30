@@ -71,6 +71,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/auth': {
+        target: 'http://backend:5000',
+        changeOrigin: true
+      },
       '/api': {
         target: 'http://backend:5000',
         changeOrigin: true

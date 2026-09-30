@@ -28,6 +28,10 @@ async function login() {
     errorMessage.value = error.message
   }
 }
+
+const loginWith42 = () => {
+  window.location.href = 'https://localhost:8443/api/auth/login/42'
+}
 </script>
 
 <template>
@@ -52,6 +56,17 @@ async function login() {
         </button>
 
       </form>
+
+      <div class="my-4 flex items-center justify-center">
+        <div class="w-full border-t border-gray-300"></div>
+        <span class="px-2 text-sm text-gray-500 uppercase">ou</span>
+        <div class="w-full border-t border-gray-300"></div>
+      </div>
+
+      <button @click="loginWith42"
+        class="w-full rounded bg-neutral-900 p-2 text-white hover:bg-black font-semibold transition-colors flex items-center justify-center gap-2">
+        <span>Se connecter avec 42</span>
+      </button>
 
       <p class="mt-4 h-6 text-center text-red-600">
         {{ errorMessage }}

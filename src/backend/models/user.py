@@ -27,7 +27,11 @@ class User(db.Model):
 
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    oauth_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    oauth_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
@@ -61,15 +65,34 @@ class User(db.Model):
         back_populates="receiver",
     )
 
-    def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
+    def __init__(
+        self,
+        *,
+        username: str,
+        email: str,
+        password: str | None = None,
+        role: str = "user",
+        oauth_provider: str | None = None,
+        oauth_id: str | None = None,
+    ):
         self.username = username
         self.email = email
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+
+        if password:
+            self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        else:
+            self.password_hash = None
+
+        self.oauth_provider = self.oauth_provider
+        self.oauth_id = self.oauth_id
+
         if role != "user":
             self.role = role
         self.is_active = True
 
     def check_password(self, password: str) -> bool:
+        if not self.password_hash:
+            return False
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str | None]:
