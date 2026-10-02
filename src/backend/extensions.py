@@ -1,6 +1,7 @@
 import os
 
 from authlib.integrations.flask_client import OAuth
+from flask import request
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_socketio import SocketIO
@@ -13,6 +14,13 @@ oauth = OAuth()
 online_users = {}
 
 socketio = SocketIO()
+
+
+@jwt.token_verification_loader
+def verify_not_pending_2fa(jwt_header, jwt_payload):
+    if jwt_payload.get("is_2fa_pending"):
+        return request.endpoint == "auth_2fa.verify_login_2fa"
+    return True
 
 
 def init_oauth(app):

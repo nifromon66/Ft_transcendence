@@ -1,10 +1,12 @@
 import os
 import uuid
+from datetime import timedelta
 
 from file_upload_management.routes import delete_file_physically, upload_bp
 from flask_socketio import join_room
 from friends_management.routes import friends_bp
 from jwt import ExpiredSignatureError, InvalidTokenError
+from routes.auth_2fa import auth_2fa_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -526,13 +528,17 @@ def login():
     data = request.get_json()
 
     if not data or "email" not in data or "password" not in data:
-        return jsonify({"success": False, "error": "email et password requis"}), 200
+        return jsonify(
+            {"success": False, "error": "Email et mot de passe requis."}
+        ), 400
 
     email = data.get("email", "").strip()
     password = data.get("password", "")
 
     if not email or not password:
-        return jsonify({"success": False, "error": "email et password requis"}), 200
+        return jsonify(
+            {"success": False, "error": "Email et mot de passe requis."}
+        ), 400
 
     user = db.session.execute(
         select(User).where(User.email == data["email"])
@@ -540,7 +546,22 @@ def login():
 
     if user is None or not user.is_active or not user.check_password(data["password"]):
         return jsonify(
-            {"success": False, "error": "email ou mot de passe incorrect"}
+            {"success": False, "error": "Email ou mot de passe incorrect."}
+        ), 401
+
+    if user.is_2fa_enabled:
+        temp_token = create_access_token(
+            identity=str(user.id),
+            expires_delta=timedelta(minutes=5),
+            additional_claims={"is_2fa_pending": True},
+        )
+        return jsonify(
+            {
+                "success": True,
+                "status": "2FA_REQUIRED",
+                "temp_token": temp_token,
+                "message": "Veuillez vérifier votre application d'authentification.",
+            }
         ), 200
 
     access_token = create_access_token(identity=str(user.id))
@@ -575,6 +596,7 @@ app.register_blueprint(recipes_bp)  ##for search func
 app.register_blueprint(users_bp)
 app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
+app.register_blueprint(auth_2fa_bp)
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

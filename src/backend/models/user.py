@@ -33,6 +33,10 @@ class User(db.Model):
 
     oauth_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
 
+    totp_secret: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    is_2fa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
@@ -83,8 +87,11 @@ class User(db.Model):
         else:
             self.password_hash = None
 
-        self.oauth_provider = self.oauth_provider
-        self.oauth_id = self.oauth_id
+        self.oauth_provider = oauth_provider
+        self.oauth_id = oauth_id
+
+        self.totp_secret = None
+        self.is_2fa_enabled = False
 
         if role != "user":
             self.role = role
@@ -103,6 +110,8 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "avatar_url": full_avatar_path,
+            "is_2fa_enabled": self.is_2fa_enabled,
+            "oauth_provider": self.oauth_provider,
         }
 
     def get_friends(self) -> list[User]:
