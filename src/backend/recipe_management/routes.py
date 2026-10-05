@@ -1,4 +1,5 @@
 from extensions import db
+from user_xp_management.experience import RECIPE_CREATED_XP, RECIPE_RATED_XP, add_xp, remove_xp
 from file_upload_management.services import (
     delete_empty_parent_directory,
     delete_file_physically,
@@ -535,6 +536,7 @@ def delete_recipe(recipe_id: int):
 
     try:
         db.session.delete(recipe)
+        remove_xp(user_id, RECIPE_CREATED_XP)
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()
@@ -690,6 +692,7 @@ def create_recipe():
 
     try:
         db.session.add(recipe)
+        add_xp(user_id, RECIPE_CREATED_XP)
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()
@@ -777,6 +780,7 @@ def rate_recipe(recipe_id: int):
 
     try:
         db.session.add(rating)
+        add_xp(user_id, RECIPE_RATED_XP)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
@@ -843,6 +847,7 @@ def delete_recipe_rating(recipe_id: int):
 
     try:
         db.session.delete(rating)
+        remove_xp(user_id, RECIPE_RATED_XP)
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()

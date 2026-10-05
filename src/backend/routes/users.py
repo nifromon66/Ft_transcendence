@@ -1,6 +1,7 @@
 from extensions import db, online_users
 from flask import Blueprint, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from user_xp_management.leveling import get_xp_progress
 from models.association import friend
 from models.user import User
 from sqlalchemy import and_, or_, select
@@ -19,6 +20,7 @@ def get_public_profile(user_id):
 
     public_data = target_user.to_dict()
     public_data.pop("email", None)
+    public_data["xp_progress"] = get_xp_progress(target_user.xp)
 
     public_data["is_online"] = target_user.id in online_users
 
