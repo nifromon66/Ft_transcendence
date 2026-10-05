@@ -45,6 +45,12 @@ const qrCodeUrl = ref('')
 const twoFaError = ref('')
 const is2FaLoading = ref(false)
 
+const isDisable2FaModalOpen = ref(false)
+const disable2FaPassword = ref('')
+const disable2FaError = ref('')
+const isDisable2FaLoading = ref(false)
+const disable2FaCode = ref('')
+
 const openEditInfo = () => {
     editForm.value.username = authStore.user.username
     editForm.value.email = authStore.user.email
@@ -202,7 +208,6 @@ const confirmDelete = async () => {
         deleteError.value = "Veuillez renseigner votre mot de passe."
         return
     }
-    console.log("Mot de passe prêt à être envoyé :", deletePassword.value)
     try {
         const token = authStore.token
 
@@ -221,6 +226,64 @@ const confirmDelete = async () => {
         } else {
             deleteError.value = err.message || "Impossible de supprimer le compte."
         }
+    }
+}
+
+const openDisable2FaModal = () => {
+    disable2FaPassword.value = ''
+    disable2FaCode.value = ''
+    disable2FaError.value = ''
+    isDisable2FaModalOpen.value = true
+}
+
+const closeDisable2FaModal = () => {
+    isDisable2FaModalOpen.value = false
+}
+
+const confirmDisable2Fa = async () => {
+    if (!disable2FaPassword.value) {
+        disable2FaError.value = "Le mot de passe est requis."
+        return
+    }
+
+    if (!disable2FaCode.value || disable2FaCode.value.length !== 6) {
+        disable2FaError.value = "Veuillez entrer le code à 6 chiffres."
+        return
+    }
+
+    isDisable2FaLoading.value = true
+    disable2FaError.value = ''
+
+    try {
+        const response = await fetch('/api/auth/2fa/disable', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authStore.token}`
+            },
+            body: JSON.stringify({
+                password: disable2FaPassword.value,
+                code: disable2FaCode.value
+            })
+        })
+
+        let data = {}
+        try {
+            data = await response.json()
+        } catch (e) {
+
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || "Erreur lors de la désactivation.")
+        }
+
+        authStore.user.is_2fa_enabled = false
+        closeDisable2FaModal()
+    } catch (err) {
+        disable2FaError.value = err.message
+    } finally {
+        isDisable2FaLoading.value = false
     }
 }
 
@@ -517,9 +580,15 @@ const cancelEdit = () => {
                             class="px-4 py-2 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap">
                             Activer le 2FA
                         </button>
-                        <div v-else
-                            class="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-lg border border-green-200 whitespace-nowrap">
-                            Activé
+                        <div v-else class="flex items-center space-x-3">
+                            <span
+                                class="px-3 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded border border-green-200">
+                                ✓ Activé
+                            </span>
+                            <button @click="openDisable2FaModal"
+                                class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline transition-colors whitespace-nowrap">
+                                Désactiver
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -621,6 +690,38 @@ const cancelEdit = () => {
                     </div>
                 </div>
 
+            </div>
+        </div>
+
+        <div v-if="isDisable2FaModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Désactiver le 2FA</h3>
+                <p class="text-gray-600 mb-4 text-sm">
+                    En désactivant le 2FA, votre compte sera moins sécurisé. Veuillez confirmer votre identité pour
+                    continuer.
+                </p>
+
+                <input type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
+                    class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
+
+                <input type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
+                    @keyup.enter="confirmDisable2Fa" />
+
+                <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
+
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button @click="closeDisable2FaModal"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">
+                        Annuler
+                    </button>
+                    <button @click="confirmDisable2Fa" :disabled="isDisable2FaLoading"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium disabled:opacity-50">
+                        {{ isDisable2FaLoading ? 'Désactivation...' : 'Désactiver' }}
+                    </button>
+                </div>
             </div>
         </div>
 

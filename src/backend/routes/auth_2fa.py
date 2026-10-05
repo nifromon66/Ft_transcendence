@@ -109,3 +109,38 @@ def verify_login_2fa():
         ), 200
     else:
         return jsonify({"error": "Code 2FA invalide."}), 401
+
+
+@auth_2fa_bp.route("/auth/2fa/disable", methods=["POST"])
+@jwt_required()
+def disable_2fa():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, user_id)
+
+    if not user:
+        return jsonify({"error": "Utilisateur introuvable."}), 404
+
+    if user.oauth_provider:
+        return jsonify({"error": "Action non autorisée pour les comptes OAuth."}), 403
+
+    data = request.get_json()
+    password = data.get("password")
+    code = data.get("code")
+
+    if not password or not user.check_password(password):
+        return jsonify({"error": "Mot de passe incorrect."}), 401
+
+    if not code:
+        return jsonify({"error": "Le code d'authentification est requis."}), 400
+
+    totp = pyotp.TOTP(user.totp_secret)
+    if not totp.verify(code):
+        return jsonify({"error": "Le code 2FA est invalide ou a expiré."}), 401
+
+    user.is_2fa_enabled = False
+    user.totp_secret = None
+    db.session.commit()
+
+    return jsonify(
+        {"message": "L'authentification à double facteur a été désactivée."}
+    ), 200
