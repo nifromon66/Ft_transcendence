@@ -227,3 +227,25 @@ export async function updateMyProfile(userData, token) {
 
     return data.user || data
 }
+
+export async function updateAvatarFrame(frame, token) {
+    if (!navigator.onLine) throw new Error("Vous êtes hors ligne.")
+    if (!token) throw new Error("SESSION_EXPIRED")
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    let response
+    try {
+        response = await fetch(`${baseUrl}/api/users/me/avatar-frame`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ frame }),
+        })
+    } catch {
+        throw new Error("Impossible de contacter le serveur.")
+    }
+    if (response.status === 401) throw new Error("SESSION_EXPIRED")
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok || data.success !== true) {
+        throw new Error(data.error || "Impossible d’enregistrer le cercle.")
+    }
+    return data
+}

@@ -1,4 +1,5 @@
 <script setup>
+import AvatarFrame from '@/components/AvatarFrame.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
 import { fetchUserProfile, deleteAccount, updateMyProfile } from '@/services/userService'
@@ -268,19 +269,22 @@ const cancelEdit = () => {
                 class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
 
                 <div class="flex flex-col items-center space-y-4">
-                    <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
-                            rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
-                        @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
-                        <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
-                            class="h-full w-full object-cover" />
-                        <span v-else-if="authStore.user.username">
-                            {{ authStore.user.username.charAt(0).toUpperCase() }}
-                        </span>
-                        <span v-else>?</span>
+                    <div class="relative">
+                        <AvatarFrame :frame="authStore.user.avatar_frame" />
+                        <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
+                                rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
+                            @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
+                            <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
+                                class="h-full w-full object-cover" />
+                            <span v-else-if="authStore.user.username">
+                                {{ authStore.user.username.charAt(0).toUpperCase() }}
+                            </span>
+                            <span v-else>?</span>
 
-                        <div
-                            class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100">
-                            <span class="text-sm font-medium text-white">Modifier</span>
+                            <div
+                                class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100">
+                                <span class="text-sm font-medium text-white">Modifier</span>
+                            </div>
                         </div>
                     </div>
 
