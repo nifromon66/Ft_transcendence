@@ -11,6 +11,7 @@ from .rating import Rating
 from .recipe import Recipe
 from .tag import Tag
 from .user import User
+from .user_avatar_frame import UserAvatarFrame
 from .recipe_step import RecipeStep
 from .message import Message
 
@@ -27,6 +28,7 @@ __all__ = [
     "RecipeIngredient",
     "Tag",
     "User",
+    "UserAvatarFrame",
     "UserBadge",
     "db",
     "recipe_tag",

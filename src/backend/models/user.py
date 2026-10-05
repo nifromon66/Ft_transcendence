@@ -8,8 +8,10 @@ from sqlalchemy import Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association import friend
+from user_xp_management.rewards import get_active_frame
 
 if TYPE_CHECKING:
+    from .user_avatar_frame import UserAvatarFrame
     from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
@@ -38,6 +40,10 @@ class User(db.Model):
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
 
     xp: Mapped[int | None] = mapped_column(Integer)
+
+    avatar_frame_preference: Mapped[UserAvatarFrame | None] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
@@ -80,6 +86,7 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "avatar_url": full_avatar_path,
+            "avatar_frame": get_active_frame(self),
         }
 
     def get_friends(self) -> list[User]:
