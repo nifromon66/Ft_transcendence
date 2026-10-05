@@ -37,8 +37,7 @@ from sqlalchemy import select
 
 app = Flask(__name__)
 
-env_frontend = dotenv_values(".env.frontend")
-frontend_url = env_frontend.get("VITE_API_URL", "https://localhost:8443")
+frontend_url = os.environ["VITE_API_URL"]
 
 
 @socketio.on("connect")
