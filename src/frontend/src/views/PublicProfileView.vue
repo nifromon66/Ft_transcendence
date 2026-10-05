@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import XpBar from '@/components/XpBar.vue'
 import { useAuthStore } from '@/authState';
 import { fetchPublicProfile } from '@/services/userService';
 import { fetchAvatarBlob } from '@/services/avatarService';
@@ -146,21 +147,25 @@ onUnmounted(() => {
             <div v-else-if="profile"
                 class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
 
-                <div class="flex flex-col items-center space-y-4 relative">
-                    <div
-                        class="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md">
-                        <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${profile.username}`"
-                            class="h-full w-full object-cover" />
-                        <span v-else-if="profile.username">
-                            {{ profile.username.charAt(0).toUpperCase() }}
+                <div class="flex w-48 shrink-0 flex-col items-center space-y-4">
+                    <div class="relative">
+                        <div
+                            class="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md">
+                            <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${profile.username}`"
+                                class="h-full w-full object-cover" />
+                            <span v-else-if="profile.username">
+                                {{ profile.username.charAt(0).toUpperCase() }}
+                            </span>
+                            <span v-else>?</span>
+                        </div>
+
+                        <span class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white shadow-sm"
+                            :class="profile.is_online ? 'bg-green-500' : 'bg-gray-400'"
+                            :title="profile.is_online ? 'En ligne' : 'Hors ligne'">
                         </span>
-                        <span v-else>?</span>
                     </div>
 
-                    <span class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white shadow-sm"
-                        :class="profile.is_online ? 'bg-green-500' : 'bg-gray-400'"
-                        :title="profile.is_online ? 'En ligne' : 'Hors ligne'">
-                    </span>
+                    <XpBar v-if="profile.xp_progress" :progress="profile.xp_progress" />
                 </div>
 
                 <div class="flex-1 w-full">
