@@ -8,7 +8,6 @@ import {
   fetchIngredients,
   fetchIngredientCategories,
   fetchTags,
-  fetchUtensils,
 } from '@/services/recipeService'
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ImagePreview from '@/components/ImagePreview.vue'
@@ -62,7 +61,6 @@ const ingredientOptions = ref([])
 const ingredientCategories = ref([])
 const ingredientsForCategory = (categoryId) =>
   ingredientOptions.value.filter((option) => option.category_id === categoryId)
-const utensilOptions = ref([])
 const tagOptions = ref([])
 const isLoadingOptions = ref(true)
 const errorMessage = ref('')
@@ -121,12 +119,6 @@ const createFormRecipe = () => {
           quantity: '',
         },
       ],
-      utensils: [
-        {
-          id: 1,
-          utensilId: '',
-        },
-      ],
       tags: [
         {
           id: 1,
@@ -154,10 +146,6 @@ const createFormRecipe = () => {
     ingredients: props.initialRecipe.ingredients.map((ingredient) => ({
       ...ingredient,
       categoryId: '',
-    })),
-
-    utensils: props.initialRecipe.utensils.map((utensil) => ({
-      ...utensil,
     })),
 
     tags: props.initialRecipe.tags.map((tag) => ({
@@ -217,32 +205,6 @@ let nextIngredientId = Math.max( 0, ...recipe.ingredients.map((ingredient) => Nu
 const addIngredient = () => {
   recipe.ingredients.push({ id: nextIngredientId, categoryId: '', ingredientId: '', quantity: '' })
   nextIngredientId += 1
-}
-
-let nextUtensilId = Math.max( 0, ...recipe.utensils.map((utensil) => Number(utensil.id))) + 1
-
-const addUtensil = () => {
-  recipe.utensils.push({
-    id: nextUtensilId,
-    utensilId: '',
-  })
-
-  nextUtensilId += 1
-}
-
-const removeUtensil = (index) => {
-  if (recipe.utensils.length > 1) {
-    recipe.utensils.splice(index, 1)
-  }
-}
-
-const isUtensilSelected = (utensilId, currentIndex) => {
-  return recipe.utensils.some((utensil, index) => {
-    return (
-      index !== currentIndex &&
-      utensil.utensilId === utensilId
-    )
-  })
 }
 
 let nextTagId = Math.max(0, ...recipe.tags.map((tag) => Number(tag.id))) + 1
@@ -308,8 +270,6 @@ const submitForm = () => {
       quantity: ingredient.quantity.trim() || null,
     })),
 
-    utensil_ids: recipe.utensils.map((utensil) => utensil.utensilId),
-
     tag_ids: recipe.tags.map((tag) => tag.tagId),
   }
 
@@ -334,13 +294,11 @@ onMounted(async () => {
       loadedCategories,
       loadedIngredients,
       loadedIngredientCategories,
-      loadedUtensils,
       loadedTags,
     ] = await Promise.all([
       fetchCategories(),
       fetchIngredients(),
       fetchIngredientCategories(),
-      fetchUtensils(),
       fetchTags(),
     ])
 
@@ -352,7 +310,6 @@ onMounted(async () => {
         (option) => Number(option.id) === Number(ingredient.ingredientId),
       )?.category_id ?? ''
     }
-    utensilOptions.value = loadedUtensils
     tagOptions.value = loadedTags
   } catch (error) {
     errorMessage.value =
@@ -759,62 +716,6 @@ onMounted(async () => {
             @click="addIngredient"
           >
             Ajouter un ingrédient
-          </button>
-        </section>
-
-        <section aria-labelledby="utensils-title"
-          class="bg-white p-6 rounded-xl shadow-md"
-        >
-          <h2 id="utensils-title" class="mb-4 text-xl font-semibold">
-            Ustensiles
-          </h2>
-
-          <div class="space-y-3">
-            <div
-              v-for="(utensil, index) in recipe.utensils"
-              :key="utensil.id"
-              class="flex gap-2"
-            >
-              <select
-                v-model="utensil.utensilId"
-                required
-                :aria-label="`Ustensile ${index + 1}`"
-                class="min-w-0 flex-1 rounded-md border border-gray-300
-                    bg-white px-3 py-2 focus:border-blue-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-200"
-              >
-                <option disabled value="">
-                  Choisir un ustensile
-                </option>
-
-                <option
-                  v-for="utensilOption in utensilOptions"
-                  :key="utensilOption.id"
-                  :value="utensilOption.id"
-                  :disabled="isUtensilSelected(utensilOption.id, index)"
-                >
-                  {{ utensilOption.name }}
-                </option>
-              </select>
-
-              <button
-                v-if="recipe.utensils.length > 1"
-                type="button"
-                class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50"
-                @click="removeUtensil(index)"
-              >
-                Retirer
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="mt-3 rounded-md border border-primary px-3 py-2
-                font-medium text-primary-dark hover:bg-primary-light"
-            @click="addUtensil"
-          >
-            Ajouter un ustensile
           </button>
         </section>
 

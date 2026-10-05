@@ -88,7 +88,6 @@
 	- Favorite
 - Listing system
 	- Ingredients : List ingredients for selected recipes
-	- Ustensils : List ustensils for selected recipes
 - Notation system
 	- Quality : Star (1 - 5)
 	- Difficulty : Chief hats (1 - 5)

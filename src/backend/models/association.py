@@ -105,14 +105,6 @@ friend = Table(
 )
 
 
-recipe_utensil = Table(
-    "recipe_utensil",
-    db.metadata,
-    Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
-    Column("utensil_id", ForeignKey("utensils.id"), primary_key=True),
-)
-
-
 recipe_tag = Table(
     "recipe_tag",
     db.metadata,

@@ -42,14 +42,6 @@ export async function createIngredient(token, ingredientData) {
   return data.ingredient
 }
 
-export function fetchUtensils() {
-  return fetchRecipeOptions(
-    'utensils',
-    'utensils',
-    'Impossible de récupérer les ustensiles.',
-  )
-}
-
 export function fetchTags() {
   return fetchRecipeOptions(
     'tags',
@@ -236,10 +228,6 @@ export async function fetchRecipeById(id, token = null) {
       id: ingredient.id,
       name: ingredient.name,
       quantity: ingredient.quantity,
-    })),
-    utensils: recipe.utensils.map((utensil) => ({
-      id: utensil.id,
-      name: utensil.name,
     })),
     tags: recipe.tags.map((tag) => ({
       id: tag.id,

@@ -13,7 +13,7 @@ from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 
 from extensions import db, jwt
 from user_xp_management.experience import add_xp, remove_xp
-from models import Category, Ingredient, IngredientCategory, Rating, Recipe, Tag, User, Utensil
+from models import Category, Ingredient, IngredientCategory, Rating, Recipe, Tag, User
 from recipe_management.routes import recipe_bp
 
 
@@ -40,7 +40,6 @@ class ExperienceTests(unittest.TestCase):
         db.session.add_all([
             Category("Test", id=1), IngredientCategory(id=1, name="Test"),
             Ingredient("Test", id=1, category_id=1), Tag("Test"),
-            Utensil("Test"),
         ])
         db.session.commit()
         self.client = app.test_client()
@@ -52,7 +51,7 @@ class ExperienceTests(unittest.TestCase):
             "title": "Test recipe", "category_id": 1,
             "steps": [{"description": "Mix ingredients"}],
             "ingredients": [{"ingredient_id": 1, "quantity": "100 g"}],
-            "utensil_ids": [1], "tag_ids": [1],
+            "tag_ids": [1],
         }
 
     def tearDown(self):
@@ -91,6 +90,11 @@ class ExperienceTests(unittest.TestCase):
         self.assertEqual(self.xp(), 30)
         response = self.client.put(f"/recipes/{recipe_id}", json=self.payload, headers=self.headers[1])
         self.assertEqual(response.status_code, 200, response.json)
+        details = self.client.get(f"/recipes/{recipe_id}")
+        self.assertEqual(details.status_code, 200, details.json)
+        self.assertEqual(details.json["recipe"]["ingredients"], [
+            {"id": 1, "name": "Test", "quantity": "100 g"},
+        ])
         self.assertEqual(self.xp(), 30)
         self.publish()
         self.assertEqual(self.xp(), 60)

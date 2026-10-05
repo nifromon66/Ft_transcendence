@@ -422,29 +422,6 @@ const formatDate = (date) => {
           </ul>
         </section>
 
-        <section
-          v-if="recipe.utensils.length"
-          aria-labelledby="utensils-title"
-        >
-          <h2
-            id="utensils-title"
-            class="mb-4 text-2xl font-bold text-gray-900"
-          >
-            Ustensiles conseillés
-          </h2>
-
-          <ul class="flex flex-wrap gap-2">
-            <li
-              v-for="utensil in recipe.utensils"
-              :key="utensil.id"
-              class="rounded-full bg-gray-100 px-3 py-1.5
-                  text-sm font-medium text-gray-700"
-            >
-              {{ utensil.name }}
-            </li>
-          </ul>
-        </section>
-
         <section aria-labelledby="steps-title">
           <h2
             id="steps-title"
