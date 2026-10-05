@@ -4,6 +4,8 @@ from authlib.integrations.flask_client import OAuth
 from flask import request
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 
@@ -35,3 +37,10 @@ def init_oauth(app):
         api_base_url="https://api.intra.42.fr/v2/",
         client_kwargs={"scope": "public"},
     )
+
+
+limiter = Limiter(
+    get_remote_address,
+    storage_uri="memory://",
+    default_limits=["1000 per day", "100 per hour"],
+)

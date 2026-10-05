@@ -1,5 +1,5 @@
 import pyotp
-from extensions import db
+from extensions import db, limiter
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
@@ -78,6 +78,7 @@ def verify_2fa_setup():
 
 @auth_2fa_bp.route("/auth/2fa/verify-login", methods=["POST"])
 @jwt_required()
+@limiter.limit("5 per minute")
 def verify_login_2fa():
     claims = get_jwt()
     if not claims.get("is_2fa_pending"):

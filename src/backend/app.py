@@ -17,7 +17,7 @@ vault = VaultClient()
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
-from extensions import bcrypt, db, init_oauth, jwt, online_users, socketio
+from extensions import bcrypt, db, init_oauth, jwt, limiter, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -49,6 +49,15 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config["SESSION_COOKIE_SECURE"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+limiter.init_app(app)
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify(
+        {"success": False, "error": "Trop de tentatives. Veuillez réessayer plus tard."}
+    ), 429
 
 
 @socketio.on("connect")
