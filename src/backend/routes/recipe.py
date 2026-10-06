@@ -29,11 +29,15 @@ def get_recipes():
         difficulty
         page
         per_page
+        sort_by
+        sort_order
     """
 
     search = request.args.get("search", "").strip()
     category = request.args.get("category", "").strip()
     difficulty = request.args.get("difficulty", "").strip()
+    sort_by = request.args.get("sort_by", "").strip()
+    sort_order = request.args.get("sort_order", "").strip()
 
     try:
         page = max(request.args.get("page", 1, type=int), 1)
@@ -70,12 +74,29 @@ def get_recipes():
     if difficulty:
         query = query.where(Recipe.difficulty.ilike(difficulty))
 
+    # if sort_by=="updated_at":
+    column=Recipe.updated_at
+    if sort_by=="cooking_time":
+        column=Recipe.cooking_time
+
+    if sort_order.upper()=="DESC":
+        column=column.desc()
+    else:
+        column=column.asc()
+
+    query = query.order_by(column)
+
+    total = db.session.scalar(
+        db.select(db.func.count()).select_from(
+            query.order_by(None).subquery()
+        )
+    )
     offset = (page - 1) * per_page
 
     query = query.offset(offset).limit(per_page)
 
     recipes = db.session.scalars(query).unique().all()
-    print("recipes:", [recipe.id for recipe in recipes], flush=True)
+    # print("recipes:", [recipe.id for recipe in recipes], flush=True)
 
     return jsonify(
         {
@@ -83,24 +104,7 @@ def get_recipes():
             "page": page,
             "per_page": per_page,
             "count": len(recipes),
+            "total": total,
         }
     ), 200
 
-
-# @recipes_bp.route("/<int:recipe_id>", methods=["GET"])
-# def display_recipe(recipe_id: int | None = None):
-#     if recipe_id is None:
-#             return jsonify({
-#             "error": "missing request id"
-#         }), 400
-
-#     recipe = db.session.scalar(
-#           db.select(Recipe).where(Recipe.id == recipe_id)
-#     )
-
-#     if recipe is None:
-#         return jsonify({
-#              "error": "resourse not found"
-#                 }), 404
-
-#     return jsonify(recipe.to_dict()), 200

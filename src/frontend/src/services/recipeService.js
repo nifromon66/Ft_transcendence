@@ -197,15 +197,41 @@ export async function fetchRecipeById(id) {
 /**
  * getRecipes
  *
- * @param {string} search
+ * @param {{ search?: string, category?: string, difficulty?: string, sort_by?: string, sort_order?: string}} filters
  * @returns {Promise<Array>}
  */
-export async function getRecipes(search = '') {
+export async function getRecipes(filters = {}) {
   const params = new URLSearchParams()
 
-  if (search.trim()) {
-    params.append('search', search.trim())
+  if (filters.search?.trim()) {
+    params.set('search', filters.search.trim())
   }
+
+  if (filters.category) {
+    params.set('category', filters.category)
+  }
+
+  if (filters.difficulty) {
+    params.set('difficulty', filters.difficulty)
+  }
+
+  if (filters.page) {
+    params.set('page', String(filters.page))
+  }
+
+  if (filters.per_page) {
+    params.set('per_page', String(filters.per_page))
+  }
+
+  if (filters.sort_by) {
+    params.set('sort_by', String(filters.sort_by))
+  }
+
+  if (filters.sort_order) {
+    params.set('sort_order', String(filters.sort_order))
+  }
+
+  
 
   const queryString = params.toString()
 
@@ -220,8 +246,16 @@ export async function getRecipes(search = '') {
   }
 
   const data = await response.json()
-console.log('API response:', data)
-console.log('Recipe IDs:', data.recipes.map(recipe => recipe.id))
-  return data.recipes
+// console.log('API response:', data)
+// console.log('Recipe IDs:', data.recipes.map(recipe => recipe.id))
+  return data
+}
+
+export function fetchDifficulties() {
+  return [
+    { value: 'facile', label: 'Facile' },
+    { value: 'moyen', label: 'Moyen' },
+    { value: 'difficile', label: 'Difficile' },
+  ]
 }
 
