@@ -378,8 +378,6 @@ const handleDeleteAvatar = async () => {
 }
 
 const handleNewFile = (rawFile) => {
-    console.log("Fichier reçu du DropZone :", rawFile)
-
     const { isValid, error } = validateAvatar(rawFile)
     if (!isValid) {
         alert(error)
@@ -388,7 +386,6 @@ const handleNewFile = (rawFile) => {
 
     selectedFile.value = rawFile
     previewImageSrc.value = URL.createObjectURL(rawFile)
-    console.log("Aperçu généré avec succès :", previewImageSrc.value)
 }
 
 const saveAvatar = async () => {
