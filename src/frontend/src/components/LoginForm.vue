@@ -14,6 +14,8 @@ const isLoading = ref(false)
 const is2FaStep = ref(false)
 const tempToken = ref('')
 const twoFaCode = ref('')
+const isRecoveryMode = ref(false)
+const recoveryCode = ref('')
 
 async function login() {
   errorMessage.value = ''
@@ -57,9 +59,21 @@ async function login() {
   }
 }
 
+const toggleRecoveryMode = () => {
+  isRecoveryMode.value = !isRecoveryMode.value
+  errorMessage.value = ''
+  twoFaCode.value = ''
+  recoveryCode.value = ''
+}
+
 async function confirm2FaLogin() {
-  if (!twoFaCode.value || twoFaCode.value.length !== 6) {
+  if (!isRecoveryMode.value && (!twoFaCode.value || twoFaCode.value.length !== 6)) {
     errorMessage.value = "Le code doit contenir 6 chiffres."
+    return
+  }
+
+  if (isRecoveryMode.value && (!recoveryCode.value || recoveryCode.value.length !== 9)) {
+    errorMessage.value = "Le code de secours doit être au format XXXX-XXXX."
     return
   }
 
@@ -67,13 +81,17 @@ async function confirm2FaLogin() {
   isLoading.value = true
 
   try {
+    const payload = isRecoveryMode.value
+      ? { recovery_code: recoveryCode.value }
+      : { code: twoFaCode.value }
+
     const response = await fetch('/api/auth/2fa/verify-login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${tempToken.value}`
       },
-      body: JSON.stringify({ code: twoFaCode.value })
+      body: JSON.stringify(payload)
     })
 
     let data = {}
@@ -102,7 +120,9 @@ async function confirm2FaLogin() {
 
 const cancel2Fa = () => {
   is2FaStep.value = false
+  isRecoveryMode.value = false
   twoFaCode.value = ''
+  recoveryCode.value = ''
   tempToken.value = ''
   password.value = ''
   errorMessage.value = ''
@@ -152,20 +172,44 @@ const loginWith42 = () => {
 
       <div v-else>
         <h2 class="mb-6 text-center text-2xl font-bold text-black">
-          Authentification à double facteurs (2FA)
+          {{ isRecoveryMode ? 'Récupération du compte' : 'Authentification à double facteurs (2FA)' }}
         </h2>
         <p class="mb-4 text-center text-sm font-medium text-gray-700">
-          Entrez le code à 6 chiffres de votre application.
+          <template v-if="isRecoveryMode">
+            Entrez l'un de vos codes de récupération.
+          </template>
+          <template v-else>
+            Entrez le code à 6 chiffres de votre application d'authentification.
+          </template>
         </p>
 
         <form @submit.prevent="confirm2FaLogin" class="flex flex-col gap-2">
-          <input v-model="twoFaCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000" required
-            class="w-full rounded border p-3 text-center font-mono text-2xl tracking-widest bg-white font-semibold text-black focus:border-blue-500 focus:outline-none" />
+          <div v-if="!isRecoveryMode">
+            <input v-model="twoFaCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
+              class="w-full rounded border p-3 text-center font-mono text-2xl tracking-widest bg-white font-semibold text-black focus:border-blue-500 focus:outline-none" />
+          </div>
+
+          <div v-else class="animate-fade-in">
+            <input v-model="recoveryCode" type="text" maxlength="9" placeholder="XXXX-XXXX"
+              class="w-full rounded border p-3 text-center font-mono text-2xl tracking-widest bg-white font-semibold text-black focus:border-blue-500 focus:outline-none" />
+          </div>
 
           <button type="submit" :disabled="isLoading"
             class="mt-2 w-full rounded bg-green-600 p-2 text-white hover:bg-green-700 font-semibold disabled:opacity-50">
             {{ isLoading ? 'Vérification...' : 'Valider' }}
           </button>
+
+          <div class="mt-2 text-center">
+            <button type="button" @click="toggleRecoveryMode"
+              class="text-sm text-blue-600 hover:text-blue-800 underline transition-colors">
+              <template v-if="isRecoveryMode">
+                Retour à l'application d'authentification
+              </template>
+              <template v-else>
+                Utiliser un code de récupération
+              </template>
+            </button>
+          </div>
 
           <button type="button" @click="cancel2Fa" :disabled="isLoading"
             class="w-full rounded bg-gray-200 p-2 text-gray-800 hover:bg-gray-300 font-semibold disabled:opacity-50">

@@ -1,5 +1,8 @@
+import secrets
+import string
+
 import pyotp
-from extensions import db, limiter
+from extensions import bcrypt, db, limiter
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
@@ -51,6 +54,7 @@ def setup_2fa():
 
 @auth_2fa_bp.route("/auth/2fa/verify-setup", methods=["POST"])
 @jwt_required()
+@limiter.limit("5 per minute")
 def verify_2fa_setup():
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
@@ -65,15 +69,36 @@ def verify_2fa_setup():
         return jsonify({"error": "Le code à 6 chiffres est requis"}), 400
 
     totp = pyotp.TOTP(user.totp_secret)
+    if not totp.verify(code):
+        return jsonify({"error": "Code 2FA invalide. Veuillez réessayer."}), 401
 
-    if totp.verify(code):
-        user.is_2fa_enabled = True
-        db.session.commit()
-        return jsonify(
-            {"message": "L'authentification à double facteur est activée avec succès !"}
-        ), 200
-    else:
-        return jsonify({"error": "Code invalide. Veuillez réessayer."}), 401
+    raw_recovery_codes = generate_recovery_codes()
+
+    hashed_codes = [
+        bcrypt.generate_password_hash(c).decode("utf-8") for c in raw_recovery_codes
+    ]
+
+    user.is_2fa_enabled = True
+    user.recovery_codes = hashed_codes
+    db.session.commit()
+    return jsonify(
+        {
+            "message": "L'authentification à double facteur est activée avec succès !",
+            "recovery_codes": raw_recovery_codes,
+        }
+    ), 200
+
+
+def generate_recovery_codes(num_codes=8):
+    codes = []
+    chars = string.ascii_uppercase + string.digits
+
+    for _ in range(num_codes):
+        raw_string = "".join(secrets.choice(chars) for _ in range(8))
+        formatted_code = f"{raw_string[:4]}-{raw_string[4:]}"
+        codes.append(formatted_code)
+
+    return codes
 
 
 @auth_2fa_bp.route("/auth/2fa/verify-login", methods=["POST"])
@@ -91,14 +116,31 @@ def verify_login_2fa():
         return jsonify({"error": "Requête invalide."}), 400
 
     data = request.get_json()
-    code = data.get("code")
+    totp_code = data.get("code")
+    recovery_code = data.get("recovery_code")
 
-    if not code:
-        return jsonify({"error": "Le code à 6 chiffres est requis."}), 400
+    if not totp_code and not recovery_code:
+        return jsonify({"error": "Un code d'authentification est requis."}), 400
 
-    totp = pyotp.TOTP(user.totp_secret)
+    is_valid = False
 
-    if totp.verify(code):
+    if totp_code:
+        if isinstance(totp_code, str) and len(totp_code) == 6 and totp_code.isdigit():
+            totp = pyotp.TOTP(user.totp_secret)
+            if totp.verify(totp_code):
+                is_valid = True
+
+    elif recovery_code and user.recovery_codes and isinstance(recovery_code, str):
+        for hashed_code in user.recovery_codes:
+            if bcrypt.check_password_hash(hashed_code, recovery_code):
+                is_valid = True
+                user.recovery_codes = [
+                    c for c in user.recovery_codes if c != hashed_code
+                ]
+                db.session.commit()
+                break
+
+    if is_valid:
         final_token = create_access_token(identity=str(user.id))
 
         return jsonify(
@@ -140,6 +182,7 @@ def disable_2fa():
 
     user.is_2fa_enabled = False
     user.totp_secret = None
+    user.recovery_codes = []
     db.session.commit()
 
     return jsonify(

@@ -37,6 +37,9 @@ const editForm = ref({
     email: ''
 })
 
+const recoveryCodes = ref([])
+const isCopied = ref(false)
+
 const is2FaModalOpen = ref(false)
 const twoFaStep = ref(1)
 const twoFaPassword = ref('')
@@ -104,6 +107,11 @@ const open2FaModal = () => {
 
 const close2FaModal = () => {
     is2FaModalOpen.value = false
+    twoFaStep.value = 1
+    twoFaPassword.value = ''
+    twoFaCode.value = ''
+    twoFaError.value = ''
+    recoveryCodes.value = []
 }
 
 const submit2FaPassword = async () => {
@@ -180,7 +188,8 @@ const confirm2FaCode = async () => {
         }
 
         authStore.user.is_2fa_enabled = true
-        close2FaModal()
+        recoveryCodes.value = data.recovery_codes
+        twoFaStep.value = 3
     } catch (err) {
         if (err.name === 'TypeError') {
             twoFaError.value = "Erreur réseau : Impossible de joindre le serveur."
@@ -189,6 +198,17 @@ const confirm2FaCode = async () => {
         }
     } finally {
         is2FaLoading.value = false
+    }
+}
+
+const copyRecoveryCodes = async () => {
+    const textToCopy = recoveryCodes.value.join('\n')
+    try {
+        await navigator.clipboard.writeText(textToCopy)
+        isCopied.value = true
+        setTimeout(() => { isCopied.value = false }, 2000)
+    } catch (err) {
+
     }
 }
 
@@ -690,7 +710,40 @@ const cancelEdit = () => {
                     </div>
                 </div>
 
+                <div v-else-if="twoFaStep === 3" class="animate-fade-in">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Codes de récupération</h3>
+
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-5">
+                        <p class="text-yellow-800 text-sm text-center font-medium">
+                            Sauvegardez ces codes en lieu sûr.
+                            Ils ne seront affichés qu'une seule fois et vous permettront de récupérer votre compte si
+                            vous
+                            perdez l'accès à Google Authenticator.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div v-for="code in recoveryCodes" :key="code"
+                            class="bg-gray-50 border border-gray-200 p-2 rounded text-center font-mono tracking-wider text-gray-800 text-sm font-semibold">
+                            {{ code }}
+                        </div>
+                    </div>
+
+                    <button @click="copyRecoveryCodes" type="button"
+                        class="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors mb-4 font-semibold">
+                        <span v-if="!isCopied">Copier les codes</span>
+                        <span v-else class="text-green-600">Codes copiés !</span>
+                    </button>
+
+                    <div class="w-full border-t border-gray-200 pt-4 mt-2">
+                        <button @click="close2FaModal"
+                            class="w-full px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold">
+                            J'ai bien sauvegardé ces codes
+                        </button>
+                    </div>
+                </div>
             </div>
+
         </div>
 
         <div v-if="isDisable2FaModalOpen"

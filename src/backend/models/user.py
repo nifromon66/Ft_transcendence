@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import Boolean, DateTime, Integer, String, and_, or_, select
+from sqlalchemy import JSON, Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association import friend
@@ -36,6 +36,10 @@ class User(db.Model):
     totp_secret: Mapped[str | None] = mapped_column(String, nullable=True)
 
     is_2fa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    recovery_codes: Mapped[list[str] | None] = mapped_column(
+        JSON, nullable=True, default=list
+    )
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
@@ -92,6 +96,7 @@ class User(db.Model):
 
         self.totp_secret = None
         self.is_2fa_enabled = False
+        self.recovery_codes = []
 
         if role != "user":
             self.role = role
