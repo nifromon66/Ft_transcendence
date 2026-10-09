@@ -40,6 +40,7 @@ services:
       interval: ${VAULT_HEALTHCHECK_INTERVAL}
       timeout: ${VAULT_HEALTHCHECK_TIMEOUT}
       retries: ${VAULT_HEALTHCHECK_RETRIES}
+      start_period: ${VAULT_HEALTHCHECK_START_PERIOD}
     networks:
       - ${VAULT_NETWORK}
   ##########################################
