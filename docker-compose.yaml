@@ -135,6 +135,7 @@ services:
       interval: ${DB_HEALTHCHECK_INTERVAL}
       timeout: ${DB_HEALTHCHECK_TIMEOUT}
       retries: ${DB_HEALTHCHECK_RETRIES}
+      start_period: ${DB_HEALTHCHECK_START_PERIOD}
     networks:
       - ${DB_NETWORK}
       - ${BACKEND_NETWORK}
