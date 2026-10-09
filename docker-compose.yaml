@@ -33,6 +33,9 @@ services:
       - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
       #- ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
       - vault_approles:${VAULT_VOLUME_APPROLES_OUT}
+      - vault_init:/vault/init
+      - vault_tls:/vault/tls
+      - vault_logs:/vault/logs
     expose:
       - "${VAULT_EXPOSE_API_PORT}"
     healthcheck:
@@ -56,8 +59,10 @@ services:
     env_file:
       - ${WAF_ENV_FILE_PATH}
     volumes:
-      - "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
-      - "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
+      #- "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
+      #- "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
+      - waf_ssl:/waf/ssl
+      - waf_logs:/waf/logs
     depends_on:
       - frontend
       - backend
@@ -121,6 +126,8 @@ services:
       - ${WAF_NETWORK}
       - ${DB_NETWORK}
       - ${FRONTEND_NETWORK}
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
   ##########################################
   # Database : PostGreSQL                  #
   ##########################################
@@ -154,6 +161,16 @@ volumes:
     name: vault_approles
   vault_data:
     name: vault_data
+  vault_init:
+    name: vault_init
+  vault_tls:
+    name: vault_tls
+  vault_logs:
+    name: vault_logs
+  waf_ssl:
+    name: waf_ssl
+  waf_logs:
+    name: waf_logs
 
 ##########################################
 # Networks                               #
