@@ -103,7 +103,8 @@ services:
       - ${FRONTEND_ENV_FILE_PATH}
     volumes:
       - ${BACKEND_VOLUME_APP_IN}:${BACKEND_VOLUME_APP_OUT}
-      - ${BACKEND_VOLUME_APPROLE_IN}:${BACKEND_VOLUME_APPROLE_OUT}:ro
+      #- ${BACKEND_VOLUME_APPROLE_IN}:${BACKEND_VOLUME_APPROLE_OUT}:ro
+      - vault_approles:/vault/approles:ro
     depends_on:
       db:
         condition: service_healthy
@@ -146,10 +147,11 @@ services:
 volumes:
   db_data:
     name: db_data
+  vault_approles:
 
-##########################################
-# Networks                               #
-##########################################
+    ##########################################
+    # Networks                               #
+    ##########################################
 networks:
   vault-network:
     name: ${VAULT_NETWORK}
