@@ -88,6 +88,7 @@ services:
     volumes:
       - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
       - /app/node_modules
+      - /app/dev-dist
     depends_on:
       - backend
     expose:
