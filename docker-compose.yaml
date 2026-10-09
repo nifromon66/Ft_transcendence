@@ -46,6 +46,8 @@ services:
       start_period: ${VAULT_HEALTHCHECK_START_PERIOD}
     networks:
       - ${VAULT_NETWORK}
+    environment:
+      - VAULT_SKIP_VERIFY=true
   ##########################################
   # WAF : Modsecurity + CRS + Nginx        #
   ##########################################
