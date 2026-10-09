@@ -27,10 +27,12 @@ services:
       - ${VAULT_TMPFS_RUN_PATH}
     volumes:
       - ${VAULT_VOLUME_INIT_IN}:${VAULT_VOLUME_INIT_OUT}
-      - ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
+      #- ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
+      - vault_data:${VAULT_VOLUME_DATA_OUT}
       - ${VAULT_VOLUME_LOGS_IN}:${VAULT_VOLUME_LOGS_OUT}
       - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
-      - ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
+      #- ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
+      - vault_approles:${VAULT_VOLUME_APPROLES_OUT}
     expose:
       - "${VAULT_EXPOSE_API_PORT}"
     healthcheck:
@@ -148,10 +150,13 @@ volumes:
   db_data:
     name: db_data
   vault_approles:
+    name: vault_approles
+  vault_data:
+    name: vault_data
 
-    ##########################################
-    # Networks                               #
-    ##########################################
+##########################################
+# Networks                               #
+##########################################
 networks:
   vault-network:
     name: ${VAULT_NETWORK}
