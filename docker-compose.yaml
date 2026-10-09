@@ -88,7 +88,7 @@ services:
     volumes:
       - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
       - /app/node_modules
-      - /app/dev-dist
+      - ${FRONTEND_VOLUME_APP_OUT}/dev-dist
     depends_on:
       - backend
     expose:
@@ -139,7 +139,7 @@ services:
     env_file:
       - ${DB_ENV_FILE_PATH}
     volumes:
-      - ${DB_VOLUME_DATA_IN}:${DB_VOLUME_DATA_OUT}
+      - db_data:${DB_VOLUME_DATA_OUT}
     expose:
       - "${DB_EXPOSE_PORT}"
     healthcheck:

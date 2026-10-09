@@ -12,6 +12,7 @@ RUN apk add --no-cache \
 COPY src/vault/scripts /usr/local/src/vault/scripts
 COPY src/vault/config /usr/local/src/vault/config
 COPY src/vault/policies /usr/local/src/vault/policies
+COPY src/vault/roles /user/local/src/vault/roles
 COPY lib/logs.sh /usr/local/src/vault/scripts/lib/logs.sh
 COPY lib/vault /usr/local/src/vault/scripts/lib/vault
 
