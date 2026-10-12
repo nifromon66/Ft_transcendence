@@ -1,8 +1,8 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { useChatStore } from '@/chatState'
+import { useChatStore } from '@/stores/chatState'
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 import { fetchPublicProfile } from '@/services/userService'
 import { fetchAvatarBlob } from '@/services/userService'
 

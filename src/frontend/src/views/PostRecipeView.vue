@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 import { createRecipe } from '@/services/recipeService'
 import RecipeForm from '@/components/RecipeForm.vue'
 import {
@@ -98,17 +98,9 @@ const submitRecipe = async (
     <div class="rounded-lg bg-white p-6 text-gray-800 shadow">
       <h1 class="mb-6 text-3xl font-bold">Publier une recette</h1>
 
-      <RecipeForm
-        :is-submitting="isSubmitting"
-        submit-label="Publier la recette"
-        @submit="submitRecipe"
-      />
+      <RecipeForm :is-submitting="isSubmitting" submit-label="Publier la recette" @submit="submitRecipe" />
 
-      <p
-        v-if="errorMessage"
-        role="alert"
-        class="mt-4 rounded-md bg-red-50 p-3 text-red-700"
-      >
+      <p v-if="errorMessage" role="alert" class="mt-4 rounded-md bg-red-50 p-3 text-red-700">
         {{ errorMessage }}
       </p>
     </div>

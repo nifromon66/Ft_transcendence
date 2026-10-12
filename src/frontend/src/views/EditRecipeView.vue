@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 import { fetchRecipeById, updateRecipe } from '@/services/recipeService'
 import RecipeForm from '@/components/RecipeForm.vue'
 import {
@@ -47,35 +47,35 @@ const loadRecipe = async () => {
     recipe.value = loadedRecipe
 
     formRecipe.value = {
-        title: loadedRecipe.title,
-        categoryId: loadedRecipe.category.id,
-        description: loadedRecipe.description || '',
-        cookingTime: loadedRecipe.cookingTime,
-        difficulty: loadedRecipe.difficulty || '',
-        imageUrl: loadedRecipe.imageUrl,
+      title: loadedRecipe.title,
+      categoryId: loadedRecipe.category.id,
+      description: loadedRecipe.description || '',
+      cookingTime: loadedRecipe.cookingTime,
+      difficulty: loadedRecipe.difficulty || '',
+      imageUrl: loadedRecipe.imageUrl,
 
-        steps: loadedRecipe.steps.map((step) => ({
-            id: step.id,
-            persistedId: step.id,
-            description: step.description,
-            imageUrl: step.imageUrl,
-        })),
+      steps: loadedRecipe.steps.map((step) => ({
+        id: step.id,
+        persistedId: step.id,
+        description: step.description,
+        imageUrl: step.imageUrl,
+      })),
 
-        ingredients: loadedRecipe.ingredients.map((ingredient) => ({
-            id: ingredient.id,
-            ingredientId: ingredient.id,
-            quantity: ingredient.quantity || '',
-        })),
+      ingredients: loadedRecipe.ingredients.map((ingredient) => ({
+        id: ingredient.id,
+        ingredientId: ingredient.id,
+        quantity: ingredient.quantity || '',
+      })),
 
-        utensils: loadedRecipe.utensils.map((utensil) => ({
-            id: utensil.id,
-            utensilId: utensil.id,
-        })),
+      utensils: loadedRecipe.utensils.map((utensil) => ({
+        id: utensil.id,
+        utensilId: utensil.id,
+      })),
 
-        tags: loadedRecipe.tags.map((tag) => ({
-            id: tag.id,
-            tagId: tag.id,
-        })),
+      tags: loadedRecipe.tags.map((tag) => ({
+        id: tag.id,
+        tagId: tag.id,
+      })),
     }
 
   } catch (error) {
@@ -192,35 +192,19 @@ watch(
       Chargement de la recette...
     </p>
 
-    <p
-      v-else-if="errorMessage"
-      role="alert"
-      class="rounded-md bg-red-50 p-4 text-red-700"
-    >
+    <p v-else-if="errorMessage" role="alert" class="rounded-md bg-red-50 p-4 text-red-700">
       {{ errorMessage }}
     </p>
 
-    <div
-        v-else-if="formRecipe"
-        class="rounded-lg bg-white p-6 text-gray-800 shadow"
-        >
-        <h1 class="mb-6 text-3xl font-bold">Modifier la recette</h1>
+    <div v-else-if="formRecipe" class="rounded-lg bg-white p-6 text-gray-800 shadow">
+      <h1 class="mb-6 text-3xl font-bold">Modifier la recette</h1>
 
-        <RecipeForm
-            :key="id"
-            :initial-recipe="formRecipe"
-            :is-submitting="isSubmitting"
-            submit-label="Enregistrer les modifications"
-            @submit="submitRecipe"
-        />
+      <RecipeForm :key="id" :initial-recipe="formRecipe" :is-submitting="isSubmitting"
+        submit-label="Enregistrer les modifications" @submit="submitRecipe" />
 
-        <p
-            v-if="errorMessage"
-            role="alert"
-            class="mt-4 rounded-md bg-red-50 p-3 text-red-700"
-        >
-            {{ errorMessage }}
-        </p>
+      <p v-if="errorMessage" role="alert" class="mt-4 rounded-md bg-red-50 p-3 text-red-700">
+        {{ errorMessage }}
+      </p>
     </div>
   </main>
 </template>

@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, unref } from 'vue'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 import { fetchAvatarBlob } from '@/services/userService'
 
 export function useAvatar(userRef) {

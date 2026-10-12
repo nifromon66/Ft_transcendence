@@ -1,13 +1,25 @@
 import { defineStore } from 'pinia'
-import { useAuthStore } from './authState'
-import { socket } from './services/socketService'
+import { useAuthStore } from '@/stores/authState.js'
+import { socket } from '@/services/socketService.js'
 
+import * as friendService from '@/services/friendService'
+import * as messageService from '@/services/messageService'
+
+/**
+ * @typedef {import('@/services/friendService').FriendUser} FriendUser
+ * @typedef {import('@/services/messageService').ChatMessage} ChatMessage
+ */
 export const useChatStore = defineStore('chat', {
     state: () => ({
+        /** @type {FriendUser[]} */
         friendsList: [],
+        /** @type {FriendUser | null} */
         activeContact: null,
+        /** @type {ChatMessage[]} */
         messages: [],
+        /**@type {Record<number, number>} */
         unreadCounts: {},
+        /** @type {string | null} */
         chatError: null
     }),
     actions: {
@@ -16,17 +28,9 @@ export const useChatStore = defineStore('chat', {
             const token = authStore.token || localStorage.getItem('token')
 
             try {
-                const response = await fetch('/friends', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                const data = await response.json()
-                if (response.ok && data.success) {
-                    this.friendsList = data.friends
-                }
+                this.friendsList = await friendService.fetchFriends(authStore.token)
             } catch (error) {
-
+                this.chatError = error.message || "Impossible de charger la liste d'amis."
             }
         },
 
@@ -49,26 +53,13 @@ export const useChatStore = defineStore('chat', {
             const token = authStore.token || localStorage.getItem('token')
 
             try {
-                const response = await fetch(`/api/messages/${friendId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-
-                const data = await response.json()
-
-                if (response.ok && data.success) {
-                    this.messages = data.messages
-                }
-
+                this.messages = await messageService.fetchConversation(friendId, authStore.token)
             } catch (error) {
-
+                this.chatError = error.message || "Erreur lors du chargement des messages."
             }
         },
 
-        async sendMessage(content, fileData = null) {
+        sendMessage(content, fileData = null) {
             if (!this.activeContact) {
                 return
             }
@@ -78,65 +69,28 @@ export const useChatStore = defineStore('chat', {
                 return
             }
 
-            let uploadedFileUrl = null
-            let uploadedFileName = null
-            let uploadedFileSize = null
-            let uploadedFileType = null
-
-            if (fileData) {
-                const authStore = useAuthStore()
-                const token = authStore.token || localStorage.getItem('token')
-
-                const formData = new FormData()
-                formData.append('file', fileData)
-
-                try {
-                    const response = await fetch('/api/messages/documents', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: formData
-                    })
-
-                    const result = await response.json()
-
-                    if (!response.ok || !result.success) {
-                        this.chatError = result.error || "Erreur lors de l'upload du document."
-                        return
-                    }
-
-                    uploadedFileName = result.filename
-                    uploadedFileSize = fileData.size
-                    uploadedFileType = fileData.mime_type || fileData.mime_type
-                    uploadedFileUrl = `/uploads/${uploadedFileName}`
-
-                } catch (error) {
-                    this.chatError = "Erreur réseau lors de l'envoi du document."
-                    return
-                }
-            }
-
             const payload = {
                 receiver_id: this.activeContact.id,
-                content: content,
-                file_url: uploadedFileUrl,
-                file_name: fileData ? fileData.name : null,
-                file_type: uploadedFileType,
-                file_size: uploadedFileSize
+                content: content
+            }
+
+            if (fileData) {
+                Object.assign(payload, fileData)
             }
 
             socket.emit('send_message', payload)
+
         },
 
         initializeSocketListeners() {
-
             if (!socket) {
                 return
             }
 
             socket.off('receive_message')
             socket.off('message_error')
+            socket.off('user_status_changed')
+            socket.off('user_updated')
 
             socket.on('receive_message', (message) => {
                 const isRelevantToActiveChat = this.activeContact && (message.sender_id == this.activeContact.id || message.receiver_id === this.activeContact.id)

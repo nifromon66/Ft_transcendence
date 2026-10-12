@@ -1,7 +1,7 @@
 <script setup>
-import { useChatStore } from '@/chatState';
+import { useChatStore } from '@/stores/chatState';
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
-import { useAuthStore } from '@/authState';
+import { useAuthStore } from '@/stores/authState';
 import FriendAvatar from '@/components/FriendAvatar.vue';
 import DocumentUpload from '@/components/DocumentUpload.vue';
 import { fetchDocumentBlob } from '@/services/fileService';

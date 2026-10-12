@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 import { fetchUserProfile, deleteAccount, updateMyProfile, deleteAvatar } from '@/services/userService'
 import { uploadAvatar } from '@/services/userService'
 import { fetchAvatarBlob } from '@/services/userService'

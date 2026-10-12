@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
-import { useChatStore } from './chatState.js'
+import { useChatStore } from './stores/chatState.js'
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
 import SiteFooter from './components/SiteFooter.vue'

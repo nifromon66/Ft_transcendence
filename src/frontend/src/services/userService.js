@@ -1,5 +1,5 @@
 import router from '@/router/index.js'
-import { useAuthStore } from '@/authState.js'
+import { useAuthStore } from '@/stores/authState.js'
 import { uploadFileToServer } from '@/services/uploadService.js'
 
 /**
