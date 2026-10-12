@@ -45,7 +45,7 @@ class User(db.Model):
 
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
 
-    avatar_url: Mapped[str | None] = mapped_column(String)
+    avatar_filename: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
 
@@ -108,7 +108,11 @@ class User(db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str | None]:
-        full_avatar_path = f"/uploads/{self.avatar_url}" if self.avatar_url else None
+        full_avatar_path = (
+            f"/api/users/avatars/{self.avatar_filename}"
+            if self.avatar_filename
+            else None
+        )
 
         return {
             "id": self.id,

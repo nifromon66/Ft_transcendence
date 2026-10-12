@@ -24,9 +24,9 @@ class RecipeStep(db.Model):
 
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
-    image_url: Mapped[str | None] = mapped_column(String)
+    image_filename: Mapped[str | None] = mapped_column(String)
 
-    recipe: Mapped["Recipe"] = relationship(back_populates="steps")
+    recipe: Mapped[Recipe] = relationship(back_populates="steps")
 
     def __init__(
         self,
@@ -49,9 +49,14 @@ class RecipeStep(db.Model):
         self.image_url = image_url
 
     def to_dict(self):
+        full_image_path = (
+            f"/api/recipes/{self.recipe_id}/steps/{self.id}/image"
+            if self.image_filename
+            else None
+        )
         return {
             "id": self.id,
             "step_number": self.step_number,
             "description": self.description,
-            "image_url": self.image_url,
+            "image_url": full_image_path,
         }
