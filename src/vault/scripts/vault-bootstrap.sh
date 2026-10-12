@@ -46,6 +46,6 @@ log_info "Configuring Vault..."
 
 vault_with_root "${VAULT_SH_CONFIGURE_PATH}"
 
-${VAULT_ENV_FILE_SECRETS_PATH}
+${VAULT_SH_SECRETS_PATH}
 
 log_ok "Vault initialization complete!"
