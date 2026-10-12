@@ -1,47 +1,4 @@
 /**
- * Registers a new user on the server.
- * @param {Object} userData - The user registration data.
- * @param {string} userData.username - The chosen username.
- * @param {string} userData.email - The user's email address.
- * @param {string} userData.password - The user's password.
- * @returns {Promise<Object>} The server response data upon successful registration.
- * @throws {Error} If the server fails or registration is unsuccessful.
- */
-export async function registerUser(userData) {
-    let response
-    try {
-        response = await fetch('/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        })
-    } catch (e) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connection internet.")
-    }
-
-    if (response.status >= 500) {
-        throw new Error("Erreur interne du serveur. Veuillez réessayer.")
-    }
-
-    let data = {}
-    try {
-        data = await response.json()
-    } catch (e) {
-
-    }
-
-    if (!response.ok) {
-        throw new Error(data.error || "Erreur lors de l'inscription")
-    }
-
-    if (data.error || data.success === false) {
-        throw new Error(data.error || "Erreur lors de l'inscription")
-    }
-
-    return data
-}
-
-/**
  * Fetches the authenticated user's profile data.
  * @param {string} token - The user's authentication token.
  * @returns {Promise<Object>} The user profile data.

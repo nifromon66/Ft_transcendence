@@ -3,23 +3,10 @@ import uuid
 from datetime import timedelta
 
 from auth_management.auth_2fa import auth_2fa_bp
-from file_upload_management.routes import delete_file_physically, upload_bp
-from flask_socketio import join_room
-from friends_management.routes import friends_bp
-from jwt import ExpiredSignatureError, InvalidTokenError
-from seeds import seed_database
-from sqlalchemy.exc import SQLAlchemyError
-from vault import VaultClient
-from werkzeug.middleware.proxy_fix import ProxyFix
-
-vault = VaultClient()
-
-database_secrets = vault.get_secret("database")
-jwt_secrets = vault.get_secret("jwt")
-
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, online_users, socketio
+from file_upload_management.routes import delete_file_physically, upload_bp
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -29,15 +16,26 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
 )
+from flask_socketio import join_room
+from friends_management.routes import friends_bp
+from jwt import ExpiredSignatureError, InvalidTokenError
 from messages_management.routes import messages_bp
 from models import User
 from models.message import Message
 from recipe_management.routes import recipe_bp
-
-# to be re-organized here
 from routes import gamification_api, recipes_bp
 from routes.users import users_bp
+from seeds import seed_database
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from vault import VaultClient
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+vault = VaultClient()
+
+database_secrets = vault.get_secret("database")
+jwt_secrets = vault.get_secret("jwt")
+
 
 app = Flask(__name__)
 
