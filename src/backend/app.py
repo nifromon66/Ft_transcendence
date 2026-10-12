@@ -6,7 +6,6 @@ from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, online_users, socketio
-from file_upload_management.routes import delete_file_physically, upload_bp
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import (
