@@ -2,9 +2,8 @@ import os
 import uuid
 
 import magic
+from config import UPLOAD_FOLDER
 from extensions import db, online_users, socketio
-from file_upload_management.constants import UPLOAD_FOLDER
-from file_upload_management.services import delete_file_physically, handle_file_upload
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
@@ -14,6 +13,9 @@ from models import User
 from models.association import friend
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
+from utils.file_services import delete_file_physically, handle_file_upload
+
+from transcendence.src.backend.messages_management.constants import UPLOAD_FOLDER
 
 from .constants import (
     ALLOWED_AVATAR_EXTENSIONS,

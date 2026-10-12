@@ -1,8 +1,16 @@
 import os
+import uuid
 
-from flask import current_app
+import magic
+from flask import current_app, jsonify
+from werkzeug.utils import secure_filename
 
-from .constants import UPLOAD_FOLDER
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def allowed_file(filename, allowed_extensions):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
 
 
 def save_raw_file(file, subfolder="") -> str:
@@ -12,9 +20,6 @@ def save_raw_file(file, subfolder="") -> str:
     file_path = os.path.join(target_dir, file.filename)
     file.save(file_path)
 
-    if subfolder:
-        return os.path.join(subfolder, file.filename)
-
     return file.filename
 
 
@@ -22,7 +27,6 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
     if not file or file.filename == "":
         return None, jsonify({"error": "No selected file"}), 400
 
-    # Check if the extension of the file is allowed
     if not allowed_file(file.filename, allowed_extensions):
         return (
             None,
@@ -35,10 +39,14 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
             400,
         )
 
-    # Check if the MIME type of the file is allowed
     file_header = file.read(2048)
     file.seek(0)
-    file_mimetype = magic.from_buffer(file_header, mime=True)
+
+    try:
+        file_mimetype = magic.from_buffer(file_header, mime=True)
+    except magic.MagicException as error:
+        current_app.logger.error(f"Erreur de lecture du type MIME : {error!s}")
+        return None, jsonify({"error": "Format de fichier illisible ou corrompu"}), 400
 
     if file_mimetype not in allowed_mimetypes:
         return (
@@ -53,15 +61,9 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
         )
 
     file_extension = file.filename.rsplit(".", 1)[1].lower()
-
-    # Sanitize the filename to prevent path traversal attacks
     safe_filename = secure_filename(file.filename)
-
-    # Generate a unique UUID to prevent file overwriting
     unique_id = uuid.uuid4().hex
     new_filename = f"{unique_id}_{safe_filename}"
-
-    # Override the original filename with the secured and unique one
     file.filename = new_filename
 
     try:
@@ -87,19 +89,22 @@ def handle_file_upload(file, subfolder, allowed_extensions, allowed_mimetypes):
         )
 
 
-def delete_file_physically(filename: str) -> None:
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
+def delete_file_physically(relative_filepath: str) -> None:
+    file_path = os.path.join(UPLOAD_FOLDER, relative_filepath)
 
     if os.path.exists(file_path):
-        os.remove(file_path)
+        try:
+            os.remove(file_path)
+        except OSError as error:
+            current_app.logger.error(f"Erreur lors de la suppression : {error!s}")
     else:
         current_app.logger.warning(
             f"Le fichier {file_path} n'a pas été trouvé sur le disque."
         )
 
 
-def delete_empty_parent_directory(filename: str) -> None:
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
+def delete_empty_parent_directory(relative_filepath: str) -> None:
+    file_path = os.path.join(UPLOAD_FOLDER, relative_filepath)
     parent_directory = os.path.dirname(file_path)
 
     upload_root = os.path.abspath(UPLOAD_FOLDER)
@@ -116,5 +121,4 @@ def delete_empty_parent_directory(filename: str) -> None:
     except FileNotFoundError:
         pass
     except OSError:
-        # Le dossier contient encore un fichier : on le conserve.
         pass

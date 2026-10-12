@@ -1,8 +1,8 @@
 import os
 
 import magic
+from config import UPLOAD_FOLDER
 from extensions import db
-from file_upload_management.constants import UPLOAD_FOLDER
 from file_upload_management.services import (
     delete_empty_parent_directory,
     delete_file_physically,
@@ -25,6 +25,11 @@ from models import (
 )
 from sqlalchemy import or_, select
 from sqlalchemy.exc import SQLAlchemyError
+from utils.file_services import (
+    delete_empty_parent_directory,
+    delete_file_physically,
+    handle_file_upload,
+)
 from werkzeug.security import safe_join
 
 from .constants import (

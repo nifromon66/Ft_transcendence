@@ -70,7 +70,7 @@ CORS(
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
-        r"/upload/document": {
+        r"/messages/documents": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
@@ -197,7 +197,6 @@ with app.app_context():
     seed_database()
 
 
-app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)

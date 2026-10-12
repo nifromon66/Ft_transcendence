@@ -1,17 +1,52 @@
 from extensions import db
-from file_upload_management.services import (
-    delete_file_physically,
-)
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
 from models.message import Message
 from sqlalchemy.exc import SQLAlchemyError
+from utils.file_services import handle_file_upload
 
-messages_bp = Blueprint("messages", __name__)
+from .constants import (
+    ALLOWED_DOCUMENT_EXTENSIONS,
+    ALLOWED_DOCUMENT_MIMETYPES,
+    MAX_DOCUMENT_SIZE,
+)
+
+messages_bp = Blueprint("messages_management", __name__, url_prefix="/messages")
 
 
-@messages_bp.route("/messages/<int:friend_id>", methods=["GET"])
+@messages_bp.route("/documents", methods=["POST"])
+@jwt_required()
+def upload_document():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, int(user_id))
+
+    if user is None or not user.is_active:
+        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+
+    max_mb = MAX_DOCUMENT_SIZE // (1024 * 1024)
+
+    if request.content_length and request.content_length > MAX_DOCUMENT_SIZE:
+        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
+
+    if "file" not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+
+    file = request.files["file"]
+    file_data, err_resp, err_code = handle_file_upload(
+        file,
+        subfolder="documents",
+        allowed_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
+        allowed_mimetypes=ALLOWED_DOCUMENT_MIMETYPES,
+    )
+
+    if err_resp:
+        return err_resp, err_code
+
+    return jsonify(file_data), 201
+
+
+@messages_bp.route("/<int:friend_id>", methods=["GET"])
 @jwt_required()
 def get_chat_history(friend_id):
     current_user_id = int(get_jwt_identity())
@@ -58,39 +93,12 @@ def get_chat_history(friend_id):
         ), 500
 
 
-@messages_bp.route("/messages/<int:message_id>", methods=["DELETE"])
-@jwt_required()
-def delete_message(message_id):
-    current_user_id = int(get_jwt_identity())
-    message = db.session.get(Message, message_id)
+@messages_bp.route("/documents/<path:filename>", methods=["GET"])
+def serve_document(filename):
+    import os
 
-    if not message:
-        return jsonify({"success": False, "error": "Message introuvable."}), 404
+    from config import UPLOAD_FOLDER
+    from flask import send_from_directory
 
-    if message.sender_id != current_user_id:
-        return jsonify(
-            {
-                "success": False,
-                "error": "Vous ne pouvez supprimer que vos propres messages.",
-            }
-        ), 403
-
-    file_url = message.file_url
-
-    try:
-        db.session.delete(message)
-        db.session.commit()
-
-        if file_url:
-            filename = file_url.replace("/uploads/", "", 1).lstrip("/")
-            delete_file_physically(filename)
-
-        return jsonify(
-            {"success": True, "message": "Message supprimé avec succès."}
-        ), 200
-
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify(
-            {"success": False, "error": "Erreur serveur lors de la suppression."}
-        ), 500
+    docs_folder = os.path.join(UPLOAD_FOLDER, "documents")
+    return send_from_directory(docs_folder, filename)

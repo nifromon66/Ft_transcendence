@@ -91,7 +91,7 @@ export const useChatStore = defineStore('chat', {
                 formData.append('file', fileData)
 
                 try {
-                    const response = await fetch('/upload/document', {
+                    const response = await fetch('/api/messages/documents', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
