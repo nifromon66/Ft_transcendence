@@ -8,7 +8,7 @@ import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import { registerUser } from '@/services/authService'
 import { loginUser } from '@/services/authService'
-import { uploadAvatar } from '@/services/uploadService'
+import { uploadAvatar } from '@/services/userService'
 
 const router = useRouter()
 

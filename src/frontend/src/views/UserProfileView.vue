@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
-import { fetchUserProfile, deleteAccount, updateMyProfile } from '@/services/userService'
-import { uploadAvatar } from '@/services/uploadService'
-import { fetchAvatarBlob } from '@/services/avatarService'
+import { fetchUserProfile, deleteAccount, updateMyProfile, deleteAvatar } from '@/services/userService'
+import { uploadAvatar } from '@/services/userService'
+import { fetchAvatarBlob } from '@/services/userService'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import QrcodeVue from 'qrcode.vue'

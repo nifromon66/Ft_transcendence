@@ -4,7 +4,7 @@ import { useChatStore } from '@/chatState'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/authState'
 import { fetchPublicProfile } from '@/services/userService'
-import { fetchAvatarBlob } from '@/services/avatarService'
+import { fetchAvatarBlob } from '@/services/userService'
 
 import {
     sendFriendRequest,
