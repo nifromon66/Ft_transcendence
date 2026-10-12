@@ -6,7 +6,7 @@ import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import OfflineBanner from './components/OfflineBanner.vue'
-import { useAuthStore } from './authState.js'
+import { useAuthStore } from './stores/authState.js'
 
 const authStore = useAuthStore()
 const chatStore = useChatStore()
