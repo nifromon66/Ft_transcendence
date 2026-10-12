@@ -18,12 +18,12 @@ from flask_jwt_extended import (
 )
 from flask_socketio import join_room
 from friends_management.routes import friends_bp
+from gamification_management.routes import gamification_api
 from jwt import ExpiredSignatureError, InvalidTokenError
 from messages_management.routes import messages_bp
 from models import User
 from models.message import Message
-from recipe_management.routes import recipe_bp
-from routes import gamification_api, recipes_bp
+from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -199,9 +199,8 @@ with app.app_context():
 
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
-app.register_blueprint(recipe_bp)
 app.register_blueprint(friends_bp)
-app.register_blueprint(recipes_bp)  ##for search func
+app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
