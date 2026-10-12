@@ -15,8 +15,6 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from utils.file_services import delete_file_physically, handle_file_upload
 
-from transcendence.src.backend.messages_management.constants import UPLOAD_FOLDER
-
 from .constants import (
     ALLOWED_AVATAR_EXTENSIONS,
     ALLOWED_AVATAR_MIMETYPES,
