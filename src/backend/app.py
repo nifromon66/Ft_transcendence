@@ -2,11 +2,11 @@ import os
 import uuid
 from datetime import timedelta
 
+from auth_management.auth_2fa import auth_2fa_bp
 from file_upload_management.routes import delete_file_physically, upload_bp
 from flask_socketio import join_room
 from friends_management.routes import friends_bp
 from jwt import ExpiredSignatureError, InvalidTokenError
-from routes.auth_2fa import auth_2fa_bp
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
 from vault import VaultClient
@@ -17,6 +17,8 @@ vault = VaultClient()
 database_secrets = vault.get_secret("database")
 jwt_secrets = vault.get_secret("jwt")
 
+from auth_management.auth_oauth import auth_oauth_bp
+from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, online_users, socketio
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -34,7 +36,6 @@ from recipe_management.routes import recipe_bp
 
 # to be re-organized here
 from routes import gamification_api, recipes_bp
-from routes.auth_oauth import auth_oauth_bp
 from routes.users import users_bp
 from sqlalchemy import select
 
@@ -75,7 +76,11 @@ CORS(
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
-        r"/login": {
+        r"/auth/login": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
+        r"/auth/register": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
@@ -353,53 +358,6 @@ def delete_my_account():
         ), 500
 
 
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-
-    if not data or "email" not in data or "password" not in data:
-        return jsonify(
-            {"success": False, "error": "Email et mot de passe requis."}
-        ), 400
-
-    email = data.get("email", "").strip()
-    password = data.get("password", "")
-
-    if not email or not password:
-        return jsonify(
-            {"success": False, "error": "Email et mot de passe requis."}
-        ), 400
-
-    user = db.session.execute(
-        select(User).where(User.email == data["email"])
-    ).scalar_one_or_none()
-
-    if user is None or not user.is_active or not user.check_password(data["password"]):
-        return jsonify(
-            {"success": False, "error": "Email ou mot de passe incorrect."}
-        ), 401
-
-    if user.is_2fa_enabled:
-        temp_token = create_access_token(
-            identity=str(user.id),
-            expires_delta=timedelta(minutes=5),
-            additional_claims={"is_2fa_pending": True},
-        )
-        return jsonify(
-            {
-                "success": True,
-                "status": "2FA_REQUIRED",
-                "temp_token": temp_token,
-                "message": "Veuillez vérifier votre application d'authentification.",
-            }
-        ), 200
-
-    access_token = create_access_token(identity=str(user.id))
-    return jsonify(
-        {"success": True, "access_token": access_token, "user": user.to_dict()}
-    ), 200
-
-
 @app.route("/me", methods=["GET"])
 @jwt_required()
 def me():
@@ -427,6 +385,7 @@ app.register_blueprint(users_bp)
 app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
 app.register_blueprint(auth_2fa_bp)
+app.register_blueprint(auth_bp)
 
 import sockets.chat
 import sockets.connection
