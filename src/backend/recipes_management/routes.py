@@ -940,6 +940,11 @@ def get_recipe(recipe_id: int):
             "recipe": {
                 "id": recipe.id,
                 "my_rating": my_rating,
+                "rating": (
+                    round(sum(r.score for r in recipe.ratings) / len(recipe.ratings), 1)
+                    if recipe.ratings
+                    else None
+                ),
                 "title": recipe.title,
                 "description": recipe.description,
                 "cooking_time": recipe.cooking_time,

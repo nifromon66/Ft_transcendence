@@ -233,8 +233,15 @@ const formatDate = (date) => {
             </div>
           </div>
 
+          <div v-if="isAuthor" class="rounded-lg text-gray-700 px-3 py-1 text-sm mb-4">
+            <span v-if="recipe.rating != null">
+              <StarRating :rating="recipe.rating" />
+            </span>
+            <span v-else>Pas encore notée</span>
+          </div>
+
           <section v-if="!isAuthor" aria-label="Notation de la recette"
-            class="rounded-lg border border-gray-200 text-gray-700 px-3 py-1 text-sm">
+            class="rounded-lg text-gray-700 px-3 py-1 text-sm mb-4">
             <form v-if="canRate || isEditingRating" @submit.prevent="handleRate"
               class="flex flex-col items-start gap-2">
               <div>

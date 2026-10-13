@@ -576,6 +576,7 @@ export async function fetchRecipeById(id, token = null) {
   return {
     id: recipe.id,
     myRating: recipe.my_rating,
+    rating: recipe.rating,
     title: recipe.title,
     description: recipe.description,
     cookingTime: recipe.cooking_time,
