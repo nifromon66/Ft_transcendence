@@ -85,7 +85,7 @@ class Recipe(db.Model):
         description: str | None = None,
         cooking_time: int | None = None,
         difficulty: str | None = None,
-        image_url: str | None = None,
+        image_filename: str | None = None,
         steps: list[RecipeStep] | None = None,
     ):
 
@@ -107,7 +107,7 @@ class Recipe(db.Model):
         self.description = description
         self.cooking_time = cooking_time
         self.difficulty = difficulty
-        self.image_filename = image_url
+        self.image_filename = image_filename
         self.created_at = datetime.now(timezone.utc)
         self.updated_at = None
 
