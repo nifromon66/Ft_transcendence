@@ -13,6 +13,7 @@ from models import User
 from models.association import friend
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
+from user_xp_management.leveling import get_xp_progress
 from utils.file_services import delete_file_physically, handle_file_upload
 
 from .constants import (
@@ -302,6 +303,7 @@ def get_public_profile(user_id):
 
     public_data = target_user.to_dict()
     public_data.pop("email", None)
+    public_data["xp_progress"] = get_xp_progress(target_user.xp)
 
     public_data["is_online"] = target_user.id in online_users
 
