@@ -125,7 +125,7 @@ export function useRecipeForm(initialRecipe) {
      * @returns {void}
      */
     const addIngredient = () => {
-        recipe.ingredients.push({ id: nextIngredientId, ingredientId: '', quantity: '' })
+        recipe.ingredients.push({ id: nextIngredientId, categoryId: '', ingredientId: '', quantity: '' })
         nextIngredientId += 1
     }
 
@@ -146,7 +146,7 @@ export function useRecipeForm(initialRecipe) {
         return recipe.ingredients.some((ingredient, index) => {
             return (
                 index !== currentIndex &&
-                ingredient.ingredientId === ingredientId
+                String(ingredient.ingredientId) === String(ingredientId)
             )
         })
     }
@@ -181,7 +181,7 @@ export function useRecipeForm(initialRecipe) {
         return recipe.utensils.some((utensil, index) => {
             return (
                 index !== currentIndex &&
-                utensil.utensilId === utensilId
+                String(utensil.utensilId) === String(utensilId)
             )
         })
     }
@@ -214,8 +214,8 @@ export function useRecipeForm(initialRecipe) {
      */
     const isTagSelected = (tagId, currentIndex) => {
         return recipe.tags.some((tag, index) =>
-            index !== currentIndex
-            && tag.tagId === tagId
+            index !== currentIndex &&
+            String(tag.tagId) === String(tagId)
         )
     }
 

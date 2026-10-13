@@ -132,6 +132,7 @@ export const createFormRecipe = (initialRecipe) => {
 
         ingredients: initialRecipe.ingredients.map((ingredient) => ({
             ...ingredient,
+            categoryId: ''
         })),
 
         utensils: initialRecipe.utensils.map((utensil) => ({

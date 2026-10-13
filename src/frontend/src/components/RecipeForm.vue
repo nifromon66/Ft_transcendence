@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import {
+  createIngredient,
   fetchCategories,
   fetchIngredients,
+  fetchIngredientCategories,
   fetchTags,
   fetchUtensils,
 } from '@/services/recipeService.js'
@@ -10,11 +12,44 @@ import { useRecipeForm } from '@/composables/useRecipeForm.js'
 import { formatRecipeForApi } from '@/utils/recipeMapper.js'
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ImagePreview from '@/components/ImagePreview.vue'
+import { useAuthStore } from '@/stores/authState'
 
 /**
  * @typedef {import('@/utils/recipeMapper.js').InitialRecipe} InitialRecipe
  * @typedef {import('@/services/recipeService.js').RecipeOption} RecipeOption
  */
+
+const authStore = useAuthStore()
+const isCreatingIngredient = ref(false)
+
+const saveNewIngredient = async (ingredient) => {
+  if (isCreatingIngredient.value || props.isSubmitting) return
+  const name = ingredient.newName?.trim()
+  if (!name || name.length > 100) {
+    ingredient.creationError = 'Saisis un nom de 1 à 100 caractères.'
+    return
+  }
+  ingredient.creationError = ''
+  isCreatingIngredient.value = true
+  try {
+    const data = await createIngredient(authStore.token, {
+      name,
+      category_id: ingredient.categoryId,
+    })
+
+    const newIngredient = data.ingredient || data
+
+    ingredientOptions.value.push(newIngredient)
+
+    ingredient.ingredientId = newIngredient.id
+
+    ingredient.newName = ''
+  } catch (error) {
+    ingredient.creationError = error.message || 'Impossible de créer l’ingrédient.'
+  } finally {
+    isCreatingIngredient.value = false
+  }
+}
 
 const props = defineProps({
   initialRecipe: {
@@ -68,6 +103,15 @@ const categories = ref([])
 /** @type {import('vue').Ref<RecipeOption[]>} */
 const ingredientOptions = ref([])
 
+const ingredientCategories = ref([])
+
+const ingredientsForCategory = (categoryId) => {
+  if (!categoryId) return []
+  return ingredientOptions.value.filter((option) =>
+    Number(option.category_id || option.categoryId) === Number(categoryId)
+  )
+}
+
 /** @type {import('vue').Ref<RecipeOption[]>} */
 const utensilOptions = ref([])
 
@@ -82,6 +126,13 @@ const fetchErrorMessage = ref('')
  * @returns {void}
  */
 const submitForm = () => {
+  if (isCreatingIngredient.value || props.isSubmitting) return
+
+  if (recipe.ingredients.some((ingredient) => ingredient.ingredientId === 'new')) {
+    errorMessage.value = 'Crée le nouvel ingrédient ou sélectionne un ingrédient existant.'
+    return
+  }
+  errorMessage.value = ''
   // Client-side validation
   errorMessage.value = ''
 
@@ -126,19 +177,57 @@ onMounted(async () => {
     const [
       loadedCategories,
       loadedIngredients,
+      loadedIngredientCategories,
       loadedUtensils,
       loadedTags,
     ] = await Promise.all([
       fetchCategories(),
       fetchIngredients(),
+      fetchIngredientCategories(),
       fetchUtensils(),
       fetchTags(),
     ])
 
     categories.value = loadedCategories
     ingredientOptions.value = loadedIngredients
+    ingredientCategories.value = loadedIngredientCategories
+    for (const ingredient of recipe.ingredients) {
+      ingredient.categoryId = loadedIngredients.find(
+        (option) => Number(option.id) === Number(ingredient.ingredientId),
+      )?.category_id ?? ''
+    }
     utensilOptions.value = loadedUtensils
     tagOptions.value = loadedTags
+
+    for (const ingredient of recipe.ingredients) {
+      if (ingredient.ingredientId) {
+        ingredient.ingredientId = String(ingredient.ingredientId)
+
+        const matchedOption = loadedIngredients.find(
+          (option) => String(option.id) === ingredient.ingredientId
+        )
+
+        if (matchedOption) {
+          ingredient.categoryId = String(matchedOption.category_id || matchedOption.categoryId || '')
+        }
+      }
+    }
+
+    if (recipe.utensils) {
+      for (const utensil of recipe.utensils) {
+        if (utensil.utensilId) {
+          utensil.utensilId = String(utensil.utensilId)
+        }
+      }
+    }
+
+    if (recipe.tags) {
+      for (const tag of recipe.tags) {
+        if (tag.tagId) {
+          tag.tagId = String(tag.tagId)
+        }
+      }
+    }
   } catch (error) {
     fetchErrorMessage.value =
       error.message || 'Impossible de charger les options du formulaire.'
@@ -332,10 +421,20 @@ onMounted(async () => {
         Ingrédients
       </h2>
 
-      <div class="space-y-3">
+      <fieldset :disabled="isCreatingIngredient || isSubmitting" class="space-y-3">
         <div v-for="(ingredient, index) in recipe.ingredients" :key="ingredient.id"
-          class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-          <select :id="`ingredient-${index}`" :name="`ingredient-${index}`" v-model="ingredient.ingredientId" required
+          class="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+          <select v-model="ingredient.categoryId" required :disabled="isLoadingOptions"
+            :aria-label="`Catégorie de l'ingrédient ${index + 1}`"
+            class="rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            @change="ingredient.ingredientId = ''; ingredient.creationError = ''">
+            <option disabled value="">Choisir une catégorie</option>
+            <option v-for="category in ingredientCategories" :key="category.id" :value="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+
+          <select v-if="ingredient.categoryId" v-model="ingredient.ingredientId" required
             :aria-label="`Ingrédient ${index + 1}`" class="rounded-md border border-gray-300 bg-white px-3 py-2
                     focus:border-blue-500 focus:outline-none focus:ring-2
                     focus:ring-blue-200">
@@ -343,21 +442,39 @@ onMounted(async () => {
               Choisir un ingrédient
             </option>
 
-            <option v-for="ingredientOption in ingredientOptions" :key="ingredientOption.id"
+            <option v-for="ingredientOption in ingredientsForCategory(ingredient.categoryId)" :key="ingredientOption.id"
               :value="ingredientOption.id" :disabled="isIngredientSelected(ingredientOption.id, index)">
               {{ ingredientOption.name }}
             </option>
+            <option value="new">Ajouter un nouvel ingrédient</option>
           </select>
-          <input :id="`ingredient-quantity-${index}`" :name="`ingredient-quantity-${index}`"
-            v-model.trim="ingredient.quantity" type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`"
+          <input v-model.trim="ingredient.quantity" type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`"
             placeholder="Ex. 3 ou 250 g" class="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <button v-if="recipe.ingredients.length > 1" type="button"
             class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50" @click="removeIngredient(index)">
             Retirer
           </button>
+          <div v-if="ingredient.ingredientId === 'new'" class="space-y-2 sm:col-span-full">
+            <label :for="`new-ingredient-${ingredient.id}`" class="block font-medium">
+              Nom du nouvel ingrédient
+            </label>
+            <div class="flex gap-2">
+              <input :id="`new-ingredient-${ingredient.id}`" v-model.trim="ingredient.newName" type="text"
+                maxlength="100" placeholder="Ex. Topinambour"
+                class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2"
+                @keydown.enter.prevent="saveNewIngredient(ingredient)" />
+              <button type="button" class="rounded-md bg-primary px-3 py-2 text-white disabled:opacity-50"
+                @click="saveNewIngredient(ingredient)">
+                {{ isCreatingIngredient ? 'Création...' : 'Créer' }}
+              </button>
+            </div>
+            <p v-if="ingredient.creationError" role="alert" class="text-sm text-red-600">
+              {{ ingredient.creationError }}
+            </p>
+          </div>
         </div>
-      </div>
+      </fieldset>
 
       <button type="button"
         class="mt-3 rounded-md border border-primary px-3 py-2 font-medium text-primary-dark hover:bg-primary-light"
@@ -433,7 +550,7 @@ onMounted(async () => {
     </section>
 
     <section class="bg-white p-6 rounded-xl shadow-md space-y-3">
-      <button type="submit" :disabled="isSubmitting || isLoadingOptions" class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-dark
+      <button type="submit" :disabled="isSubmitting || isLoadingOptions || isCreatingIngredient" class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-dark
                 disabled:cursor-not-allowed disabled:opacity-50">
         {{ isSubmitting ? 'Enregistrement...' : submitLabel }}
       </button>

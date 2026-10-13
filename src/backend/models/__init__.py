@@ -6,6 +6,7 @@ from .category import Category
 from .comment import Comment
 from .favorite import Favorite
 from .ingredient import Ingredient
+from .ingredient_category import IngredientCategory
 from .message import Message
 from .rating import Rating
 from .recipe import Recipe
@@ -20,10 +21,12 @@ __all__ = [
     "Comment",
     "Favorite",
     "Ingredient",
+    "IngredientCategory",
+    "Message",
     "Rating",
     "Recipe",
-    "RecipeStep",
     "RecipeIngredient",
+    "RecipeStep",
     "Tag",
     "User",
     "UserBadge",
@@ -31,5 +34,4 @@ __all__ = [
     "db",
     "recipe_tag",
     "recipe_utensil",
-    "Message",
 ]

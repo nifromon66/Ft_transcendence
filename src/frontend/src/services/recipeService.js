@@ -584,7 +584,7 @@ export async function fetchRecipeById(id, token = null) {
     imageUrl: getRecipeImageUrl(recipe.image_url),
     createdAt: recipe.created_at,
     category: recipe.category,
-    categoryId: recipe.category ? recipe.category.id : '',
+    categoryId: (recipe.category && recipe.category.id) ? recipe.category.id : (recipe.category_id || ''),
     author: recipe.author,
     steps: recipe.steps.map((step) => ({
       id: step.id,
@@ -594,7 +594,8 @@ export async function fetchRecipeById(id, token = null) {
     })),
     ingredients: recipe.ingredients.map((ingredient, index) => ({
       id: index + 1,
-      ingredientId: ingredient.id,
+      ingredientId: ingredient.ingredient_id || ingredient.id,
+      categoryId: '',
       name: ingredient.name,
       quantity: ingredient.quantity,
     })),
@@ -835,6 +836,15 @@ export function fetchTags() {
   )
 }
 
+export function fetchIngredientCategories() {
+  return fetchRecipeOptions(
+    'recipes/ingredient-categories',
+    'ingredient_categories',
+    "Impossible de récupérer les catégories d'ingrédients.",
+  )
+}
+
+
 /**
  * Generic helper function to fetch recipe options from the server.
  * @param {string} endpoint - the API endpoint suffix.
@@ -880,6 +890,57 @@ async function fetchRecipeOptions(endpoint, key, errorMessage) {
   return data[key] || []
 }
 
+export async function createIngredient(token, ingredientData) {
+  if (!navigator.onLine) {
+    throw new Error("Impossible de publier la recette : vous êtes hors ligne.")
+  }
+
+  if (!token) {
+    throw new Error("Impossible de publier la recette : vous n'êtes pas authentifié.")
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || ''
+
+  let response
+  try {
+    response = await fetch(`${baseUrl}/api/recipes/ingredients`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(ingredientData),
+    })
+  } catch (error) {
+    throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+  }
+
+  if (response.status === 401) {
+    const authStore = useAuthStore()
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+  }
+
+  if (response.status >= 500) {
+    throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Impossible de créer l'ingrédient.")
+  }
+
+  return data
+}
+
 /**
  * Builds the full URL for a recipe image.
  * @param {string} imagePath - The partial path of the image.
@@ -902,3 +963,4 @@ function getRecipeImageUrl(imagePath) {
 
   return `${cleanBaseUrl}${imagePath}`
 }
+
