@@ -196,8 +196,8 @@ watch(
       {{ errorMessage }}
     </p>
 
-    <div v-else-if="formRecipe" class="rounded-lg bg-white p-6 text-gray-800 shadow">
-      <h1 class="mb-6 text-3xl font-bold">Modifier la recette</h1>
+    <div v-else-if="formRecipe" class="rounded-lg p-6 text-gray-800"">
+      <h1 class=" mb-6 text-3xl font-bold">Modifier la recette</h1>
 
       <RecipeForm :key="id" :initial-recipe="formRecipe" :is-submitting="isSubmitting"
         submit-label="Enregistrer les modifications" @submit="submitRecipe" />
