@@ -2,8 +2,7 @@
 # backend funcs to display recipes and relatived routers
 
 from extensions import db
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask import Blueprint, jsonify
 from models import Recipe
 
 recipes_api = Blueprint("recipes_api", __name__)

@@ -1,31 +1,21 @@
 import os
-import uuid
-from datetime import timedelta
 
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
-from extensions import bcrypt, db, init_oauth, jwt, limiter, online_users, socketio
-from flask import Flask, jsonify, request
+from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import (
-    create_access_token,
-    decode_token,
     get_jwt_identity,
     jwt_required,
-    set_access_cookies,
 )
-from flask_socketio import join_room
 from friends_management.routes import friends_bp
 from gamification_management.routes import gamification_api
-from jwt import ExpiredSignatureError, InvalidTokenError
 from messages_management.routes import messages_bp
 from models import User
-from models.message import Message
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 from users_management.routes import users_bp
 from werkzeug.middleware.proxy_fix import ProxyFix
 

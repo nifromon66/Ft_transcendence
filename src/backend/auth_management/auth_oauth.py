@@ -2,7 +2,7 @@ import os
 
 from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
 from extensions import db, oauth
-from flask import Blueprint, jsonify, redirect, request, session
+from flask import Blueprint, jsonify, redirect
 from flask_jwt_extended import create_access_token
 from models import User
 
