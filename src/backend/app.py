@@ -27,8 +27,9 @@ from seeds import seed_database
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from users_management.routes import users_bp
-from vault import VaultClient
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+from vault import VaultClient
 
 vault = VaultClient()
 
