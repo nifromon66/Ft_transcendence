@@ -21,9 +21,11 @@ import { socket } from '@/services/socketService'
 const router = useRouter()
 const chatStore = useChatStore()
 
-const openChat = (friend) => {
-    chatStore.setActiveContact(friend)
-    router.push('/chat')
+const openChat = () => {
+    if (profile.value) {
+        chatStore.setActiveContact(profile.value)
+        router.push('/chat')
+    }
 }
 
 const props = defineProps({
@@ -199,7 +201,8 @@ onUnmounted(() => {
                             <span v-else>?</span>
                         </div>
 
-                        <span class="absolute bottom-2 right-2 z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm"
+                        <span
+                            class="absolute bottom-2 right-2 z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm"
                             :class="profile.is_online ? 'bg-green-500' : 'bg-gray-400'"
                             :title="profile.is_online ? 'En ligne' : 'Hors ligne'">
                         </span>
@@ -230,7 +233,7 @@ onUnmounted(() => {
                         </div>
 
                         <template v-else-if="profile.friendship_status === 'accepted'">
-                            <button @click="openChat(friend)"
+                            <button
                                 class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors">
                                 Envoyer un message à cet ami
                             </button>
@@ -280,13 +283,9 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <LevelRewards v-if="profile && !isLoading && !errorMessage"
-            :rewards="profile.level_rewards || []"
-            :selected="profile.avatar_frame"
-            :editable="profile.friendship_status === 'self'"
-            :saving="isRewardSaving"
-            :error="rewardError"
-            @select="selectAvatarFrame" />
+        <LevelRewards v-if="profile && !isLoading && !errorMessage" :rewards="profile.level_rewards || []"
+            :selected="profile.avatar_frame" :editable="profile.friendship_status === 'self'" :saving="isRewardSaving"
+            :error="rewardError" @select="selectAvatarFrame" />
 
 
     </main>
