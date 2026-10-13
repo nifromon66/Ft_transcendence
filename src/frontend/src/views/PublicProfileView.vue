@@ -233,8 +233,8 @@ onUnmounted(() => {
                         </div>
 
                         <template v-else-if="profile.friendship_status === 'accepted'">
-                            <button
-                                class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors">
+                            <button @click="openChat"
+                                class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors cursor-pointer">
                                 Envoyer un message à cet ami
                             </button>
                             <button @click="removeCurrentFriend(profile.username)" :disabled="isActionLoading"
