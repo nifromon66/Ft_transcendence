@@ -21,6 +21,7 @@ function closeMenu() {
 }
 
 onMounted(() => {
+  authStore.initializeAuth()
   if (authStore.token) {
     chatStore.initializeSocketListeners()
   }
