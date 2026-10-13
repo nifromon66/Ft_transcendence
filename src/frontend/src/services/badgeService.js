@@ -28,7 +28,7 @@ export async function fetchBadges() {
  * @param {number|string} badgeId
  * @returns {Promise<void>}
  */
-async function claimBadgeApi(badgeId) {
+export async function claimBadgeApi(badgeId) {
     const response = await fetch('/api/getbadge', {
         method: 'POST',
         headers: {
