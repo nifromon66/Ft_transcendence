@@ -180,6 +180,17 @@ const submitRecipe = async (
   }
 }
 
+const handleCancel = () => {
+  if (window.history.state && window.history.state.back) {
+    router.back()
+  } else {
+    router.push({
+      name: 'recipe-details',
+      params: { id: props.id },
+    })
+  }
+}
+
 watch(
   () => props.id,
   loadRecipe,
@@ -197,11 +208,11 @@ watch(
       {{ errorMessage }}
     </p>
 
-    <div v-else-if="formRecipe" class="rounded-lg p-6 text-gray-800"">
-      <h1 class=" mb-6 text-3xl font-bold">Modifier la recette</h1>
+    <div v-else-if="formRecipe" class="rounded-lg p-6 text-gray-800">
+      <h1 class="mb-6 text-3xl font-bold">Modifier la recette</h1>
 
       <RecipeForm :key="id" :initial-recipe="formRecipe" :is-submitting="isSubmitting"
-        submit-label="Enregistrer les modifications" @submit="submitRecipe" />
+        submit-label="Enregistrer les modifications" @submit="submitRecipe" @cancel="handleCancel" />
 
       <p v-if="errorMessage" role="alert" class="mt-4 rounded-md bg-red-50 p-3 text-red-700">
         {{ errorMessage }}
