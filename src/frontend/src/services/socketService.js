@@ -9,7 +9,7 @@ const apiUrl = import.meta.env.VITE_API_URL || ''
  * @type {import('socket.io-client').Socket}
  */
 export const socket = io(apiUrl, {
-    path: 'socket.io',
+    path: '/socket.io/',
     autoConnect: false,
     reconnectionAttempts: 3,
     reconnectionDelay: 2000
