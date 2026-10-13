@@ -29,9 +29,7 @@ onMounted(() => {
 
 watch(() => authStore.token, (newToken) => {
   if (newToken) {
-    setTimeout(() => {
-      chatStore.initializeSocketListeners()
-    }, 100)
+    chatStore.initializeSocketListeners()
   }
 })
 
