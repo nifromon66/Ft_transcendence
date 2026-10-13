@@ -34,7 +34,7 @@ const saveNewIngredient = async (ingredient) => {
   try {
     const data = await createIngredient(authStore.token, {
       name,
-      category_id: ingredient.categoryId,
+      category_id: Number(ingredient.categoryId),
     })
 
     const newIngredient = data.ingredient || data
@@ -191,40 +191,17 @@ onMounted(async () => {
     categories.value = loadedCategories
     ingredientOptions.value = loadedIngredients
     ingredientCategories.value = loadedIngredientCategories
-    for (const ingredient of recipe.ingredients) {
-      ingredient.categoryId = loadedIngredients.find(
-        (option) => Number(option.id) === Number(ingredient.ingredientId),
-      )?.category_id ?? ''
-    }
     utensilOptions.value = loadedUtensils
     tagOptions.value = loadedTags
 
     for (const ingredient of recipe.ingredients) {
       if (ingredient.ingredientId) {
-        ingredient.ingredientId = String(ingredient.ingredientId)
-
         const matchedOption = loadedIngredients.find(
-          (option) => String(option.id) === ingredient.ingredientId
+          (option) => Number(option.id) === Number(ingredient.ingredientId),
         )
 
         if (matchedOption) {
-          ingredient.categoryId = String(matchedOption.category_id || matchedOption.categoryId || '')
-        }
-      }
-    }
-
-    if (recipe.utensils) {
-      for (const utensil of recipe.utensils) {
-        if (utensil.utensilId) {
-          utensil.utensilId = String(utensil.utensilId)
-        }
-      }
-    }
-
-    if (recipe.tags) {
-      for (const tag of recipe.tags) {
-        if (tag.tagId) {
-          tag.tagId = String(tag.tagId)
+          ingredient.categoryId = matchedOption.category_id ?? matchedOption.categoryId ?? ingredient.categoryId ?? ''
         }
       }
     }

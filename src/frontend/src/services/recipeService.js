@@ -595,7 +595,7 @@ export async function fetchRecipeById(id, token = null) {
     ingredients: recipe.ingredients.map((ingredient, index) => ({
       id: index + 1,
       ingredientId: ingredient.ingredient_id || ingredient.id,
-      categoryId: '',
+      categoryId: ingredient.category_id || '',
       name: ingredient.name,
       quantity: ingredient.quantity,
     })),

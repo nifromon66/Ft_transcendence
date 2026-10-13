@@ -982,6 +982,7 @@ def get_recipe(recipe_id: int):
                     {
                         "id": recipe_ingredient.ingredient.id,
                         "name": recipe_ingredient.ingredient.name,
+                        "category_id": recipe_ingredient.ingredient.category_id,
                         "quantity": recipe_ingredient.quantity,
                     }
                     for recipe_ingredient in recipe.ingredients
@@ -1394,6 +1395,9 @@ def get_categories():
 
 @recipes_bp.route("/ingredient-categories", methods=["GET"])
 def get_ingredient_categories():
+    """
+    Retrieves the list of all ingredient categories ordered by name.
+    """
     categories = db.session.scalars(
         select(IngredientCategory).order_by(IngredientCategory.name)
     ).all()
@@ -1469,39 +1473,63 @@ def get_tags():
 @recipes_bp.route("/ingredients", methods=["POST"])
 @jwt_required()
 def create_ingredient():
+    """
+    Creates a new ingredient associated with an ingredient category.
+    """
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
-        return jsonify({"error": "Données invalides"}), 400
+        return jsonify({"success": False, "error": "Données invalides"}), 200
+
     name = data.get("name")
     category_id = data.get("category_id")
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 100:
-        return jsonify({"error": "Le nom doit contenir entre 1 et 100 caractères"}), 400
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Le nom doit contenir entre 1 et 100 caractères",
+                }
+            ),
+            200,
+        )
+
     if not isinstance(category_id, int) or isinstance(category_id, bool):
-        return jsonify({"error": "Catégorie invalide"}), 400
+        return jsonify({"success": False, "error": "Catégorie invalide"}), 200
+
     if db.session.get(IngredientCategory, category_id) is None:
-        return jsonify({"error": "Catégorie introuvable"}), 400
+        return jsonify({"success": False, "error": "Catégorie introuvable"}), 200
+
     name = name.strip().capitalize()
     existing = db.session.scalar(
         select(Ingredient).where(func.lower(Ingredient.name) == name.lower())
     )
     if existing is not None:
-        return jsonify({"error": "Cet ingrédient existe déjà"}), 409
+        return jsonify({"success": False, "error": "Cet ingrédient existe déjà"}), 200
+
     ingredient = Ingredient(name=name, category_id=category_id)
     try:
         db.session.add(ingredient)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Cet ingrédient existe déjà"}), 409
+        return jsonify({"success": False, "error": "Cet ingrédient existe déjà"}), 200
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"error": "Impossible de créer l'ingrédient"}), 500
-    return jsonify(
-        {
-            "ingredient": {
-                "id": ingredient.id,
-                "name": ingredient.name,
-                "category_id": ingredient.category_id,
+        return (
+            jsonify({"success": False, "error": "Impossible de créer l'ingrédient"}),
+            200,
+        )
+
+    return (
+        jsonify(
+            {
+                "success": True,
+                "ingredient": {
+                    "id": ingredient.id,
+                    "name": ingredient.name,
+                    "category_id": ingredient.category_id,
+                },
             }
-        }
-    ), 201
+        ),
+        200,
+    )

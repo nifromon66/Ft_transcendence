@@ -132,7 +132,7 @@ export const createFormRecipe = (initialRecipe) => {
 
         ingredients: initialRecipe.ingredients.map((ingredient) => ({
             ...ingredient,
-            categoryId: ''
+            categoryId: ingredient.categoryId ?? '',
         })),
 
         utensils: initialRecipe.utensils.map((utensil) => ({
@@ -153,9 +153,9 @@ export const createFormRecipe = (initialRecipe) => {
 export const formatRecipeForApi = (recipe) => {
     const recipeData = {
         title: recipe.title,
-        category_id: recipe.categoryId,
+        category_id: recipe.categoryId === '' ? null : Number(recipe.categoryId),
         description: recipe.description || null,
-        cooking_time: recipe.cookingTime === '' ? null : recipe.cookingTime,
+        cooking_time: recipe.cookingTime === '' || recipe.cookingTime === null ? null : Number(recipe.cookingTime),
         difficulty: recipe.difficulty || null,
 
         steps: recipe.steps.map((step) => ({
@@ -164,13 +164,13 @@ export const formatRecipeForApi = (recipe) => {
         })),
 
         ingredients: recipe.ingredients.map((ingredient) => ({
-            ingredient_id: ingredient.ingredientId,
+            ingredient_id: Number(ingredient.ingredientId),
             quantity: ingredient.quantity.trim() || null,
         })),
 
-        utensil_ids: recipe.utensils.map((utensil) => utensil.utensilId),
+        utensil_ids: recipe.utensils.map((utensil) => Number(utensil.utensilId)),
 
-        tag_ids: recipe.tags.map((tag) => tag.tagId),
+        tag_ids: recipe.tags.map((tag) => Number(tag.tagId)),
     }
 
     const stepImageChanges = recipe.steps.map((step) => ({
