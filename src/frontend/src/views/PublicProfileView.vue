@@ -3,8 +3,10 @@ import { useRouter } from 'vue-router'
 import { useChatStore } from '@/stores/chatState'
 import { ref, onMounted, onUnmounted } from 'vue'
 import XpBar from '@/components/XpBar.vue'
+import AvatarFrame from '@/components/AvatarFrame.vue'
+import LevelRewards from '@/components/LevelRewards.vue'
 import { useAuthStore } from '@/stores/authState'
-import { fetchPublicProfile } from '@/services/userService'
+import { fetchPublicProfile, updateAvatarFrame } from '@/services/userService'
 import { fetchAvatarBlob } from '@/services/userService'
 
 import {
@@ -38,6 +40,33 @@ const isActionLoading = ref(false)
 const errorMessage = ref('')
 const profile = ref(null)
 const avatarImageSrc = ref(null)
+const isRewardSaving = ref(false)
+const rewardError = ref('')
+
+const selectAvatarFrame = async (frame) => {
+    if (isRewardSaving.value || profile.value?.friendship_status !== 'self') return
+    isRewardSaving.value = true
+    rewardError.value = ''
+    try {
+        const data = await updateAvatarFrame(frame, authStore.token)
+        profile.value.avatar_frame = data.avatar_frame
+        profile.value.level_rewards = data.level_rewards
+        profile.value.xp_progress = data.xp_progress
+        if (authStore.user) {
+            authStore.user.avatar_frame = data.avatar_frame
+            localStorage.setItem('user', JSON.stringify(authStore.user))
+        }
+    } catch (error) {
+        if (error.message === 'SESSION_EXPIRED') {
+            authStore.clearAuth()
+            errorMessage.value = 'Votre session a expiré. Veuillez vous reconnecter.'
+        } else {
+            rewardError.value = error.message
+        }
+    } finally {
+        isRewardSaving.value = false
+    }
+}
 
 const handleUserStatusChange = (data) => {
     if (profile.value && data.user_id == props.id) {
@@ -159,6 +188,7 @@ onUnmounted(() => {
 
                 <div class="flex w-48 shrink-0 flex-col items-center space-y-4">
                     <div class="relative">
+                        <AvatarFrame :frame="profile.avatar_frame" />
                         <div
                             class="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md">
                             <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${profile.username}`"
@@ -169,7 +199,7 @@ onUnmounted(() => {
                             <span v-else>?</span>
                         </div>
 
-                        <span class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white shadow-sm"
+                        <span class="absolute bottom-2 right-2 z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm"
                             :class="profile.is_online ? 'bg-green-500' : 'bg-gray-400'"
                             :title="profile.is_online ? 'En ligne' : 'Hors ligne'">
                         </span>
@@ -249,6 +279,14 @@ onUnmounted(() => {
                 Impossible de charger le profil.
             </div>
         </div>
+
+        <LevelRewards v-if="profile && !isLoading && !errorMessage"
+            :rewards="profile.level_rewards || []"
+            :selected="profile.avatar_frame"
+            :editable="profile.friendship_status === 'self'"
+            :saving="isRewardSaving"
+            :error="rewardError"
+            @select="selectAvatarFrame" />
 
         <div v-if="profile && !isLoading && !errorMessage"
             class="mx-auto mt-6 max-w-2xl rounded-xl bg-white p-8 shadow-lg">

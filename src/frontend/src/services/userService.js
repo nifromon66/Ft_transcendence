@@ -469,3 +469,58 @@ export async function fetchAvatarBlob(avatarUrl, token) {
         throw new Error("Impossible de lire les données de l'image.", { cause: error })
     }
 }
+
+export async function updateAvatarFrame(frame, token) {
+    if (!navigator.onLine) {
+        throw new Error("Impossible de modifier le profil : vous êtes hors ligne.")
+    }
+
+    if (!token) {
+        throw new Error("Impossible de modifier le profil : vous n'êtes pas authentifié.")
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+
+    let response
+    try {
+        response = await fetch(`${baseUrl}/api/users/me/avatar-frame`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ frame }),
+        })
+    } catch (error) {
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+    }
+
+    if (response.status === 401) {
+        const authStore = useAuthStore()
+        authStore.clearAuth()
+        router.push({ name: 'login' })
+        throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+    }
+
+    if (response.status === 404) {
+        throw new Error("Utilisateur introuvable.")
+    }
+
+    if (response.status >= 500) {
+        throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+    }
+
+    let data
+    try {
+        data = await response.json()
+    } catch (error) {
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+    }
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.error || "Impossible d'enregistrer le cadre.")
+    }
+
+    return data
+}
