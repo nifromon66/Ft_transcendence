@@ -408,22 +408,47 @@ export async function deleteRecipeStepImage(token, recipeId, stepId) {
 }
 
 /**
- * Fetches recipes, optionally filtered by a search term.
- * @param {string} [search=''] - The search query.
- * @returns {Promise<RecipeSummary[]>} The list of recipes.
+ * Fetches recipes, optionally filtered by search criteria.
+ * @param {{ search?: string, category?: string, difficulty?: string, sort_by?: string, sort_order?: string, page?: number, per_page?: number}|string} filters
+ * @returns {Promise<{ recipes: Array, total: number, page: number, perPage: number }>}
  * @throws {Error} If the request fails or a network error occurs.
  */
-export async function getRecipes(search = '') {
+export async function getRecipes(filters = {}) {
   if (!navigator.onLine) {
     throw new Error("Impossible de récupérer les recettes : vous êtes hors ligne.")
   }
 
+  const opts = typeof filters === 'string' ? { search: filters } : (filters || {})
   const baseUrl = import.meta.env.VITE_API_URL || ''
 
   const params = new URLSearchParams()
 
-  if (search.trim()) {
-    params.append('search', search.trim())
+  if (opts.search?.trim()) {
+    params.set('search', opts.search.trim())
+  }
+
+  if (opts.category) {
+    params.set('category', opts.category)
+  }
+
+  if (opts.difficulty) {
+    params.set('difficulty', opts.difficulty)
+  }
+
+  if (opts.page) {
+    params.set('page', String(opts.page))
+  }
+
+  if (opts.per_page) {
+    params.set('per_page', String(opts.per_page))
+  }
+
+  if (opts.sort_by) {
+    params.set('sort_by', opts.sort_by)
+  }
+
+  if (opts.sort_order) {
+    params.set('sort_order', opts.sort_order)
   }
 
   const queryString = params.toString()
@@ -459,17 +484,35 @@ export async function getRecipes(search = '') {
     throw new Error(data.error || "Impossible de récupérer les recettes.")
   }
 
-
-
-  return (data.recipes || []).map((recipe) => ({
+  const mappedRecipes = (data.recipes || []).map((recipe) => ({
     id: recipe.id,
     title: recipe.title,
     description: recipe.description,
-    cookingTime: recipe.cooking_time,
+    cookingTime:
+      recipe.cooking_time !== null && recipe.cooking_time !== undefined
+        ? `${recipe.cooking_time} min`
+        : 'Non renseigné',
     difficulty: recipe.difficulty,
     imageUrl: getRecipeImageUrl(recipe.image_url),
-    likes: recipe.likes,
+    rating: recipe.rating ?? null,
+    category: recipe.category,
+    author: recipe.author,
   }))
+
+  return {
+    recipes: mappedRecipes,
+    total: typeof data.total === 'number' ? data.total : mappedRecipes.length,
+    page: data.page || 1,
+    perPage: data.per_page || 20,
+  }
+}
+
+export function fetchDifficulties() {
+  return [
+    { value: 'facile', label: 'Facile' },
+    { value: 'moyen', label: 'Moyen' },
+    { value: 'difficile', label: 'Difficile' },
+  ]
 }
 
 /**

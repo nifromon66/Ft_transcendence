@@ -27,7 +27,8 @@ export const useRecipeStore = defineStore('recipe', {
             this.errorMessage = null
 
             try {
-                this.recipes = await recipeService.getRecipes(search)
+                const result = await recipeService.getRecipes(search)
+                this.recipes = Array.isArray(result) ? result : (result?.recipes || [])
             } catch (error) {
                 console.error('Failed to load recipes:', error)
                 this.errorMessage = error.message || 'Impossible de charger les recettes.'
