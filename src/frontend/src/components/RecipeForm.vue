@@ -13,11 +13,6 @@ import ImageDropZone from '@/components/ImageDropZone.vue'
 import ImagePreview from '@/components/ImagePreview.vue'
 import { useAuthStore } from '@/stores/authState'
 
-/**
- * @typedef {import('@/utils/recipeMapper.js').InitialRecipe} InitialRecipe
- * @typedef {import('@/services/recipeService.js').RecipeOption} RecipeOption
- */
-
 const authStore = useAuthStore()
 const isCreatingIngredient = ref(false)
 
@@ -65,9 +60,6 @@ const props = defineProps({
   },
 })
 
-/**
- * @type {(e: 'submit', recipeData: Object, imageFile: File | null, shouldDeleteImage: boolean, stepImageChanges: Array<{persistedId: number|null, file: File|null, shouldDelete: boolean}>) => void}
- */
 const emit = defineEmits(['submit', 'cancel'])
 
 const {
@@ -93,10 +85,8 @@ const {
   isTagSelected
 } = useRecipeForm(props.initialRecipe)
 
-/** @type {import('vue').Ref<RecipeOption[]>} */
 const categories = ref([])
 
-/** @type {import('vue').Ref<RecipeOption[]>} */
 const ingredientOptions = ref([])
 
 const ingredientCategories = ref([])
@@ -108,16 +98,12 @@ const ingredientsForCategory = (categoryId) => {
   )
 }
 
-/** @type {import('vue').Ref<RecipeOption[]>} */
 const tagOptions = ref([])
 
 const isLoadingOptions = ref(true)
 
 const fetchErrorMessage = ref('')
 
-/**
- * @returns {void}
- */
 const submitForm = () => {
   if (isCreatingIngredient.value || props.isSubmitting) return
 
@@ -125,8 +111,6 @@ const submitForm = () => {
     errorMessage.value = 'Crée le nouvel ingrédient ou sélectionne un ingrédient existant.'
     return
   }
-  errorMessage.value = ''
-  // Client-side validation
   errorMessage.value = ''
 
   if (!recipe.title || !recipe.categoryId) {
@@ -153,7 +137,7 @@ const submitForm = () => {
 
   emit(
     'submit',
-    /** @type {RecipePayload} */(recipeData),
+    recipeData,
     recipeImageFile.value,
     shouldDeleteRecipeImage.value,
     stepImageChanges,

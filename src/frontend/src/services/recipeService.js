@@ -2,74 +2,6 @@ import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authState.js'
 import { uploadFileToServer } from '@/services/uploadService.js'
 
-/**
- * @typedef {Object} GenericResponse
- * @property {boolean} success - Indicates if the operation was successful.
- * @property {string} [message] - Success or error message.
- * @property {string} [error] - Error message if applicable.
- */
-
-/**
- * @typedef {Object} RecipeOption
- * @property {number} id - The option ID.
- * @property {string} name - The option name.
- */
-
-/**
- * @typedef {Object} RecipePayload
- * @property {string} title - The recipe title.
- * @property {number} category_id - The ID of the category.
- * @property {string} description - The recipe description.
- * @property {number} cooking_time - The cooking time in minutes.
- * @property {string} difficulty - The difficulty level.
- * @property {string[]} [step_descriptions] - Descriptions for each step.
- * @property {Array<{id: number|null, description: string}>} [steps] - Steps data.
- * @property {Array<{ingredient_id: number, quantity: string}>} ingredients - List of ingredients.
- * @property {number[]} tag_ids - Array of tag IDs.
- */
-
-/**
- * @typedef {Object} RecipeSummary
- * @property {number} id - The recipe ID.
- * @property {string} title - The recipe title.
- * @property {string} description - The recipe description.
- * @property {number|string} cookingTime - The cooking time.
- * @property {number} [likes] - Number of likes.
- * @property {string} [difficulty] - The difficulty level.
- */
-
-/**
- * @typedef {Object} RecipeDetail
- * @property {number} id - The recipe ID.
- * @property {string} title - The recipe title.
- * @property {string} description - The recipe description.
- * @property {number} cookingTime - The cooking time in minutes.
- * @property {string} difficulty - The difficulty level.
- * @property {string|null} imageUrl - The full URL to the recipe's cover image.
- * @property {string} createdAt - Creation date string.
- * @property {RecipeOption} category - The recipe category.
- * @property {{id: number, username: string}} author - The author's basic info.
- * @property {Array<{id: number, stepNumber: number, description: string, imageUrl: string|null}>} steps - The recipe steps.
- * @property {RecipeOption[]} tags - The recipe tags.
- */
-
-/**
- * @typedef {Object} RecipePreview
- * @property {number} id - Recipe unique identifier.
- * @property {string} title - Recipe title.
- * @property {string} description - Short description.
- * @property {string} cookingTime - Cooking time.
- * @property {number} likes - Total number of likes.
- * @property {string} imageUrl - URL of the recipe image.
- */
-
-/**
- * Creates a recipe for the authenticated user.
- * @param {string} token - The user's JWT access token.
- * @param {RecipePayload} recipeData - The recipe fields accepted by the API.
- * @returns {Promise<{success: boolean, id: number, title: string, steps: Array<{id: number, step_number: number}>}>} The newly created recipe data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function createRecipe(token, recipeData) {
   if (!navigator.onLine) {
     throw new Error("Impossible de publier la recette : vous êtes hors ligne.")
@@ -121,39 +53,14 @@ export async function createRecipe(token, recipeData) {
   return data
 }
 
-/**
- * Uploads the main cover image for a specific recipe.
- * @param {string} token - The user's JWT access token.
- * @param {number|string} recipeId - The ID of the recipe.
- * @param {File} file - The image file.
- * @param {Function} [onProgress] - Callback function receiving the upload percentage.
- * @returns {Promise<{success: boolean, filename: string, image_url: string}>} The server response data.
- */
 export function uploadRecipeImage(token, recipeId, file, onProgress) {
   return uploadFileToServer(token, file, `/api/recipes/${encodeURIComponent(recipeId)}/image`, "l'image de la recette", onProgress)
 }
 
-/**
- * Uploads an image for a specific recipe step.
- * @param {string} token - The user's JWT access token.
- * @param {number|string} recipeId - The ID of the recipe.
- * @param {number|string} stepId - The ID of the recipe step.
- * @param {File} file - The image file to upload.
- * @param {Function} [onProgress] - Callback function receiving the upload percentage.
- * @returns {Promise<success: boolean, filename: string, image_url: string>} The server response data.
- */
 export function uploadRecipeStepImage(token, recipeId, stepId, file, onProgress) {
   return uploadFileToServer(token, file, `/api/recipes/${encodeURIComponent(recipeId)}/steps/${encodeURIComponent(stepId)}/image`, "l'image de l'étape", onProgress)
 }
 
-/**
- * Updates an existing recipe.
- * @param {string} token - The user's JWT access token.
- * @param {string|number} id - The ID of the recipe to update.
- * @param {RecipePayload} recipeData - The updated recipe data.
- * @returns {Promise<{success: boolean, id: number, title: string, steps: Array<{id: number, step_number: number}>}>} The server response data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function updateRecipe(token, id, recipeData) {
   if (!navigator.onLine) {
     throw new Error("Impossible de modifier la recette : vous êtes hors ligne.")
@@ -205,15 +112,6 @@ export async function updateRecipe(token, id, recipeData) {
   return data
 }
 
-/**
- * Deletes a specific recipe by its ID.
- * @param {string} token - The user's authentication token.
- * @param {string|number} id - The ID of the recipe to delete.
- * 
- * @returns {Promise<Object>} The server response data confirming deletion.
- * 
- * @throws {Error} If the request fails, the user is unauthorized/not the owner, or a network error occurs.
- */
 export async function deleteRecipe(token, id) {
   if (!navigator.onLine) {
     throw new Error("Impossible de supprimer la recette : vous êtes hors ligne.")
@@ -274,13 +172,6 @@ export async function deleteRecipe(token, id) {
   return data
 }
 
-/**
- * Deletes the main cover image of a specific recipe.
- * @param {string} token - The user's JWT access token.
- * @param {number|string} recipeId - The ID of the recipe.
- * @returns {Promise<GenericResponse>} The server response data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function deleteRecipeImage(token, recipeId) {
   if (!navigator.onLine) {
     throw new Error("Impossible de supprimer l'image de la recette : vous êtes hors ligne.")
@@ -341,14 +232,6 @@ export async function deleteRecipeImage(token, recipeId) {
   return data
 }
 
-/**
- * Deletes the image of a specific recipe step.
- * @param {string} token - The user's JWT access token.
- * @param {number|string} recipeId - The ID of the recipe.
- * @param {number|string} stepId - The ID of the recipe step.
- * @returns {Promise<GenericResponse>} The server response data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function deleteRecipeStepImage(token, recipeId, stepId) {
   if (!navigator.onLine) {
     throw new Error("Impossible de supprimer l'image de l'étape : vous êtes hors ligne.")
@@ -407,12 +290,6 @@ export async function deleteRecipeStepImage(token, recipeId, stepId) {
   return data
 }
 
-/**
- * Fetches recipes, optionally filtered by search criteria.
- * @param {{ search?: string, category?: string, difficulty?: string, sort_by?: string, sort_order?: string, page?: number, per_page?: number}|string} filters
- * @returns {Promise<{ recipes: Array, total: number, page: number, perPage: number }>}
- * @throws {Error} If the request fails or a network error occurs.
- */
 export async function getRecipes(filters = {}) {
   if (!navigator.onLine) {
     throw new Error("Impossible de récupérer les recettes : vous êtes hors ligne.")
@@ -515,11 +392,6 @@ export function fetchDifficulties() {
   ]
 }
 
-/**
- * Fetches the latest recipes from the server.
- * @returns {Promise<RecipeSummary[]>} The list of the latest recipes.
- * @throws {Error} If the request fails or a network error occurs.
- */
 export async function fetchLatestRecipes() {
   if (!navigator.onLine) {
     throw new Error("Impossible de récupérer les dernières recettes : vous êtes hors ligne.")
@@ -567,12 +439,6 @@ export async function fetchLatestRecipes() {
   }))
 }
 
-/**
- * Fetches a specific recipe by its ID.
- * @param {string|number} id - The ID of the recipe.
- * @returns {Promise<RecipeDetail>} The detailed recipe data.
- * @throws {Error} If the request fails or a network error occurs.
- */
 export async function fetchRecipeById(id, token = null) {
   if (!navigator.onLine) {
     throw new Error("Impossible de récupérer la recette : vous êtes hors ligne.")
@@ -648,16 +514,6 @@ export async function fetchRecipeById(id, token = null) {
   }
 }
 
-/**
- * Submits a rating score for a specific recipe.
- * @param {string} token - The user's authentication token.
- * @param {string|number} recipeId - The ID of the recipe to rate.
- * @param {number} score - The rating score given by the user.
- * 
- * @returns {Promise<Object>} The server response data after rating.
- * 
- * @throws {Error} If the request fails, the session is expired, or a network error occurs.
- */
 export async function rateRecipe(token, recipeId, score) {
   if (score < 1 || score > 5) {
     throw new Error("La note doit être comprise entre 1 et 5.")
@@ -713,15 +569,6 @@ export async function rateRecipe(token, recipeId, score) {
   return data
 }
 
-/**
- * Deletes the authenticated user's rating for a specific recipe.
- * @param {string} token - The user's authentication token.
- * @param {string|number} recipeId - The ID of the recipe whose rating is being deleted.
- * 
- * @returns {Promise<Object>} The server response data confirming the deletion of the rating.
- * 
- * @throws {Error} If the request fails, the session is expired, or a network error occurs.
- */
 export async function deleteRecipeRating(token, recipeId) {
   if (!navigator.onLine) {
     throw new Error("Impossible de modifier la recette : vous êtes hors ligne.")
@@ -823,11 +670,6 @@ export async function updateRecipeRating(token, recipeId, score) {
   return data
 }
 
-/**
- * Fetches the recipe categories available in the database.
- * @returns {Promise<RecipeOption[]>} The categories.
- * @throws {Error} If the request fails or a network error occurs.
- */
 export async function fetchCategories() {
   return fetchRecipeOptions(
     'recipes/categories',
@@ -836,10 +678,6 @@ export async function fetchCategories() {
   )
 }
 
-/**
- * Fetches the list of available ingredients.
- * @returns {Promise<RecipeOption[]>} The list of ingredients.
- */
 export function fetchIngredients() {
   return fetchRecipeOptions(
     'recipes/ingredients',
@@ -848,11 +686,6 @@ export function fetchIngredients() {
   )
 }
 
-
-/**
- * Fetches the list of available tags.
- * @returns {Promise<RecipeOption[]>} The list of tags.
- */
 export function fetchTags() {
   return fetchRecipeOptions(
     'recipes/tags',
@@ -869,15 +702,6 @@ export function fetchIngredientCategories() {
   )
 }
 
-
-/**
- * Generic helper function to fetch recipe options from the server.
- * @param {string} endpoint - the API endpoint suffix.
- * @param {string} key - The data key to extract from the JSON response.
- * @param {string} errorMessage - The fallback error message.
- * @returns {Promise<RecipeOption[]>} The fetched options list.
- * @throws {Error} If the request fails or a network error occurs.
- */
 async function fetchRecipeOptions(endpoint, key, errorMessage) {
   if (!navigator.onLine) {
     throw new Error(`${errorMessage.replace(/\.$/, '')} : vous êtes hors ligne.`)
@@ -966,11 +790,6 @@ export async function createIngredient(token, ingredientData) {
   return data
 }
 
-/**
- * Builds the full URL for a recipe image.
- * @param {string} imagePath - The partial path of the image.
- * @returns {string|null} The full image URL or null
- */
 function getRecipeImageUrl(imagePath) {
   if (!imagePath) {
     return null
@@ -988,4 +807,3 @@ function getRecipeImageUrl(imagePath) {
 
   return `${cleanBaseUrl}${imagePath}`
 }
-

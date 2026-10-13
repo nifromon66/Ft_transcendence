@@ -2,33 +2,18 @@ import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/authState.js'
 import * as friendService from '@/services/friendService.js'
 
-/**
- * @typedef {import('@/services/friendService').FriendUser} FriendUser
- */
-
 export const useFriendStore = defineStore('friend', {
     state: () => ({
-        /** @type {FriendUser[]} */
         friendsList: [],
-        /** @type {FriendUser[]} */
         searchResults: [],
-        /** @type {FriendUser[]} */
         discoverList: [],
-        /** @type {FriendUser[]} */
         receivedRequestsList: [],
-        /** @type {FriendUser[]} */
         sentRequestsList: [],
-        /** @type {string} */
         errorMessage: '',
-        /** @type {boolean} */
         isLoading: false
     }),
 
     actions: {
-        /**
-         * Loads the accepted friends list.
-         * @returns {Promise<void>}
-         */
         async loadFriends() {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -47,10 +32,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Loads pending friend requests received by the user.
-         * @returns {Promise<void>}
-         */
         async loadReceivedRequests() {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -65,10 +46,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Loads pending friend requests sent by the user.
-         * @returns {Promise<void>}
-         */
         async loadSentRequests() {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -83,10 +60,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Loads suggestions for new users to discover.
-         * @returns {Promise<void>}
-         */
         async loadDiscoverUsers() {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -104,11 +77,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Searches for users by username.
-         * @param {string} query - The search query. 
-         * @returns {Promise<void>}
-         */
         async performSearch(query) {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -132,11 +100,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Sends a friend request to a specific user.
-         * @param {number} targetUserId - The ID of the user to add.
-         * @returns {Promise<void>}
-         */
         async addFriend(targetUserId) {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -170,11 +133,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Accepts a pending friend request.
-         * @param {number} senderId - The ID of the user who sent the request.
-         * @returns {Promise<void>}
-         */
         async acceptRequest(senderId) {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -204,11 +162,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Denies a pending friend request.
-         * @param {number} senderId - The ID of the user aho sent the request.
-         * @returns {Promise<void>}
-         */
         async denyRequest(senderId) {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -231,11 +184,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Cancels a friend request previously sent by the current user.
-         * @param {number} targetUserId - The ID of the user the request was sent to. 
-         * @returns {Promise<void>}
-         */
         async cancelRequest(targetUserId) {
             const authStore = useAuthStore()
             if (!authStore.token) {
@@ -263,12 +211,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Removes a user from the friends list.
-         * @param {number} friendId - The ID of the friend to remove.
-         * @param {string} username - The username of the friend
-         * @returns {Promise<void>}
-         */
         async deleteFriend(friendId, username) {
             if (!confirm(`Êtes-vous sûr de vouloir retirer ${username} de vos amis ?`)) {
                 return
@@ -300,11 +242,6 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        /**
-         * Updates a user's online status across all relevant lists.
-         * @param {number} userId - The ID of the user.
-         * @param {boolean} isOnline - The new online status.
-         */
         updateUserStatus(userId, isOnline) {
             const targets = [
                 this.friendsList,

@@ -1,71 +1,3 @@
-/**
- * @typedef {Object} InitialStep
- * @property {number} [id]
- * @property {number} [persistedId]
- * @property {string} [description]
- * @property {string|null} [imageUrl]
- */
-
-/**
- * @typedef {Object} InitialIngredient
- * @property {number} [id]
- * @property {string|number} ingredientId
- * @property {string} [quantity]
- */
-
-/**
- * @typedef {Object} InitialTag
- * @property {number} [id]
- * @property {string|number} tagId
- */
-
-/**
- * @typedef {Object} InitialRecipe
- * @property {string} title
- * @property {string|number} categoryId
- * @property {string} [description]
- * @property {number|string|null} [cookingTime]
- * @property {string} [difficulty]
- * @property {InitialStep[]} steps
- * @property {InitialIngredient[]} ingredients
- * @property {InitialTag[]} tags
- */
-
-/**
- * @typedef {Object} FormStep
- * @property {number} id
- * @property {number} [persistedId]
- * @property {string} description
- * @property {string|null} imageUrl
- * @property {File|null} imageFile
- * @property {boolean} shouldDeleteImage
- * @property {boolean} showImageDropZone
- */
-
-/**
- * @typedef {Object} FormIngredient
- * @property {number} id
- * @property {string|number} ingredientId
- * @property {string} quantity
- */
-
-/**
- * @typedef {Object} FormRecipe
- * @property {string} title
- * @property {string|number} categoryId
- * @property {string} description
- * @property {number|string|null} cookingTime
- * @property {string} difficulty
- * @property {FormStep[]} steps
- * @property {FormIngredient[]} ingredients
- * @property {Array<{id: number, tagId: string|number}>} tags
- */
-
-/**
- * Creates the initial state for the recipe form.
- * @param {InitialRecipe|null} initialRecipe
- * @returns {FormRecipe}
- */
 export const createFormRecipe = (initialRecipe) => {
     if (!initialRecipe) {
         return {
@@ -127,11 +59,6 @@ export const createFormRecipe = (initialRecipe) => {
     }
 }
 
-/**
- * Formats the reactive recipe state for the API payload.
- * @param {FormRecipe} recipe
- * @returns {{ recipeData: Object, stepImageChanges: Array<{persistedId: number|null, file: File|null, shouldDelete: boolean}> }}
- */
 export const formatRecipeForApi = (recipe) => {
     const recipeData = {
         title: recipe.title,

@@ -7,16 +7,8 @@ import carboImage from '@/assets/temp_assets/carbonara-e1521461363147-1024x670.j
 import soupeLegumeImage from '@/assets/temp_assets/Soupe_jardiniere_aux_legumes.png.1200x627_q64.jpg'
 import soupePoissonImage from '@/assets/temp_assets/poissonsoupe.jpg'
 
-/**
- * @typedef {import('@/services/recipeService.js').RecipePreview} RecipePreview
- */
 
-/**
- * Composable to manage the recipe feed data.
- * @returns {Object} Feed state and computed properties.
- */
 export function useFeed() {
-    /** @type {RecipePreview[]} */
     const recipes = [
         {
             id: 1,

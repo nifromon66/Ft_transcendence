@@ -1,11 +1,3 @@
-/**
- * Resizes and compresses an image using HTML5 Canvas.
- * @param {File} file - The original image file.
- * @param {number} maxWidth - The maximum allowed width.
- * @param {number} maxHeight - The maximum allowed height.
- * @param {number} quality - The WebP compression quality (0 to 1).
- * @returns {Promise<File>} - The new optimized image file.
- */
 export function optimizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()

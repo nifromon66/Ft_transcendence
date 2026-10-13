@@ -2,9 +2,6 @@
 
 import { ref } from 'vue'
 
-/**
- * @type {(e: 'file-selected', file: File) => void}
- */
 const emit = defineEmits(['file-selected'])
 
 const props = defineProps({
@@ -20,11 +17,6 @@ const props = defineProps({
 
 const isDragging = ref(false)
 
-/**
- * Handles the drag-and-drop file event.
- * @param {DragEvent} event
- * @returns {void}
- */
 const handleDrop = (event) => {
     isDragging.value = false
 
@@ -38,11 +30,6 @@ const handleDrop = (event) => {
     }
 }
 
-/**
- * Handles file selection via the hidden input element.
- * @param {Event} event
- * @returns {void}
- */
 const handleFileSelect = (event) => {
     const target = /** @type {HTMLInputElement} */ (event.target)
     const files = target.files

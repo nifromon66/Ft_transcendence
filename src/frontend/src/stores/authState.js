@@ -2,10 +2,6 @@ import { defineStore } from 'pinia'
 import { fetchUserProfile } from '@/services/userService.js'
 import { connectSocket, disconnectSocket } from '@/services/socketService.js'
 
-/**
- * @typedef {import('@/services/userService').UserProfile} UserProfile
- */
-
 export const useAuthStore = defineStore('auth', {
     state: () => {
         const rawUser = localStorage.getItem('user')
@@ -13,9 +9,7 @@ export const useAuthStore = defineStore('auth', {
         const token = localStorage.getItem('token') || null
 
         return {
-            /** @type {string | null} */
             token: token,
-            /** @type {UserProfile | null} */
             user: parsedUser
         }
     },
@@ -26,10 +20,6 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        /**
-         * @param {string} token 
-         * @param {UserProfile} user 
-         */
         setAuth(token, user) {
             this.token = token
             this.user = user

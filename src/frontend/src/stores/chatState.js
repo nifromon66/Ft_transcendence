@@ -5,21 +5,12 @@ import { socket } from '@/services/socketService.js'
 import * as friendService from '@/services/friendService'
 import * as messageService from '@/services/messageService'
 
-/**
- * @typedef {import('@/services/friendService').FriendUser} FriendUser
- * @typedef {import('@/services/messageService').ChatMessage} ChatMessage
- */
 export const useChatStore = defineStore('chat', {
     state: () => ({
-        /** @type {FriendUser[]} */
         friendsList: [],
-        /** @type {FriendUser | null} */
         activeContact: null,
-        /** @type {ChatMessage[]} */
         messages: [],
-        /**@type {Record<number, number>} */
         unreadCounts: {},
-        /** @type {string | null} */
         chatError: null
     }),
     actions: {
@@ -150,7 +141,6 @@ export const useChatStore = defineStore('chat', {
 
             try {
                 await messageService.deleteMessage(messageId, authStore.token)
-                // We remove it optimistically from the UI, or wait for socket event
                 this.messages = this.messages.filter(m => m.id !== messageId)
             } catch (error) {
                 this.chatError = error.message || "Erreur lors de la suppression du message."

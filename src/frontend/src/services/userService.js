@@ -2,39 +2,6 @@ import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authState.js'
 import { uploadFileToServer } from '@/services/uploadService.js'
 
-/**
- * @typedef {Object} GenericResponse
- * @property {boolean} success - Indicates if the operation was successful.
- * @property {string} [message] - Success or error message.
- * @property {string} [error] - Error message if applicable.
- */
-
-/**
- * @typedef {Object} UserProfile
- * @property {number} id - The user's unique ID.
- * @property {string} username - The user's username.
- * @property {string} email - The user's email address.
- * @property {string|null} avatar_url - The full URL to the user's avatar.
- */
-
-/**
- * @typedef {Object} PublicProfile
- * @property {number} id - The user's unique ID.
- * @property {string} username - The user's username.
- * @property {string|null} avatar_url - The full URL to the user's avatar.
- * @property {boolean} is_online - Indicates if the user is online.
- * @property {'self'|'none'|'accepted'|'pending_sent'|'pending_received'} friendship_status - The relationship status with the current user.
- */
-
-/**
- * Updates the authenticated user's profile.
- * @param {Object} userData - The data to update.
- * @param {string} [userData.username] - The new username.
- * @param {string} [userData.email] - The new email address.
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<UserProfile>} The updated user profile data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function updateMyProfile(userData, token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de modifier le profil : vous êtes hors ligne.")
@@ -90,24 +57,10 @@ export async function updateMyProfile(userData, token) {
     return data.user
 }
 
-/**
- * Uploads a user avatar.
- * @param {string} token - The user's JWT access token.
- * @param {File} file - The image file.
- * @param {Function} [onProgress] - Callback function receiving the upload percentage.
- * @returns {Promise<{success: boolean, filename: string, error?: string}>} The server response data.
- */
 export async function uploadAvatar(token, file, onProgress) {
     const data = await uploadFileToServer(token, file, '/api/users/me/avatar', "l'image", onProgress)
     return data
 }
-
-/**
- * Deletes the authenticated user's avatar.
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<GenericResponse>} The server confirmation response.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 
 export async function deleteAvatar(token) {
     if (!navigator.onLine) {
@@ -158,13 +111,6 @@ export async function deleteAvatar(token) {
     return data
 }
 
-/**
- * Deletes the authenticated user's account.
- * @param {string} password - The user's password to confirm deletion.
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<string>} The success message from the server
- * @throws {Error} If the request fails, the user is unauthorized, the password is incorrect, or a network error occurs.
- */
 export const deleteAccount = async (password, token) => {
     if (!navigator.onLine) {
         throw new Error("Impossible de supprimer le compte : vous êtes hors ligne.")
@@ -220,12 +166,6 @@ export const deleteAccount = async (password, token) => {
     return data.message
 }
 
-/**
- * Fetches the authenticated user's profile data.
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<UserProfile>} The user profile data.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function fetchUserProfile(token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de récupérer le profil : vous êtes hors ligne.")
@@ -279,12 +219,6 @@ export async function fetchUserProfile(token) {
     return data.user
 }
 
-/**
- * Fetches the list of all users.
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<UserProfile[]>} The list of users.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
-*/
 export async function fetchAllUsers(token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de récupérer la liste des utilisateurs : vous êtes hors ligne.")
@@ -334,13 +268,6 @@ export async function fetchAllUsers(token) {
     return data.users || []
 }
 
-/**
- * Fetches the public profile of a specific user.
- * @param {number|string} userId - The ID of the user whose profile is being fetched. 
- * @param {string} token - The authenticated user's token. 
- * @returns {Promise<PublicProfile>} The public profile data.
- * @throws {Error} If the request fails, the user is unauthorized, the profile is not found, or a network error occurs.
- */
 export async function fetchPublicProfile(userId, token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de récupérer le profil : vous êtes hors ligne.")
@@ -394,13 +321,6 @@ export async function fetchPublicProfile(userId, token) {
     return data.profile
 }
 
-/**
- * Fetches the user's avatar image as Blob.
- * @param {string} avatarUrl - The full API route to the avatar (e.g., "/api/users/avatars/123.jpg").
- * @param {string} token - The user's JWT access token.
- * @returns {Promise<Blob>} The avatar image Blob.
- * @throws {Error} If the request fails, the user is unauthorized, the file is not an image, or a network error occurs.
- */
 export async function fetchAvatarBlob(avatarUrl, token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de récupérer l'avatar : vous êtes hors ligne.")

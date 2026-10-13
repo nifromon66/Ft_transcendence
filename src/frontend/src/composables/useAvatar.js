@@ -2,27 +2,6 @@ import { ref, watch, onMounted, onBeforeUnmount, unref } from 'vue'
 import { useAuthStore } from '@/stores/authState.js'
 import * as userService from '@/services/userService.js'
 
-/**
- * @typedef {import('@/services/friendService').FriendUser} FriendUser
- * @typedef {import('@/stores/authState').User} AuthUser
- */
-
-/**
- * @typedef {FriendUser | AuthUser | null} AvatarOwner
- */
-
-/**
- * @typedef {Object} useAvatarReturn
- * @property {import('vue').Ref<string | null>} avatarImageSrc - Local blob URL for the avatar.
- * @property {import('vue').Ref<string>} errorMessage - Reactive error message.
- * @property {() => Promise<void>} reloadAvatar - Function to force a manual reload.
- */
-
-/**
- * Composable to securely load and manage a user's avatar image via Blob.
- * @param {import('vue').Ref<AvatarOwner> | AvatarOwner} userRef - The user object or a ref to the user object.
- * @returns {useAvatarReturn}
- */
 export function useAvatar(userRef) {
     const authStore = useAuthStore()
 

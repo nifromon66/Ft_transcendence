@@ -1,24 +1,6 @@
 import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authState.js'
 
-/**
- * @typedef {Object} ChatMessage
- * @property {number} id - The unique ID of the message.
- * @property {number} sender_id - The ID of the sender.
- * @property {number} receiver_id - The ID of the receiver.
- * @property {string} content - The text content of the message.
- * @property {string} [filename] - The attached filename.
- * @property {string} [file_url] - The full URL to the attached file.
- * @property {string} [created_at] - Creation date string.
- */
-
-/**
- * Fetch the conversation history with a specific friend.
- * @param {number|string} friendId - The ID of the friend.
- * @param {string} token - The user's JWT token.
- * @returns {Promise<ChatMessage[]>} The list of messages.
- * @throws {Error} If the request fails, the user is unauthorized, or a network error occurs.
- */
 export async function fetchConversation(friendId, token) {
     if (!navigator.onLine) {
         throw new Error("Impossible de charger la conversation : vous êtes hors ligne.")

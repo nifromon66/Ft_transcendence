@@ -17,7 +17,6 @@ const dismissed = ref(false)
 
 function selectReward(event, reward) {
     const next = event.target.checked ? reward.id : null
-    // The checkbox reflects the server-confirmed choice, including on failure.
     event.target.checked = props.selected === reward.id
     emit('select', next)
 }

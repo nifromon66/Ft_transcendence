@@ -1,17 +1,6 @@
 import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authState.js'
 
-/**
- * Generic function to upload a file to the server with progress tracking.
- * @template T
- * @param {string} token - The user's JWT access token.
- * @param {File} file - The file object to upload. 
- * @param {string} endpoint - The API endpoint relative to the base URL.
- * @param {string} fileTypeLabel - A descriptive label for error messages (e.g., "l'image").
- * @param {(progress: number) => void} [onProgress] - Callback function receiving the upload percentage (0 to 100).
- * @returns {Promise<T>} The server response data.
- * @throws {Error} If the upload fails, the user is unauthorized, or a network error occurs.
- */
 export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgress) {
     return new Promise((resolve, reject) => {
         if (!navigator.onLine) {
