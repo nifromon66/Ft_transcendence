@@ -559,6 +559,8 @@ def update_recipe(recipe_id: int):
             for entry in ingredient_entries
         ]
 
+        db.session.add_all(ingredient_associations)
+
         recipe.tags = [tags_by_id[tag_id] for tag_id in tag_ids]
 
         db.session.add(recipe)
