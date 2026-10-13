@@ -80,6 +80,7 @@ export const useChatStore = defineStore('chat', {
             socket.off('receive_message')
             socket.off('message_error')
             socket.off('user_status_changed')
+            socket.off('message_deleted')
             socket.off('user_updated')
 
             socket.on('receive_message', (message) => {
@@ -114,6 +115,11 @@ export const useChatStore = defineStore('chat', {
                 if (this.activeContact && this.activeContact.id === data.user_id) {
                     this.activeContact.is_online = data.is_online
                 }
+            })
+
+            socket.on('message_deleted', (data) => {
+                const messageId = data.message_id
+                this.messages = this.messages.filter(m => m.id !== messageId)
             })
 
             socket.on('user_updated', (data) => {

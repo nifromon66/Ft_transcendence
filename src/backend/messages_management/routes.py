@@ -1,3 +1,6 @@
+import os
+
+from config import UPLOAD_FOLDER
 from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -102,3 +105,48 @@ def serve_document(filename):
 
     docs_folder = os.path.join(UPLOAD_FOLDER, "documents")
     return send_from_directory(docs_folder, filename)
+
+
+@messages_bp.route("/<int:message_id>", methods=["DELETE"])
+@jwt_required()
+def delete_message(message_id):
+    current_user_id = int(get_jwt_identity())
+    message = db.session.get(Message, message_id)
+
+    if not message:
+        return jsonify({"success": False, "error": "Message introuvable."}), 200
+
+    if message.sender_id != current_user_id:
+        return jsonify(
+            {"success": False, "error": "Non autorisé à supprimer ce message."}
+        ), 200
+
+    file_name = message.file_name
+    receiver_id = message.receiver_id
+    sender_id = message.sender_id
+
+    try:
+        db.session.delete(message)
+        db.session.commit()
+
+        if file_name:
+            file_path = os.path.join(UPLOAD_FOLDER, "documents", file_name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        from extensions import socketio
+
+        socketio.emit(
+            "message_deleted", {"message_id": message_id}, to=f"user_{receiver_id}"
+        )
+        socketio.emit(
+            "message_deleted", {"message_id": message_id}, to=f"user_{sender_id}"
+        )
+
+        return jsonify(
+            {"success": True, "message": "Message supprimé avec succès."}
+        ), 200
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify({"success": False, "error": "Erreur serveur."}), 200

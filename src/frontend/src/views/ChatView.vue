@@ -140,7 +140,7 @@ watch(() => chatStore.messages.length, async () => {
                             <p v-if="msg.content" :class="msg.file_url ? 'mb-2' : ''">{{ msg.content }}</p>
 
                             <div v-if="msg.file_url"
-                                class="flex items-center justify-between rounded-lg bg-white p-3 border border-gray-200 w-full min-w-[250px]">
+                                class="flex items-center justify-between rounded-lg bg-white p-3 border border-gray-200 w-full min-w-62.5">
                                 <div class="flex items-center space-x-3 overflow-hidden">
                                     <svg class="h-8 w-8 shrink-0 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                         <path
