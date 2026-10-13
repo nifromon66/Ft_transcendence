@@ -519,7 +519,7 @@ export async function updateAvatarFrame(frame, token) {
     }
 
     if (!response.ok || data.success === false) {
-        throw new Error(data.error || "Impossible d'enregistrer le cadre.")
+        throw new Error(data.error || "Impossible d'enregistrer le cercle.")
     }
 
     return data

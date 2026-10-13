@@ -288,14 +288,6 @@ onUnmounted(() => {
             :error="rewardError"
             @select="selectAvatarFrame" />
 
-        <div v-if="profile && !isLoading && !errorMessage"
-            class="mx-auto mt-6 max-w-2xl rounded-xl bg-white p-8 shadow-lg">
-            <h2 class="mb-4 border-b pb-4 text-xl font-bold text-gray-800">Statistiques</h2>
-
-            <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-
-            </div>
-        </div>
 
     </main>
 </template>
