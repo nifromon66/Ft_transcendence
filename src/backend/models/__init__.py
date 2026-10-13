@@ -6,13 +6,13 @@ from .category import Category
 from .comment import Comment
 from .favorite import Favorite
 from .ingredient import Ingredient
+from .message import Message
 from .rating import Rating
 from .recipe import Recipe
+from .recipe_step import RecipeStep
 from .tag import Tag
 from .user import User
 from .utensil import Utensil
-from .recipe_step import RecipeStep
-from .message import Message
 
 __all__ = [
     "Badge",
