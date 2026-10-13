@@ -42,47 +42,26 @@ const handleSend = () => {
 }
 
 const downloadFile = async (fileUrl, fileName) => {
-    const token = authStore.token || localStorage.getItem('token')
-
     try {
+        const token = authStore.token || localStorage.getItem('token')
         const blob = await fetchDocumentBlob(fileUrl, token)
-        const blobUrl = window.URL.createObjectURL(blob)
-
-        const link = document.createElement('a')
-        link.href = blobUrl
-        link.download = fileName || 'document.pdf'
-        document.body.appendChild(link)
-        link.click()
-
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(blobUrl)
-
-    } catch (error) {
-        chatStore.chatError = error.message || "Impossible de télécharger le document."
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName || 'document'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+    } catch {
+        useNotificationStore().addError('Erreur lors du téléchargement')
+        alert('Impossible de télécharger le document.')
     }
 }
 
-const deleteMessage = async (messageId) => {
-    const token = authStore.token || localStorage.getItem('token')
-
-    try {
-        const response = await fetch(`messages/${messageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-
-        const result = await response.json()
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || "Impossible de supprimer le message.")
-        }
-
-        chatStore.messages = chatStore.messages.filter(m => m.id !== messageId)
-
-    } catch (error) {
-        chatStore.chatError = error.message
+const deleteMessage = (messageId) => {
+    if (confirm('Voulez-vous vraiment supprimer ce message ?')) {
+        chatStore.deleteMessage(messageId)
     }
 }
 

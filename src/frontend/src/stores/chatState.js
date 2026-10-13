@@ -25,7 +25,6 @@ export const useChatStore = defineStore('chat', {
     actions: {
         async fetchFriends() {
             const authStore = useAuthStore()
-            const token = authStore.token || localStorage.getItem('token')
 
             try {
                 this.friendsList = await friendService.fetchFriends(authStore.token)
@@ -140,6 +139,22 @@ export const useChatStore = defineStore('chat', {
                     }
                 }
             })
+        },
+
+        async deleteMessage(messageId) {
+            const authStore = useAuthStore()
+            if (!authStore.token) {
+                this.chatError = "Vous n'êtes pas authentifié."
+                return
+            }
+
+            try {
+                await messageService.deleteMessage(messageId, authStore.token)
+                // We remove it optimistically from the UI, or wait for socket event
+                this.messages = this.messages.filter(m => m.id !== messageId)
+            } catch (error) {
+                this.chatError = error.message || "Erreur lors de la suppression du message."
+            }
         },
 
         clearError() {
