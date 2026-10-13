@@ -106,7 +106,7 @@ class Recipe(db.Model):
         self.description = description
         self.cooking_time = cooking_time
         self.difficulty = difficulty
-        self.image_url = image_url
+        self.image_filename = image_url
         self.created_at = datetime.now(timezone.utc)
         self.updated_at = None
 
@@ -139,6 +139,13 @@ class Recipe(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
+            "rating": (
+                round(
+                    sum(rating.score for rating in self.ratings) / len(self.ratings), 1
+                )
+                if self.ratings
+                else None
+            ),
             "cooking_time": self.cooking_time,
             "difficulty": self.difficulty,
             "image_url": full_image_path,
@@ -151,6 +158,11 @@ class Recipe(db.Model):
             "author": {
                 "id": self.user.id,
                 "username": self.user.username,
+                "avatar_url": (
+                    f"/api/users/avatars/{self.user.avatar_filename}"
+                    if self.user.avatar_filename
+                    else None
+                ),
             },
             "steps": [step.to_dict() for step in self.steps],
             "ingredients": [ingredient.to_dict() for ingredient in self.ingredients],

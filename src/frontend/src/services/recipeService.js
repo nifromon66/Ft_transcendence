@@ -208,6 +208,75 @@ export async function updateRecipe(token, id, recipeData) {
 }
 
 /**
+ * Deletes a specific recipe by its ID.
+ * @param {string} token - The user's authentication token.
+ * @param {string|number} id - The ID of the recipe to delete.
+ * 
+ * @returns {Promise<Object>} The server response data confirming deletion.
+ * 
+ * @throws {Error} If the request fails, the user is unauthorized/not the owner, or a network error occurs.
+ */
+export async function deleteRecipe(token, id) {
+  if (!navigator.onLine) {
+    throw new Error("Impossible de supprimer la recette : vous êtes hors ligne.")
+  }
+
+  if (!token) {
+    throw new Error("Impossible de supprimer la recette : vous n'êtes pas authentifié.")
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || ''
+
+  let response
+  try {
+    response = await fetch(`${baseUrl}/api/recipes/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+  } catch (error) {
+    throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+  }
+
+  if (response.status === 401) {
+    const authStore = useAuthStore()
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+  }
+
+  if (response.status === 403) {
+    throw new Error("Accès refusé. Tu ne peux supprimer que ta propre recette.")
+  }
+
+  if (response.status === 404) {
+    throw new Error("Recette ou image de la recette introuvable.")
+  }
+
+  if (response.status >= 500) {
+    throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(
+      data.error ||
+      "Impossible de supprimer la recette.",
+    )
+  }
+
+  return data
+}
+
+/**
  * Deletes the main cover image of a specific recipe.
  * @param {string} token - The user's JWT access token.
  * @param {number|string} recipeId - The ID of the recipe.
@@ -453,7 +522,7 @@ export async function fetchLatestRecipes() {
         ? `${recipe.cooking_time} min`
         : 'Non renseigné',
     imageUrl: getRecipeImageUrl(recipe.image_url),
-    likes: recipe.likes,
+    rating: recipe.rating,
   }))
 }
 
@@ -463,7 +532,7 @@ export async function fetchLatestRecipes() {
  * @returns {Promise<RecipeDetail>} The detailed recipe data.
  * @throws {Error} If the request fails or a network error occurs.
  */
-export async function fetchRecipeById(id) {
+export async function fetchRecipeById(id, token = null) {
   if (!navigator.onLine) {
     throw new Error("Impossible de récupérer la recette : vous êtes hors ligne.")
   }
@@ -475,7 +544,8 @@ export async function fetchRecipeById(id) {
     response = await fetch(`${baseUrl}/api/recipes/${encodeURIComponent(id)}`, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
       }
     })
   } catch (error) {
@@ -505,6 +575,7 @@ export async function fetchRecipeById(id) {
 
   return {
     id: recipe.id,
+    myRating: recipe.my_rating,
     title: recipe.title,
     description: recipe.description,
     cookingTime: recipe.cooking_time,
@@ -537,6 +608,181 @@ export async function fetchRecipeById(id) {
       name: tag.name,
     })),
   }
+}
+
+/**
+ * Submits a rating score for a specific recipe.
+ * @param {string} token - The user's authentication token.
+ * @param {string|number} recipeId - The ID of the recipe to rate.
+ * @param {number} score - The rating score given by the user.
+ * 
+ * @returns {Promise<Object>} The server response data after rating.
+ * 
+ * @throws {Error} If the request fails, the session is expired, or a network error occurs.
+ */
+export async function rateRecipe(token, recipeId, score) {
+  if (score < 1 || score > 5) {
+    throw new Error("La note doit être comprise entre 1 et 5.")
+  }
+
+  if (!navigator.onLine) {
+    throw new Error("Impossible de noter la recette : vous êtes hors ligne.")
+  }
+
+  if (!token) {
+    throw new Error("Impossible de noter la recette : vous n'êtes pas authentifié.")
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || ''
+
+  let response
+  try {
+    response = await fetch(`${baseUrl}/api/recipes/${encodeURIComponent(recipeId)}/ratings`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ score }),
+    })
+  } catch (error) {
+    throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+  }
+
+  if (response.status === 401) {
+    const authStore = useAuthStore()
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+  }
+
+  if (response.status >= 500) {
+    throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Impossible de noter la recette.")
+  }
+
+  return data
+}
+
+/**
+ * Deletes the authenticated user's rating for a specific recipe.
+ * @param {string} token - The user's authentication token.
+ * @param {string|number} recipeId - The ID of the recipe whose rating is being deleted.
+ * 
+ * @returns {Promise<Object>} The server response data confirming the deletion of the rating.
+ * 
+ * @throws {Error} If the request fails, the session is expired, or a network error occurs.
+ */
+export async function deleteRecipeRating(token, recipeId) {
+  if (!navigator.onLine) {
+    throw new Error("Impossible de modifier la recette : vous êtes hors ligne.")
+  }
+
+  if (!token) {
+    throw new Error("Impossible de modifier la recette : vous n'êtes pas authentifié.")
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || ''
+
+  let response
+  try {
+    response = await fetch(`${baseUrl}/api/recipes/${encodeURIComponent(recipeId)}/ratings`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      },
+    })
+  } catch (error) {
+    throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+  }
+
+  if (response.status === 401) {
+    const authStore = useAuthStore()
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+  }
+
+  if (response.status >= 500) {
+    throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Impossible de supprimer la note de la recette.")
+  }
+
+  return data
+}
+
+export async function updateRecipeRating(token, recipeId, score) {
+  if (!navigator.onLine) {
+    throw new Error("Impossible de modifier la recette : vous êtes hors ligne.")
+  }
+
+  if (!token) {
+    throw new Error("Impossible de modifier la recette : vous n'êtes pas authentifié.")
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || ''
+
+  let response
+  try {
+    response = await fetch(`${baseUrl}/api/recipes/${encodeURIComponent(recipeId)}/ratings`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ score }),
+    })
+
+  } catch (error) {
+    throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
+  }
+
+  if (response.status === 401) {
+    const authStore = useAuthStore()
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.")
+  }
+
+  if (response.status >= 500) {
+    throw new Error("Erreur interne du serveur. Veuillez réessayer.")
+  }
+
+  let data
+  try {
+    data = await response.json()
+  } catch (error) {
+    throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Impossible de modifier la note de la recette.")
+  }
+
+  return data
 }
 
 /**

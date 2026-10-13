@@ -11,6 +11,7 @@ from flask_jwt_extended import (
 from models import (
     Category,
     Ingredient,
+    Rating,
     Recipe,
     RecipeIngredient,
     RecipeStep,
@@ -19,7 +20,7 @@ from models import (
     Utensil,
 )
 from sqlalchemy import or_, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from utils.file_services import (
     delete_empty_parent_directory,
     delete_file_physically,
@@ -888,6 +889,15 @@ def get_latest_recipes():
                     "image_url": f"/api/recipes/{recipe.id}/image"
                     if recipe.image_filename
                     else None,
+                    "rating": (
+                        round(
+                            sum(rating.score for rating in recipe.ratings)
+                            / len(recipe.ratings),
+                            1,
+                        )
+                        if recipe.ratings
+                        else None
+                    ),
                 }
                 for recipe in recipes
             ],
@@ -896,6 +906,7 @@ def get_latest_recipes():
 
 
 @recipes_bp.route("/<int:recipe_id>", methods=["GET"])
+@jwt_required(optional=True)
 def get_recipe(recipe_id: int):
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -907,11 +918,28 @@ def get_recipe(recipe_id: int):
             }
         ), 404
 
+    my_rating = None
+    identity = get_jwt_identity()
+
+    if identity is not None:
+        user_id = int(identity)
+
+        rating = db.session.scalar(
+            select(Rating).where(
+                Rating.user_id == user_id,
+                Rating.recipe_id == recipe_id,
+            )
+        )
+
+        if rating is not None:
+            my_rating = rating.score
+
     return jsonify(
         {
             "success": True,
             "recipe": {
                 "id": recipe.id,
+                "my_rating": my_rating,
                 "title": recipe.title,
                 "description": recipe.description,
                 "cooking_time": recipe.cooking_time,
@@ -927,6 +955,11 @@ def get_recipe(recipe_id: int):
                 "author": {
                     "id": recipe.user.id,
                     "username": recipe.user.username,
+                    "avatar_url": (
+                        f"/api/users/avatars/{recipe.user.avatar_filename}"
+                        if recipe.user.avatar_filename
+                        else None
+                    ),
                 },
                 "steps": [
                     {
@@ -962,6 +995,286 @@ def get_recipe(recipe_id: int):
                     for tag in recipe.tags
                 ],
             },
+        }
+    ), 200
+
+
+@recipes_bp.route("/<int:recipe_id>", methods=["DELETE"])
+@jwt_required()
+def delete_recipe(recipe_id: int):
+    recipe = db.session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Recette introuvable",
+            }
+        ), 404
+
+    user_id = get_jwt_identity()
+
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Utilisateur non authentifié",
+            }
+        ), 401
+
+    if recipe.user_id != user_id:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Tu ne peux supprimer que tes propres recettes",
+            }
+        ), 403
+
+    image_paths = [step.image_filename for step in recipe.steps if step.image_filename]
+
+    if recipe.image_filename:
+        image_paths.append(recipe.image_filename)
+
+    try:
+        db.session.delete(recipe)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible de supprimer la recette",
+            }
+        ), 500
+
+    for filename in image_paths:
+        try:
+            delete_file_physically(filename)
+            delete_empty_parent_directory(filename)
+        except OSError as error:
+            current_app.logger.error(
+                f"Impossible de supprimer l'image {filename} : {error!s}"
+            )
+
+    return jsonify({"success": True}), 200
+
+
+@recipes_bp.route("/<int:recipe_id>/ratings", methods=["POST"])
+@jwt_required()
+def rate_recipe(recipe_id: int):
+    user_id = get_jwt_identity()
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+
+    recipe = db.session.get(Recipe, recipe_id)
+    if recipe is None:
+        return jsonify({"success": False, "error": "Recette introuvable"}), 404
+    if recipe.user_id == user_id:
+        return jsonify(
+            {"success": False, "error": "Tu ne peux pas noter ta propre recette"}
+        ), 403
+
+    existing_rating = db.session.scalar(
+        select(Rating).where(
+            Rating.user_id == user_id,
+            Rating.recipe_id == recipe_id,
+        )
+    )
+
+    if existing_rating is not None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Tu as déjà noté cette recette",
+            }
+        ), 409
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Un objet JSON est attendu",
+            }
+        ), 400
+
+    score = data.get("score")
+
+    if type(score) is not int or not 1 <= score <= 5:
+        return jsonify(
+            {
+                "success": False,
+                "error": "La note doit être un entier entre 1 et 5",
+            }
+        ), 400
+
+    rating = Rating(
+        user_id=user_id,
+        recipe_id=recipe_id,
+        score=score,
+    )
+
+    try:
+        db.session.add(rating)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+        existing_rating = db.session.scalar(
+            select(Rating).where(
+                Rating.user_id == user_id,
+                Rating.recipe_id == recipe_id,
+            )
+        )
+
+        if existing_rating is not None:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Tu as déjà noté cette recette",
+                }
+            ), 409
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible d’enregistrer la note",
+            }
+        ), 500
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible d’enregistrer la note",
+            }
+        ), 500
+
+    return jsonify(
+        {
+            "success": True,
+            "score": rating.score,
+        }
+    ), 201
+
+
+@recipes_bp.route("/<int:recipe_id>/ratings", methods=["DELETE"])
+@jwt_required()
+def delete_recipe_rating(recipe_id: int):
+    user_id = get_jwt_identity()
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+
+    rating = db.session.scalar(
+        select(Rating).where(
+            Rating.user_id == user_id,
+            Rating.recipe_id == recipe_id,
+        )
+    )
+
+    if rating is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Tu n’as pas encore noté cette recette",
+            }
+        ), 404
+
+    try:
+        db.session.delete(rating)
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible de supprimer la note",
+            }
+        ), 500
+
+    return jsonify({"success": True}), 200
+
+
+@recipes_bp.route("/<int:recipe_id>/ratings", methods=["PUT"])
+@jwt_required()
+def update_recipe_rating(recipe_id: int):
+    user_id = get_jwt_identity()
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+
+    rating = db.session.scalar(
+        select(Rating).where(
+            Rating.user_id == user_id,
+            Rating.recipe_id == recipe_id,
+        )
+    )
+
+    if rating is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Tu n’as pas encore noté cette recette",
+            }
+        ), 404
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Un objet JSON est attendu",
+            }
+        ), 400
+
+    score = data.get("score")
+
+    if type(score) is not int or not 1 <= score <= 5:
+        return jsonify(
+            {
+                "success": False,
+                "error": "La note doit être un entier entre 1 et 5",
+            }
+        ), 400
+
+    rating.update_score(score)
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {
+                "success": False,
+                "error": "Impossible de modifier la note",
+            }
+        ), 500
+
+    return jsonify(
+        {
+            "success": True,
+            "score": rating.score,
         }
     ), 200
 

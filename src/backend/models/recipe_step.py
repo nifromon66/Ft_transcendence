@@ -35,7 +35,7 @@ class RecipeStep(db.Model):
         recipe: Recipe | None = None,
         step_number: int,
         description: str,
-        image_url: str | None = None,
+        image_filename: str | None = None,
     ):
         if recipe is not None:
             self.recipe = recipe
@@ -46,7 +46,7 @@ class RecipeStep(db.Model):
 
         self.step_number = step_number
         self.description = description
-        self.image_url = image_url
+        self.image_filename = image_filename
 
     def to_dict(self):
         full_image_path = (
