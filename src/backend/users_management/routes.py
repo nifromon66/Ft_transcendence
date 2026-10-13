@@ -11,9 +11,11 @@ from flask_jwt_extended import (
 )
 from models import User
 from models.association import friend
+from models.user_avatar_frame import UserAvatarFrame
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from user_xp_management.leveling import get_xp_progress
+from user_xp_management.rewards import FRAME_LEVELS, get_active_frame, get_level_rewards
 from utils.file_services import delete_file_physically, handle_file_upload
 
 from .constants import (
@@ -304,7 +306,7 @@ def get_public_profile(user_id):
     public_data = target_user.to_dict()
     public_data.pop("email", None)
     public_data["xp_progress"] = get_xp_progress(target_user.xp)
-
+    public_data["level_rewards"] = get_level_rewards(target_user)
     public_data["is_online"] = target_user.id in online_users
 
     if current_user_id == user_id:
@@ -361,3 +363,48 @@ def get_avatar_file(filename):
         return jsonify({"success": False, "error": "Type de fichier non autorisé"}), 415
 
     return send_from_directory(avatar_folder, filename, mimetype=mimetype)
+
+
+@users_bp.route("/me/avatar-frame", methods=["PUT"])
+@jwt_required()
+def update_avatar_frame():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or "frame" not in data:
+        return jsonify({"success": False, "error": "Le cercle est requis."}), 400
+    frame = data["frame"]
+    if frame is not None and (not isinstance(frame, str) or frame not in FRAME_LEVELS):
+        return jsonify({"success": False, "error": "Cercle invalide."}), 400
+
+    try:
+        # Serialize preference changes with other changes to this user's XP.
+        user = db.session.scalar(
+            select(User).where(User.id == int(get_jwt_identity())).with_for_update()
+        )
+        if user is None or not user.is_active:
+            return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+        if (
+            frame is not None
+            and get_xp_progress(user.xp)["level"] < FRAME_LEVELS[frame]
+        ):
+            return jsonify(
+                {"success": False, "error": "Le niveau requis n’est pas atteint."}
+            ), 403
+        if user.avatar_frame_preference is None:
+            user.avatar_frame_preference = UserAvatarFrame(frame=frame)
+        else:
+            user.avatar_frame_preference.frame = frame
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify(
+            {"success": False, "error": "Impossible d’enregistrer le cercle."}
+        ), 500
+
+    return jsonify(
+        {
+            "success": True,
+            "avatar_frame": get_active_frame(user),
+            "level_rewards": get_level_rewards(user),
+            "xp_progress": get_xp_progress(user.xp),
+        }
+    ), 200

@@ -13,6 +13,7 @@ from .recipe import Recipe
 from .recipe_step import RecipeStep
 from .tag import Tag
 from .user import User
+from .user_avatar_frame import UserAvatarFrame
 
 __all__ = [
     "Badge",
@@ -28,6 +29,7 @@ __all__ = [
     "RecipeStep",
     "Tag",
     "User",
+    "UserAvatarFrame",
     "UserBadge",
     "db",
     "recipe_tag",

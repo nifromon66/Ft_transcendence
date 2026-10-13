@@ -102,6 +102,10 @@ CORS(
             "origins": [frontend_url],
             "methods": ["PUT", "OPTIONS"],
         },
+        r"/users/me/avatar-frame": {
+            "origins": [frontend_url],
+            "methods": ["PUT", "OPTIONS"],
+        },
         r"/users/me/delete": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],

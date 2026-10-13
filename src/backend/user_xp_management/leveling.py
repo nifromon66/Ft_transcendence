@@ -2,9 +2,10 @@
 
 
 def get_xp_progress(xp: int | None) -> dict[str, int]:
-    """Thresholds: 0, 30, 100, 200, 350, 550, 800, ... XP.
+    """Thresholds: 0, 30, 65, 105, 150, 200, 255, 315, 380, 450, ... XP.
 
-    After level 3, each level costs 50 XP more than the previous.
+    Each level costs 5 XP more than the previous, starting at 30 XP.
+    Level 10 requires 450 XP, equivalent to 15 recipes at 30 XP each.
     NULL or negative XP is treated as zero.
     """
     total = max(0, xp or 0)
@@ -12,7 +13,7 @@ def get_xp_progress(xp: int | None) -> dict[str, int]:
     while total >= end:
         level += 1
         start = end
-        end += 70 if level == 2 else 50 * (level - 1)
+        end += 30 + 5 * (level - 1)
     return {
         "total": total,
         "level": level,
