@@ -17,9 +17,8 @@ from models import User
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from users_management.routes import users_bp
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from vault import VaultClient
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 vault = VaultClient()
 
@@ -112,11 +111,11 @@ CORS(
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
-        r"/friends/requests/received": {
+        r"/friends/request/received": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
-        r"/friends/requests/sent": {
+        r"/friends/request/sent": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },

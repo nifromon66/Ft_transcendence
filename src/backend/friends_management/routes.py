@@ -8,6 +8,7 @@ from sqlalchemy import and_, case, delete, insert, or_, select, update
 friends_bp = Blueprint("friends", __name__)
 
 
+@friends_bp.route("/friends/requests/<int:target_user_id>", methods=["POST"])
 @friends_bp.route("/friends/request/<int:target_user_id>", methods=["POST"])
 @jwt_required()
 def send_friend_request(target_user_id):
@@ -84,6 +85,7 @@ def send_friend_request(target_user_id):
     return jsonify({"success": True, "message": "Demande d'ami envoyée."}), 201
 
 
+@friends_bp.route("/friends/requests/<int:sender_id>/accept", methods=["PATCH"])
 @friends_bp.route("/friends/request/<int:sender_id>/accept", methods=["PATCH"])
 @jwt_required()
 def accept_friend_request(sender_id):
@@ -131,6 +133,7 @@ def accept_friend_request(sender_id):
     return jsonify({"success": True, "message": "Demande d'ami acceptée !"}), 200
 
 
+@friends_bp.route("/friends/requests/<int:target_user_id>/cancel", methods=["DELETE"])
 @friends_bp.route("/friends/request/<int:target_user_id>/cancel", methods=["DELETE"])
 @jwt_required()
 def cancel_friend_request(target_user_id):
@@ -168,6 +171,7 @@ def cancel_friend_request(target_user_id):
     ), 200
 
 
+@friends_bp.route("/friends/requests/<int:sender_id>/deny", methods=["DELETE"])
 @friends_bp.route("/friends/request/<int:sender_id>/deny", methods=["DELETE"])
 @jwt_required()
 def deny_friend_request(sender_id):
