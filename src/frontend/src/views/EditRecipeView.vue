@@ -9,7 +9,7 @@ import {
   deleteRecipeStepImage,
   uploadRecipeImage,
   uploadRecipeStepImage,
-} from '@/services/uploadService'
+} from '@/services/recipeService'
 import { optimizeImage } from '@/utils/imageProcessor'
 
 const props = defineProps({

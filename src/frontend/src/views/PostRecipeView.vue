@@ -7,7 +7,7 @@ import RecipeForm from '@/components/RecipeForm.vue'
 import {
   uploadRecipeImage,
   uploadRecipeStepImage,
-} from '@/services/uploadService'
+} from '@/services/recipeService'
 import { optimizeImage } from '@/utils/imageProcessor'
 
 const router = useRouter()

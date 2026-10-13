@@ -1,5 +1,5 @@
 /**
- * Formats a file size in bytes into a human-readable string (Octets, Ko, Mo).
+ * Formats a file size in bytes into a human-readable string (Octets, Ko, Mo, Go, To).
  * @param {number} bytes - The file size in bytes.
  * @returns {string} The formatted file size string.
  */
@@ -9,7 +9,8 @@ export function formatFileSize(bytes) {
     }
 
     const k = 1024
-    const sizes = ['Octets', 'Ko', 'Mo']
+    const sizes = ['Octets', 'Ko', 'Mo', 'Go', 'To']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+    const validIndex = Math.min(i, sizes.length - 1)
+    return parseFloat((bytes / Math.pow(k, validIndex)).toFixed(1)) + ' ' + sizes[validIndex]
 }
