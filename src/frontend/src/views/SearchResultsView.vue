@@ -45,11 +45,58 @@ watch(
   },
   { immediate: true },
 )
+
+const isSortMenuOpen = ref(false)
+
+function applySort(sortBy, sortOrder = 'asc') {
+  isSortMenuOpen.value = false
+  router.push({
+    path: '/search',
+    query: {
+      ...route.query,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+      page: '1',
+    },
+  })
+}
 </script>
 
 <template>
   <main class="flex-1 px-6 py-8">
     <div class="mx-auto max-w-7xl">
+      <div class="relative mb-6 flex justify-end">
+        <button type="button"
+          class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
+          :aria-expanded="isSortMenuOpen" aria-haspopup="true" @click="isSortMenuOpen = !isSortMenuOpen">
+          Trier par
+        </button>
+
+        <div v-if="isSortMenuOpen"
+          class="absolute right-0 top-full z-10 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+          role="menu">
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('updated_at', 'desc')">
+            Les plus récentes
+          </button>
+
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('updated_at', 'asc')">
+            Les moins récentes
+          </button>
+
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('cooking_time', 'desc')">
+            Durée : la plus longue
+          </button>
+
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('cooking_time', 'asc')">
+            Durée : la moins longue
+          </button>
+
+        </div>
+      </div>
 
       <h1 class="mb-8 text-3xl font-bold text-gray-900">
         Résultats de recherche

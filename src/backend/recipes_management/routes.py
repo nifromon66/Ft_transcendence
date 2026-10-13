@@ -831,6 +831,8 @@ def get_recipes():
     column = Recipe.updated_at
     if sort_by == "cooking_time":
         column = Recipe.cooking_time
+    else:
+        column = func.coalesce(Recipe.updated_at, Recipe.created_at)
 
     if sort_order.upper() == "DESC":
         column = column.desc()
