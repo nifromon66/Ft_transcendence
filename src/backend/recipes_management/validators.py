@@ -195,14 +195,6 @@ def validate_recipe_payload(data):
 
     validated["ingredients"] = validate_ingredients(data)
 
-    validated["utensil_ids"] = validate_id_list(
-        data,
-        "utensil_ids",
-        "La recette doit contenir au moins un ustensile",
-        "Un ou plusieurs ustensiles sont invalides",
-        "Un ustensile ne peut pas être ajouté deux fois",
-    )
-
     validated["tag_ids"] = validate_id_list(
         data,
         "tag_ids",

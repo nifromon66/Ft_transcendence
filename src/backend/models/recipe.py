@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from .rating import Rating
     from .tag import Tag
     from .user import User
-    from .utensil import Utensil
 
 
 class Recipe(db.Model):
@@ -61,10 +60,6 @@ class Recipe(db.Model):
 
     ingredients: Mapped[list[RecipeIngredient]] = relationship(
         back_populates="recipe", cascade="all, delete-orphan"
-    )
-
-    utensils: Mapped[list[Utensil]] = relationship(
-        secondary="recipe_utensil", back_populates="recipes"
     )
 
     tags: Mapped[list[Tag]] = relationship(
@@ -172,6 +167,5 @@ class Recipe(db.Model):
             },
             "steps": [step.to_dict() for step in self.steps],
             "ingredients": [ingredient.to_dict() for ingredient in self.ingredients],
-            "utensils": [utensil.to_dict() for utensil in self.utensils],
             "tags": [tag.to_dict() for tag in self.tags],
         }

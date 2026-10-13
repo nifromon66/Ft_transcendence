@@ -25,7 +25,6 @@ import { uploadFileToServer } from '@/services/uploadService.js'
  * @property {string[]} [step_descriptions] - Descriptions for each step.
  * @property {Array<{id: number|null, description: string}>} [steps] - Steps data.
  * @property {Array<{ingredient_id: number, quantity: string}>} ingredients - List of ingredients.
- * @property {number[]} utensil_ids - Array of utensil IDs.
  * @property {number[]} tag_ids - Array of tag IDs.
  */
 
@@ -51,7 +50,6 @@ import { uploadFileToServer } from '@/services/uploadService.js'
  * @property {RecipeOption} category - The recipe category.
  * @property {{id: number, username: string}} author - The author's basic info.
  * @property {Array<{id: number, stepNumber: number, description: string, imageUrl: string|null}>} steps - The recipe steps.
- * @property {RecipeOption[]} utensils - The recipe utensils.
  * @property {RecipeOption[]} tags - The recipe tags.
  */
 
@@ -599,11 +597,6 @@ export async function fetchRecipeById(id, token = null) {
       name: ingredient.name,
       quantity: ingredient.quantity,
     })),
-    utensils: recipe.utensils.map((utensil, index) => ({
-      id: index + 1,
-      utensilId: utensil.id,
-      name: utensil.name,
-    })),
     tags: recipe.tags.map((tag, index) => ({
       id: index + 1,
       tagId: tag.id,
@@ -812,17 +805,6 @@ export function fetchIngredients() {
   )
 }
 
-/**
- * Fetches the list of available utensils.
- * @returns {Promise<RecipeOption[]>} The list of utensils.
- */
-export function fetchUtensils() {
-  return fetchRecipeOptions(
-    'recipes/utensils',
-    'utensils',
-    'Impossible de récupérer les ustensiles.',
-  )
-}
 
 /**
  * Fetches the list of available tags.

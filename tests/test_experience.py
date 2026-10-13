@@ -18,7 +18,6 @@ from models import (
     Recipe,
     Tag,
     User,
-    Utensil,
 )
 from recipe_management.routes import recipe_bp
 from sqlalchemy import select
@@ -65,7 +64,6 @@ class ExperienceTests(unittest.TestCase):
                 IngredientCategory(id=1, name="Test"),
                 Ingredient("Test", id=1, category_id=1),
                 Tag("Test"),
-                Utensil("Test"),
             ]
         )
         db.session.commit()
@@ -81,7 +79,6 @@ class ExperienceTests(unittest.TestCase):
             "category_id": 1,
             "steps": [{"description": "Mix ingredients"}],
             "ingredients": [{"ingredient_id": 1, "quantity": "100 g"}],
-            "utensil_ids": [1],
             "tag_ids": [1],
         }
 

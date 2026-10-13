@@ -14,12 +14,6 @@
  */
 
 /**
- * @typedef {Object} InitialUtensil
- * @property {number} [id]
- * @property {string|number} utensilId
- */
-
-/**
  * @typedef {Object} InitialTag
  * @property {number} [id]
  * @property {string|number} tagId
@@ -34,7 +28,6 @@
  * @property {string} [difficulty]
  * @property {InitialStep[]} steps
  * @property {InitialIngredient[]} ingredients
- * @property {InitialUtensil[]} utensils
  * @property {InitialTag[]} tags
  */
 
@@ -65,7 +58,6 @@
  * @property {string} difficulty
  * @property {FormStep[]} steps
  * @property {FormIngredient[]} ingredients
- * @property {Array<{id: number, utensilId: string|number}>} utensils
  * @property {Array<{id: number, tagId: string|number}>} tags
  */
 
@@ -99,12 +91,6 @@ export const createFormRecipe = (initialRecipe) => {
                     quantity: '',
                 },
             ],
-            utensils: [
-                {
-                    id: 1,
-                    utensilId: '',
-                },
-            ],
             tags: [
                 {
                     id: 1,
@@ -135,10 +121,6 @@ export const createFormRecipe = (initialRecipe) => {
             categoryId: ingredient.categoryId ?? '',
         })),
 
-        utensils: initialRecipe.utensils.map((utensil) => ({
-            ...utensil,
-        })),
-
         tags: initialRecipe.tags.map((tag) => ({
             ...tag,
         })),
@@ -167,8 +149,6 @@ export const formatRecipeForApi = (recipe) => {
             ingredient_id: Number(ingredient.ingredientId),
             quantity: ingredient.quantity.trim() || null,
         })),
-
-        utensil_ids: recipe.utensils.map((utensil) => Number(utensil.utensilId)),
 
         tag_ids: recipe.tags.map((tag) => Number(tag.tagId)),
     }

@@ -68,11 +68,6 @@ const loadRecipe = async () => {
         quantity: ingredient.quantity || '',
       })),
 
-      utensils: loadedRecipe.utensils.map((utensil) => ({
-        id: utensil.id,
-        utensilId: utensil.utensilId,
-      })),
-
       tags: loadedRecipe.tags.map((tag) => ({
         id: tag.id,
         tagId: tag.tagId,

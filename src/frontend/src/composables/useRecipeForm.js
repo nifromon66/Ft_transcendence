@@ -27,7 +27,6 @@ export function useRecipeForm(initialRecipe) {
 
     let nextStepId = Math.max(0, ...recipe.steps.map((step) => Number(step.id))) + 1
     let nextIngredientId = Math.max(0, ...recipe.ingredients.map((ingredient) => Number(ingredient.id))) + 1
-    let nextUtensilId = Math.max(0, ...recipe.utensils.map((utensil) => Number(utensil.id))) + 1
     let nextTagId = Math.max(0, ...recipe.tags.map((tag) => Number(tag.id))) + 1
 
     /**
@@ -154,41 +153,6 @@ export function useRecipeForm(initialRecipe) {
     /**
      * @returns {void}
      */
-    const addUtensil = () => {
-        recipe.utensils.push({
-            id: nextUtensilId,
-            utensilId: '',
-        })
-        nextUtensilId += 1
-    }
-
-    /**
-     * @param {number} index
-     * @returns {void}
-     */
-    const removeUtensil = (index) => {
-        if (recipe.utensils.length > 1) {
-            recipe.utensils.splice(index, 1)
-        }
-    }
-
-    /**
-     * @param {string|number} utensilId
-     * @param {number} currentIndex
-     * @returns {boolean}
-     */
-    const isUtensilSelected = (utensilId, currentIndex) => {
-        return recipe.utensils.some((utensil, index) => {
-            return (
-                index !== currentIndex &&
-                String(utensil.utensilId) === String(utensilId)
-            )
-        })
-    }
-
-    /**
-     * @returns {void}
-     */
     const addTag = () => {
         recipe.tags.push({
             id: nextTagId,
@@ -237,9 +201,6 @@ export function useRecipeForm(initialRecipe) {
         addIngredient,
         removeIngredient,
         isIngredientSelected,
-        addUtensil,
-        removeUtensil,
-        isUtensilSelected,
         addTag,
         removeTag,
         isTagSelected

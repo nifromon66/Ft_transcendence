@@ -6,7 +6,6 @@ import {
   fetchIngredients,
   fetchIngredientCategories,
   fetchTags,
-  fetchUtensils,
 } from '@/services/recipeService.js'
 import { useRecipeForm } from '@/composables/useRecipeForm.js'
 import { formatRecipeForApi } from '@/utils/recipeMapper.js'
@@ -89,9 +88,6 @@ const {
   addIngredient,
   removeIngredient,
   isIngredientSelected,
-  addUtensil,
-  removeUtensil,
-  isUtensilSelected,
   addTag,
   removeTag,
   isTagSelected
@@ -111,9 +107,6 @@ const ingredientsForCategory = (categoryId) => {
     Number(option.category_id || option.categoryId) === Number(categoryId)
   )
 }
-
-/** @type {import('vue').Ref<RecipeOption[]>} */
-const utensilOptions = ref([])
 
 /** @type {import('vue').Ref<RecipeOption[]>} */
 const tagOptions = ref([])
@@ -151,11 +144,6 @@ const submitForm = () => {
     return
   }
 
-  if (!recipe.utensils || recipe.utensils.some(u => !u.utensilId)) {
-    errorMessage.value = "Tous les ustensiles doivent être sélectionnés."
-    return
-  }
-
   if (!recipe.tags || recipe.tags.some(t => !t.tagId)) {
     errorMessage.value = "Tous les tags doivent être sélectionnés."
     return
@@ -178,20 +166,17 @@ onMounted(async () => {
       loadedCategories,
       loadedIngredients,
       loadedIngredientCategories,
-      loadedUtensils,
       loadedTags,
     ] = await Promise.all([
       fetchCategories(),
       fetchIngredients(),
       fetchIngredientCategories(),
-      fetchUtensils(),
       fetchTags(),
     ])
 
     categories.value = loadedCategories
     ingredientOptions.value = loadedIngredients
     ingredientCategories.value = loadedIngredientCategories
-    utensilOptions.value = loadedUtensils
     tagOptions.value = loadedTags
 
     for (const ingredient of recipe.ingredients) {
@@ -457,40 +442,6 @@ onMounted(async () => {
         class="mt-3 rounded-md border border-primary px-3 py-2 font-medium text-primary-dark hover:bg-primary-light"
         @click="addIngredient">
         Ajouter un ingrédient
-      </button>
-    </section>
-
-    <section aria-labelledby="utensils-title" class="bg-white p-6 rounded-xl shadow-md">
-      <h2 id="utensils-title" class="mb-4 text-xl font-semibold">
-        Ustensiles
-      </h2>
-
-      <div class="space-y-3">
-        <div v-for="(utensil, index) in recipe.utensils" :key="utensil.id" class="flex gap-2">
-          <select :id="`utensil-${index}`" :name="`utensil-${index}`" v-model="utensil.utensilId" required
-            :aria-label="`Ustensile ${index + 1}`" class="min-w-0 flex-1 rounded-md border border-gray-300
-                    bg-white px-3 py-2 focus:border-blue-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-200">
-            <option disabled value="">
-              Choisir un ustensile
-            </option>
-
-            <option v-for="utensilOption in utensilOptions" :key="utensilOption.id" :value="utensilOption.id"
-              :disabled="isUtensilSelected(utensilOption.id, index)">
-              {{ utensilOption.name }}
-            </option>
-          </select>
-
-          <button v-if="recipe.utensils.length > 1" type="button"
-            class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50" @click="removeUtensil(index)">
-            Retirer
-          </button>
-        </div>
-      </div>
-
-      <button type="button" class="mt-3 rounded-md border border-primary px-3 py-2
-                font-medium text-primary-dark hover:bg-primary-light" @click="addUtensil">
-        Ajouter un ustensile
       </button>
     </section>
 

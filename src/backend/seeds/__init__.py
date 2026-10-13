@@ -5,7 +5,6 @@ from .ingredients import seed_ingredients
 from .recipes import seed_recipes
 from .tags import seed_tags
 from .users import seed_users
-from .utensils import seed_utensils
 
 
 def seed_database():
@@ -14,6 +13,5 @@ def seed_database():
     seed_categories()
     seed_ingredient_categories()
     seed_ingredients()
-    seed_utensils()
     seed_tags()
     seed_recipes()
