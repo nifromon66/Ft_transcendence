@@ -73,11 +73,6 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/test-upload',
-      name: 'test-upload',
-      component: () => import('@/views/TestUploadView.vue'),
-    },
-    {
       path: '/recipe/:id/edit',
       name: 'recipe-edit',
       component: () => import('../views/EditRecipeView.vue'),
