@@ -156,10 +156,4 @@ def check_badge_eligibility(
     user_id = user.id
     badge_id = badge.id
 
-    if badge_id == 1:
-        return True
-
-    elif badge_id == 2:
-        return True
-
-    return False
+    return bool(badge_id == 1 or badge_id == 2)

@@ -41,9 +41,6 @@ class RecipeStep(db.Model):
             self.recipe = recipe
         elif recipe_id is not None:
             self.recipe_id = recipe_id
-        # else:
-        #     raise ValueError("Init RecipeStep: recipe or recipe_id must be provided")
-
         self.step_number = step_number
         self.description = description
         self.image_filename = image_filename
