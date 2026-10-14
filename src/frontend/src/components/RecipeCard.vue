@@ -1,21 +1,17 @@
 <script setup>
-  import { RouterLink } from 'vue-router'
-  import StarRating from '@/components/StarRating.vue'
+import { RouterLink } from 'vue-router'
+import StarRating from '@/components/StarRating.vue'
 
-
-  defineProps({
-    recipe: {
-      type: Object,
-      required: true,
-    },
-  })
+defineProps({
+  recipe: {
+    type: Object,
+    required: true,
+  },
+})
 </script>
 
 <template>
-  <RouterLink
-    :to="{ name: 'recipe-details', params: { id: recipe.id } }"
-    class="block h-full rounded-xl"
-  >
+  <RouterLink :to="{ name: 'recipe-details', params: { id: recipe.id } }" class="block h-full rounded-xl">
     <article class="
       flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-md
       transition duration-200
@@ -24,17 +20,10 @@
       hover:ring-4
      hover:ring-primary
     ">
-      <img
-        v-if="recipe.imageUrl"
-        :src="recipe.imageUrl"
-        :alt="`Photo de ${recipe.title}`"
-        class="aspect-video w-full object-cover"
-      />
+      <img v-if="recipe.imageUrl" :src="recipe.imageUrl" :alt="`Photo de ${recipe.title}`"
+        class="aspect-video w-full object-cover" />
 
-      <div
-        v-else
-        class="flex aspect-video items-center justify-center bg-primary-light"
-      >
+      <div v-else class="flex aspect-video items-center justify-center bg-primary-light">
         Image indisponible
       </div>
 

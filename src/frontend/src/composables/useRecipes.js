@@ -2,21 +2,23 @@ import { ref } from 'vue'
 import { getRecipes } from '@/services/recipeService'
 
 export function useRecipes() {
+  const total = ref(0)
+
   const recipes = ref([])
 
   const loading = ref(false)
 
   const error = ref(null)
 
-  async function loadRecipes(search = '') {
+  async function loadRecipes(filters = []) {
     loading.value = true
     error.value = null
 
     try {
-      recipes.value = await getRecipes(search)
+      const data = await getRecipes(filters)
+      recipes.value = data.recipes
+      total.value = data.total
     } catch (err) {
-      console.error('Failed to load recipes:', err)
-
       error.value = 'Impossible de charger les recettes.'
     } finally {
       loading.value = false
@@ -27,6 +29,7 @@ export function useRecipes() {
     recipes,
     loading,
     error,
+    total,
     loadRecipes,
   }
 }

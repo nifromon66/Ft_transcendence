@@ -18,12 +18,17 @@ class Ingredient(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    category_id: Mapped[int] = mapped_column(ForeignKey("ingredient_categories.id"), nullable=False)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("ingredient_categories.id"), nullable=False
+    )
+
     category: Mapped[IngredientCategory] = relationship(back_populates="ingredients")
 
-    recipes: Mapped[list[RecipeIngredient]] = relationship(back_populates="ingredient", cascade="all, delete-orphan")
+    recipes: Mapped[list[RecipeIngredient]] = relationship(
+        back_populates="ingredient", cascade="all, delete-orphan"
+    )
 
-    def __init__(self, name, id:int | None = None, *, category_id: int):
+    def __init__(self, name, id: int | None = None, *, category_id: int):
         self.category_id = category_id
         if id is not None:
             self.id = id

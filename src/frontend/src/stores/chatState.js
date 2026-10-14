@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { useAuthStore } from './authState'
-import { socket } from './services/socketService'
-import { fetchFriends } from './services/friendService'
-
+import { useAuthStore } from '@/stores/authState.js'
+import { socket } from '@/services/socketService.js'
+import { fetchFriends } from '@/services/friendService'
+import { fetchConversation, deleteMessage } from '@/services/messageService'
 
 export const useChatStore = defineStore('chat', {
     state: () => ({
@@ -15,20 +15,11 @@ export const useChatStore = defineStore('chat', {
     actions: {
         async fetchFriends() {
             const authStore = useAuthStore()
-            const token = authStore.token || localStorage.getItem('token')
 
             try {
-                const response = await fetch('/friends', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                const data = await response.json()
-                if (response.ok && data.success) {
-                    this.friendsList = data.friends
-                }
+                this.friendsList = await fetchFriends(authStore.token)
             } catch (error) {
-
+                this.chatError = error.message || "Impossible de charger la liste d'amis."
             }
         },
 
@@ -48,25 +39,10 @@ export const useChatStore = defineStore('chat', {
         async fetchConversation(friendId) {
             const authStore = useAuthStore()
 
-            const token = authStore.token || localStorage.getItem('token')
-
             try {
-                const response = await fetch(`/api/messages/${friendId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-
-                const data = await response.json()
-
-                if (response.ok && data.success) {
-                    this.messages = data.messages
-                }
-
+                this.messages = await fetchConversation(friendId, authStore.token)
             } catch (error) {
-
+                this.chatError = error.message || "Erreur lors du chargement des messages."
             }
         },
 
@@ -94,13 +70,15 @@ export const useChatStore = defineStore('chat', {
         },
 
         initializeSocketListeners() {
-
             if (!socket) {
                 return
             }
 
             socket.off('receive_message')
             socket.off('message_error')
+            socket.off('user_status_changed')
+            socket.off('message_deleted')
+            socket.off('user_updated')
 
             socket.on('receive_message', (message) => {
                 const isRelevantToActiveChat = this.activeContact && (message.sender_id == this.activeContact.id || message.receiver_id === this.activeContact.id)
@@ -136,6 +114,11 @@ export const useChatStore = defineStore('chat', {
                 }
             })
 
+            socket.on('message_deleted', (data) => {
+                const messageId = data.message_id
+                this.messages = this.messages.filter(m => m.id !== messageId)
+            })
+
             socket.on('user_updated', (data) => {
                 const friend = this.friendsList.find(f => f.id === data.user_id)
                 if (friend) {
@@ -150,6 +133,21 @@ export const useChatStore = defineStore('chat', {
                     }
                 }
             })
+        },
+
+        async deleteMessage(messageId) {
+            const authStore = useAuthStore()
+            if (!authStore.token) {
+                this.chatError = "Vous n'êtes pas authentifié."
+                return
+            }
+
+            try {
+                await deleteMessage(messageId, authStore.token)
+                this.messages = this.messages.filter(m => m.id !== messageId)
+            } catch (error) {
+                this.chatError = error.message || "Erreur lors de la suppression du message."
+            }
         },
 
         clearError() {

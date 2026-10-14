@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import Boolean, DateTime, Integer, String, and_, or_, select
+from sqlalchemy import JSON, Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from user_xp_management.rewards import get_active_frame
 
 from .association import friend
 from user_xp_management.rewards import get_active_frame
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .rating import Rating
     from .recipe import Recipe
+    from .user_avatar_frame import UserAvatarFrame
 
 
 class User(db.Model):
@@ -29,13 +31,25 @@ class User(db.Model):
 
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    oauth_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    oauth_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+
+    totp_secret: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    is_2fa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    recovery_codes: Mapped[list[str] | None] = mapped_column(
+        JSON, nullable=True, default=list
+    )
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
 
-    avatar_url: Mapped[str | None] = mapped_column(String)
+    avatar_filename: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
 
@@ -67,19 +81,46 @@ class User(db.Model):
         back_populates="receiver",
     )
 
-    def __init__(self, *, username: str, email: str, password: str, role: str = "user"):
+    def __init__(
+        self,
+        *,
+        username: str,
+        email: str,
+        password: str | None = None,
+        role: str = "user",
+        oauth_provider: str | None = None,
+        oauth_id: str | None = None,
+    ):
         self.username = username
         self.email = email
-        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+
+        if password:
+            self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        else:
+            self.password_hash = None
+
+        self.oauth_provider = oauth_provider
+        self.oauth_id = oauth_id
+
+        self.totp_secret = None
+        self.is_2fa_enabled = False
+        self.recovery_codes = []
+
         if role != "user":
             self.role = role
         self.is_active = True
 
     def check_password(self, password: str) -> bool:
+        if not self.password_hash:
+            return False
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str | None]:
-        full_avatar_path = f"/uploads/{self.avatar_url}" if self.avatar_url else None
+        full_avatar_path = (
+            f"/api/users/avatars/{self.avatar_filename}"
+            if self.avatar_filename
+            else None
+        )
 
         return {
             "id": self.id,
@@ -87,6 +128,8 @@ class User(db.Model):
             "email": self.email,
             "avatar_url": full_avatar_path,
             "avatar_frame": get_active_frame(self),
+            "is_2fa_enabled": self.is_2fa_enabled,
+            "oauth_provider": self.oauth_provider,
         }
 
     def get_friends(self) -> list[User]:

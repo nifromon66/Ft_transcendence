@@ -1,15 +1,6 @@
-/**
- * Resizes and compresses an image using HTML5 Canvas.
- * @param {File} file - The original image file.
- * @param {number} maxWidth - The maximum allowed width.
- * @param {number} maxHeight - The maximum allowed height.
- * @param {number} quality - The WebP compression quality (0 to 1).
- * @returns {Promise<File>} - The new optimized image file.
- */
 export function optimizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()
-        reader.readAsDataURL(file)
 
         reader.onload = (event) => {
             const img = new Image()
@@ -21,12 +12,12 @@ export function optimizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0
 
                 if (width > height) {
                     if (width > maxWidth) {
-                        height = Math.round((height *= maxWidth / width))
+                        height = Math.round(height * (maxWidth / width))
                         width = maxWidth
                     }
                 } else {
                     if (height > maxHeight) {
-                        width = Math.round((width *= maxHeight / height))
+                        width = Math.round(width * (maxHeight / height))
                         height = maxHeight
                     }
                 }
@@ -34,6 +25,7 @@ export function optimizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0
                 const canvas = document.createElement('canvas')
                 canvas.width = width
                 canvas.height = height
+
                 const ctx = canvas.getContext('2d')
                 ctx.drawImage(img, 0, 0, width, height)
 
@@ -63,5 +55,7 @@ export function optimizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0
         }
 
         reader.onerror = () => reject(new Error('Error reading the file.'))
+
+        reader.readAsDataURL(file)
     })
 }

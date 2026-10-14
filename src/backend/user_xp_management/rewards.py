@@ -12,11 +12,17 @@ FRAME_LEVELS = {reward["id"]: reward["required_level"] for reward in AVATAR_REWA
 def get_active_frame(user):
     preference = user.avatar_frame_preference
     frame = preference.frame if preference else None
-    if frame in FRAME_LEVELS and get_xp_progress(user.xp)["level"] >= FRAME_LEVELS[frame]:
+    if (
+        frame in FRAME_LEVELS
+        and get_xp_progress(user.xp)["level"] >= FRAME_LEVELS[frame]
+    ):
         return frame
     return None
 
 
 def get_level_rewards(user):
     level = get_xp_progress(user.xp)["level"]
-    return [{**reward, "unlocked": level >= reward["required_level"]} for reward in AVATAR_REWARDS]
+    return [
+        {**reward, "unlocked": level >= reward["required_level"]}
+        for reward in AVATAR_REWARDS
+    ]

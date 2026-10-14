@@ -9,10 +9,10 @@ from .ingredient import Ingredient
 from .ingredient_category import IngredientCategory
 from .rating import Rating
 from .recipe import Recipe
+from .recipe_step import RecipeStep
 from .tag import Tag
 from .user import User
 from .user_avatar_frame import UserAvatarFrame
-from .recipe_step import RecipeStep
 from .message import Message
 
 __all__ = [
@@ -22,15 +22,15 @@ __all__ = [
     "Favorite",
     "Ingredient",
     "IngredientCategory",
+    "Message",
     "Rating",
     "Recipe",
-    "RecipeStep",
     "RecipeIngredient",
+    "RecipeStep",
     "Tag",
     "User",
     "UserAvatarFrame",
     "UserBadge",
     "db",
     "recipe_tag",
-    "Message",
 ]

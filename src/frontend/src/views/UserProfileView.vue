@@ -1,13 +1,13 @@
 <script setup>
 import AvatarFrame from '@/components/AvatarFrame.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/authState'
-import { fetchUserProfile, deleteAccount, updateMyProfile } from '@/services/userService'
-import { uploadAvatar } from '@/services/uploadService'
-import { fetchAvatarBlob } from '@/services/avatarService'
+import { useAuthStore } from '@/stores/authState'
+import { fetchUserProfile, deleteAccount, updateMyProfile, deleteAvatar } from '@/services/userService'
+import { uploadAvatar } from '@/services/userService'
+import { fetchAvatarBlob } from '@/services/userService'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
-
+import QrcodeVue from 'qrcode.vue'
 
 import ImageDropZone from '@/components/ImageDropZone.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -38,6 +38,23 @@ const editForm = ref({
     email: ''
 })
 
+const recoveryCodes = ref([])
+const isCopied = ref(false)
+
+const is2FaModalOpen = ref(false)
+const twoFaStep = ref(1)
+const twoFaPassword = ref('')
+const twoFaCode = ref('')
+const qrCodeUrl = ref('')
+const twoFaError = ref('')
+const is2FaLoading = ref(false)
+
+const isDisable2FaModalOpen = ref(false)
+const disable2FaPassword = ref('')
+const disable2FaError = ref('')
+const isDisable2FaLoading = ref(false)
+const disable2FaCode = ref('')
+
 const openEditInfo = () => {
     editForm.value.username = authStore.user.username
     editForm.value.email = authStore.user.email
@@ -65,7 +82,7 @@ const saveProfileInfo = async () => {
         authStore.user.username = updatedUser.username
         authStore.user.email = updatedUser.email
 
-        infoSuccessMessage.value = "Vos informations ont été mises à jout avec succès !"
+        infoSuccessMessage.value = "Vos informations ont été mises à jour avec succès !"
         isEditingInfo.value = false
 
         setTimeout(() => infoSuccessMessage.value = '', 3000)
@@ -78,6 +95,121 @@ const saveProfileInfo = async () => {
         }
     } finally {
         isInfoUpdating.value = false
+    }
+}
+
+const open2FaModal = () => {
+    is2FaModalOpen.value = true
+    twoFaStep.value = 1
+    twoFaPassword.value = ''
+    twoFaCode.value = ''
+    twoFaError.value = ''
+}
+
+const close2FaModal = () => {
+    is2FaModalOpen.value = false
+    twoFaStep.value = 1
+    twoFaPassword.value = ''
+    twoFaCode.value = ''
+    twoFaError.value = ''
+    recoveryCodes.value = []
+}
+
+const submit2FaPassword = async () => {
+    if (!twoFaPassword.value) {
+        twoFaError.value = "Veuillez entrer votre mot de passe."
+        return
+    }
+
+    try {
+        is2FaLoading.value = true
+        twoFaError.value = ''
+
+        const response = await fetch('/api/auth/2fa/setup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authStore.token}`
+            },
+            body: JSON.stringify({ password: twoFaPassword.value })
+        })
+
+        let data = {}
+
+        try {
+            data = await response.json()
+        } catch (parseError) {
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error)
+        }
+
+        qrCodeUrl.value = data.qr_uri
+        twoFaStep.value = 2
+    } catch (err) {
+        twoFaError.value = err.message || "Impossible de joindre le serveur."
+    } finally {
+        is2FaLoading.value = false
+    }
+}
+
+const confirm2FaCode = async () => {
+    if (!twoFaCode.value || twoFaCode.value.length !== 6) {
+        twoFaError.value = "Le code doit contenir 6 chiffres."
+        return
+    }
+
+    try {
+        is2FaLoading.value = true
+        twoFaError.value = ''
+
+        const response = await fetch('/api/auth/2fa/verify-setup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authStore.token}`
+            },
+            body: JSON.stringify({ code: twoFaCode.value })
+        })
+
+        let data = {}
+        try {
+            data = await response.json()
+        } catch (parseError) {
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+        }
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error("Le code est incorrect ou a expiré.")
+            }
+            throw new Error(data.error || "Code invalide.")
+        }
+
+        authStore.user.is_2fa_enabled = true
+        recoveryCodes.value = data.recovery_codes
+        twoFaStep.value = 3
+    } catch (err) {
+        if (err.name === 'TypeError') {
+            twoFaError.value = "Erreur réseau : Impossible de joindre le serveur."
+        } else {
+            twoFaError.value = err.message
+        }
+    } finally {
+        is2FaLoading.value = false
+    }
+}
+
+const copyRecoveryCodes = async () => {
+    const textToCopy = recoveryCodes.value.join('\n')
+    try {
+        await navigator.clipboard.writeText(textToCopy)
+        isCopied.value = true
+        setTimeout(() => { isCopied.value = false }, 2000)
+    } catch (err) {
+
     }
 }
 
@@ -97,7 +229,6 @@ const confirmDelete = async () => {
         deleteError.value = "Veuillez renseigner votre mot de passe."
         return
     }
-    console.log("Mot de passe prêt à être envoyé :", deletePassword.value)
     try {
         const token = authStore.token
 
@@ -116,6 +247,64 @@ const confirmDelete = async () => {
         } else {
             deleteError.value = err.message || "Impossible de supprimer le compte."
         }
+    }
+}
+
+const openDisable2FaModal = () => {
+    disable2FaPassword.value = ''
+    disable2FaCode.value = ''
+    disable2FaError.value = ''
+    isDisable2FaModalOpen.value = true
+}
+
+const closeDisable2FaModal = () => {
+    isDisable2FaModalOpen.value = false
+}
+
+const confirmDisable2Fa = async () => {
+    if (!disable2FaPassword.value) {
+        disable2FaError.value = "Le mot de passe est requis."
+        return
+    }
+
+    if (!disable2FaCode.value || disable2FaCode.value.length !== 6) {
+        disable2FaError.value = "Veuillez entrer le code à 6 chiffres."
+        return
+    }
+
+    isDisable2FaLoading.value = true
+    disable2FaError.value = ''
+
+    try {
+        const response = await fetch('/api/auth/2fa/disable', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authStore.token}`
+            },
+            body: JSON.stringify({
+                password: disable2FaPassword.value,
+                code: disable2FaCode.value
+            })
+        })
+
+        let data = {}
+        try {
+            data = await response.json()
+        } catch (e) {
+
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || "Erreur lors de la désactivation.")
+        }
+
+        authStore.user.is_2fa_enabled = false
+        closeDisable2FaModal()
+    } catch (err) {
+        disable2FaError.value = err.message
+    } finally {
+        isDisable2FaLoading.value = false
     }
 }
 
@@ -168,15 +357,8 @@ const handleDeleteAvatar = async () => {
 
     try {
         const token = authStore.token
-        const response = await fetch('/api/users/avatar', {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
 
-        const data = await response.json()
-        if (!response.ok || data.success === false) {
-            throw new Error(data.error || "Erreur lors de la suppression de l'avatar.")
-        }
+        const data = await deleteAvatar(token)
 
         if (avatarImageSrc.value) {
             URL.revokeObjectURL(avatarImageSrc.value)
@@ -190,8 +372,6 @@ const handleDeleteAvatar = async () => {
 }
 
 const handleNewFile = (rawFile) => {
-    console.log("Fichier reçu du DropZone :", rawFile)
-
     const { isValid, error } = validateAvatar(rawFile)
     if (!isValid) {
         alert(error)
@@ -200,7 +380,6 @@ const handleNewFile = (rawFile) => {
 
     selectedFile.value = rawFile
     previewImageSrc.value = URL.createObjectURL(rawFile)
-    console.log("Aperçu généré avec succès :", previewImageSrc.value)
 }
 
 const saveAvatar = async () => {
@@ -251,7 +430,6 @@ const cancelEdit = () => {
         previewImageSrc.value = null
     }
 }
-
 </script>
 
 <template>
@@ -269,6 +447,7 @@ const cancelEdit = () => {
                 class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
 
                 <div class="flex flex-col items-center space-y-4">
+
                     <div class="relative">
                         <AvatarFrame :frame="authStore.user.avatar_frame" />
                         <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
@@ -388,21 +567,56 @@ const cancelEdit = () => {
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div v-if="avatarError || (errorMessage && authStore.user)" class="mt-4">
-                    <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
-                    <p v-if="errorMessage && authStore.user" class="text-sm text-red-500">{{ errorMessage }}</p>
-                </div>
+                    <div v-if="avatarError || (errorMessage && authStore.user)" class="mt-4">
+                        <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
+                        <p v-if="errorMessage && authStore.user" class="text-sm text-red-500">{{ errorMessage }}</p>
+                    </div>
 
-                <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
-                    <button @click="openDeleteModal"
-                        class="text-red-600 hover:text-red-800 font-medium text-sm underline transition-colors">
-                        Supprimer mon compte
-                    </button>
+                    <div v-if="authStore.user && !authStore.user.oauth_provider"
+                        class="mt-8 pt-6 border-t border-gray-200">
+                        <h2 class="mb-4 text-lg font-semibold text-gray-800">Sécurité</h2>
+
+                        <div
+                            class="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-betwwen gap-4">
+                            <div>
+                                <p class="font-bold text-gray-700 text-base">Authentification à double facteur (2FA)</p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    <template v-if="authStore.user.is_2fa_enabled">
+                                        Le 2FA est activé. Votre compte bénéficie d'une sécurité renforcée.
+                                    </template>
+                                    <template v-else>
+                                        Ajoutez une couche de sécurité supplémentaire en activant l'authentification à
+                                        double facteurs (2FA).
+                                    </template>
+                                </p>
+                            </div>
+                            <button v-if="!authStore.user.is_2fa_enabled" @click="open2FaModal"
+                                class="px-4 py-2 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap">
+                                Activer le 2FA
+                            </button>
+                            <div v-else class="flex items-center space-x-3">
+                                <span
+                                    class="px-3 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded border border-green-200">
+                                    ✓ Activé
+                                </span>
+                                <button @click="openDisable2FaModal"
+                                    class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline transition-colors whitespace-nowrap">
+                                    Désactiver
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
+                        <button @click="openDeleteModal"
+                            class="text-red-600 hover:text-red-800 font-medium text-sm underline transition-colors">
+                            Supprimer mon compte
+                        </button>
+                    </div>
                 </div>
             </div>
-
             <div v-else class="text-red-500">
                 Impossible de charger le profil.
             </div>
@@ -414,7 +628,8 @@ const cancelEdit = () => {
                 <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer mon compte</h3>
 
                 <p class="text-gray-700 mb-4 text-sm">
-                    Attention, cette action est définitive. Vos données personnelles et votre avatar seront effacés. Vos
+                    Attention, cette action est définitive. Vos données personnelles et votre avatar seront effacés.
+                    Vos
                     contributions seront conservées, mais anonymisées.
                 </p>
 
@@ -441,5 +656,126 @@ const cancelEdit = () => {
                 </div>
             </div>
         </div>
+
+        <div v-if="is2FaModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+
+                <div v-if="twoFaStep === 1">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
+                    <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
+                    </p>
+                    <input type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
+                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
+                        @keyup.enter="submit2FaPassword">
+                    <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
+
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button @click="close2FaModal"
+                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
+                        <button @click="submit2FaPassword" :disabled="is2FaLoading"
+                            class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition-colors">
+                            {{ is2FaLoading ? 'Vérification...' : 'Continuer' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-else-if="twoFaStep === 2">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Scanner le QR Code</h3>
+                    <p class="text-gray-600 mb-4 text-sm text-center">Utilisez Google Authenticator pour scanner ce
+                        QR
+                        Code :
+                    </p>
+
+                    <div class="flex justify-center mb-6">
+                        <div class="p-2 bg-white border rounded-xl shadow-sm">
+                            <qrcode-vue :value="qrCodeUrl" :size="200" level="H" />
+                        </div>
+                    </div>
+
+                    <input type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
+                        @keyup.enter="confirm2FaCode">
+                    <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
+
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button @click="close2FaModal"
+                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
+                        <button @click="confirm2FaCode" :disabled="is2FaLoading"
+                            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium">
+                            {{ is2FaLoading ? 'Validation...' : 'Valider et Activer le 2FA' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-else-if="twoFaStep === 3" class="animate-fade-in">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Codes de récupération</h3>
+
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-5">
+                        <p class="text-yellow-800 text-sm text-center font-medium">
+                            Sauvegardez ces codes en lieu sûr.
+                            Ils ne seront affichés qu'une seule fois et vous permettront de récupérer votre compte
+                            si
+                            vous
+                            perdez l'accès à Google Authenticator.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div v-for="code in recoveryCodes" :key="code"
+                            class="bg-gray-50 border border-gray-200 p-2 rounded text-center font-mono tracking-wider text-gray-800 text-sm font-semibold">
+                            {{ code }}
+                        </div>
+                    </div>
+
+                    <button @click="copyRecoveryCodes" type="button"
+                        class="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-gray-100 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors mb-4 font-semibold">
+                        <span v-if="!isCopied">Copier les codes</span>
+                        <span v-else class="text-green-600">Codes copiés !</span>
+                    </button>
+
+                    <div class="w-full border-t border-gray-200 pt-4 mt-2">
+                        <button @click="close2FaModal"
+                            class="w-full px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold">
+                            J'ai bien sauvegardé ces codes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div v-if="isDisable2FaModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Désactiver le 2FA</h3>
+                <p class="text-gray-600 mb-4 text-sm">
+                    En désactivant le 2FA, votre compte sera moins sécurisé. Veuillez confirmer votre identité pour
+                    continuer.
+                </p>
+
+                <input type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
+                    class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
+
+                <input type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
+                    @keyup.enter="confirmDisable2Fa" />
+
+                <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
+
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button @click="closeDisable2FaModal"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">
+                        Annuler
+                    </button>
+                    <button @click="confirmDisable2Fa" :disabled="isDisable2FaLoading"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium disabled:opacity-50">
+                        {{ isDisable2FaLoading ? 'Désactivation...' : 'Désactiver' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 </template>

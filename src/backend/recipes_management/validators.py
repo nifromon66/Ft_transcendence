@@ -39,15 +39,14 @@ def validate_recipe_fields(data):
 
     cooking_time = data.get("cooking_time")
 
-    if cooking_time is not None:
-        if (
-            not isinstance(cooking_time, int)
-            or isinstance(cooking_time, bool)
-            or cooking_time < 0
-        ):
-            raise RecipeValidationError(
-                "Le temps de préparation doit être un entier positif"
-            )
+    if cooking_time is not None and (
+        not isinstance(cooking_time, int)
+        or isinstance(cooking_time, bool)
+        or cooking_time < 0
+    ):
+        raise RecipeValidationError(
+            "Le temps de préparation doit être un entier positif"
+        )
 
     difficulty = data.get("difficulty")
 

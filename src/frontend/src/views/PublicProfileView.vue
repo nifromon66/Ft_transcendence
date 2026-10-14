@@ -1,11 +1,13 @@
 <script setup>
+import { useRouter } from 'vue-router'
+import { useChatStore } from '@/stores/chatState'
 import { ref, onMounted, onUnmounted } from 'vue'
 import XpBar from '@/components/XpBar.vue'
 import AvatarFrame from '@/components/AvatarFrame.vue'
 import LevelRewards from '@/components/LevelRewards.vue'
-import { useAuthStore } from '@/authState';
-import { fetchPublicProfile, updateAvatarFrame } from '@/services/userService';
-import { fetchAvatarBlob } from '@/services/avatarService';
+import { useAuthStore } from '@/stores/authState'
+import { fetchPublicProfile, updateAvatarFrame } from '@/services/userService'
+import { fetchAvatarBlob } from '@/services/userService'
 
 import {
     sendFriendRequest,
@@ -14,7 +16,17 @@ import {
     denyFriendRequest,
     removeFriend
 } from '@/services/friendService'
-import { socket } from '@/services/socketService';
+import { socket } from '@/services/socketService'
+
+const router = useRouter()
+const chatStore = useChatStore()
+
+const openChat = () => {
+    if (profile.value) {
+        chatStore.setActiveContact(profile.value)
+        router.push('/chat')
+    }
+}
 
 const props = defineProps({
     id: {
@@ -44,6 +56,8 @@ const selectAvatarFrame = async (frame) => {
         profile.value.xp_progress = data.xp_progress
         if (authStore.user) {
             authStore.updateRewards(data)
+            authStore.user.avatar_frame = data.avatar_frame
+            localStorage.setItem('user', JSON.stringify(authStore.user))
         }
     } catch (error) {
         if (error.message === 'SESSION_EXPIRED') {
@@ -192,7 +206,8 @@ onUnmounted(() => {
                             <span v-else>?</span>
                         </div>
 
-                        <span class="absolute bottom-2 right-2 z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm"
+                        <span
+                            class="absolute bottom-2 right-2 z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm"
                             :class="profile.is_online ? 'bg-green-500' : 'bg-gray-400'"
                             :title="profile.is_online ? 'En ligne' : 'Hors ligne'">
                         </span>
@@ -223,8 +238,8 @@ onUnmounted(() => {
                         </div>
 
                         <template v-else-if="profile.friendship_status === 'accepted'">
-                            <button
-                                class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors">
+                            <button @click="openChat"
+                                class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors cursor-pointer">
                                 Envoyer un message à cet ami
                             </button>
                             <button @click="removeCurrentFriend(profile.username)" :disabled="isActionLoading"
@@ -273,22 +288,10 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <LevelRewards v-if="profile && !isLoading && !errorMessage"
-            :rewards="profile.level_rewards || []"
-            :selected="profile.avatar_frame"
-            :editable="profile.friendship_status === 'self'"
-            :saving="isRewardSaving"
-            :error="rewardError"
-            @select="selectAvatarFrame" />
+        <LevelRewards v-if="profile && !isLoading && !errorMessage" :rewards="profile.level_rewards || []"
+            :selected="profile.avatar_frame" :editable="profile.friendship_status === 'self'" :saving="isRewardSaving"
+            :error="rewardError" @select="selectAvatarFrame" />
 
-        <div v-if="profile && !isLoading && !errorMessage"
-            class="mx-auto mt-6 max-w-2xl rounded-xl bg-white p-8 shadow-lg">
-            <h2 class="mb-4 border-b pb-4 text-xl font-bold text-gray-800">Statistiques</h2>
-
-            <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-
-            </div>
-        </div>
 
     </main>
 </template>

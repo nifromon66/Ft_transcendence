@@ -1,7 +1,6 @@
 from extensions import db
 from models import IngredientCategory
 
-
 INGREDIENT_GROUPS = {
     "Légumes": "tomate,oignon,ail,carotte,courgette,poivron,aubergine,pomme de terre,champignon,épinards,brocoli,tomates concassées",
     "Fruits": "avocat,citron",
@@ -16,12 +15,21 @@ INGREDIENT_GROUPS = {
 
 
 def category_name_for(name):
-    return next((category for category, names in INGREDIENT_GROUPS.items()
-                 if name.casefold() in names.split(",")), "Autres")
+    return next(
+        (
+            category
+            for category, names in INGREDIENT_GROUPS.items()
+            if name.casefold() in names.split(",")
+        ),
+        "Autres",
+    )
 
 
 def seed_ingredient_categories():
     for name in INGREDIENT_GROUPS:
-        if db.session.scalar(db.select(IngredientCategory).filter_by(name=name)) is None:
+        if (
+            db.session.scalar(db.select(IngredientCategory).filter_by(name=name))
+            is None
+        ):
             db.session.add(IngredientCategory(name=name))
     db.session.commit()

@@ -16,4 +16,4 @@ class IngredientCategory(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    ingredients: Mapped[list["Ingredient"]] = relationship(back_populates="category")
+    ingredients: Mapped[list[Ingredient]] = relationship(back_populates="category")

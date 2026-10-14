@@ -1,27 +1,34 @@
 import { io } from 'socket.io-client'
 
-export let socket = null
+const apiUrl = import.meta.env.VITE_API_URL || ''
+
+export const socket = io(apiUrl, {
+    path: '/socket.io/',
+    autoConnect: false,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 2000
+})
 
 export const connectSocket = (token) => {
-    if (socket) {
-        return socket
+    if (!navigator.onLine) {
+        throw new Error("Impossible de se connecter au serveur : vous êtes hors ligne.")
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    if (!token) {
+        throw new Error("Impossible de se connecter au serveur : vous n'êtes pas authentifié.")
+    }
 
-    socket = io(apiUrl, {
-        path: '/socket.io',
-        auth: { token: token },
-        reconnectionAttempts: 3,
-        reconnectionDelay: 2000
-    })
+    if (socket.connected && socket.auth?.token === token) {
+        return
+    }
 
-    return socket
+    socket.auth = { token }
+    socket.connect()
 }
 
 export const disconnectSocket = () => {
-    if (socket) {
+    if (socket.connected) {
+        socket.auth = {}
         socket.disconnect()
-        socket = null
     }
 }

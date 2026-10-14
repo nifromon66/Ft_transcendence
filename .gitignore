@@ -73,3 +73,5 @@ uploads/
 
 # other
 AGENTS.md
+
+.ruff_cache

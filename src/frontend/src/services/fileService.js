@@ -1,7 +1,8 @@
-export async function fetchAvatarBlob(avatarUrl, token) {
-    const baseUrl = import.meta.env.VITE_API_URL
+export async function fetchDocumentBlob(fileUrl, token) {
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    const url = fileUrl.startsWith('http') ? fileUrl : `${baseUrl}${fileUrl}`
 
-    const response = await fetch(`${baseUrl}${avatarUrl}`, {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -19,10 +20,6 @@ export async function fetchAvatarBlob(avatarUrl, token) {
         if (data.success === false) {
             throw new Error(data.error || "Erreur serveur")
         }
-    }
-
-    if (!contentType || !contentType.includes("image")) {
-        throw new Error("Le format du fichier n'est pas une image")
     }
 
     return await response.blob()

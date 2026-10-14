@@ -94,6 +94,13 @@ class RecipeIngredient(db.Model):
 
         self.quantity = quantity
 
+    def to_dict(self) -> dict:
+        return {
+            "ingredient_id": self.ingredient_id,
+            "name": self.ingredient.name,
+            "quantity": self.quantity,
+        }
+
 
 friend = Table(
     "friend",
