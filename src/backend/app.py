@@ -6,14 +6,9 @@ from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_jwt_extended import (
-    get_jwt_identity,
-    jwt_required,
-)
 from friends_management.routes import friends_bp
 from gamification_management.routes import gamification_api
 from messages_management.routes import messages_bp
-from models import User
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from users_management.routes import users_bp
@@ -71,10 +66,6 @@ CORS(
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
-        r"/me": {
-            "origins": [frontend_url],
-            "methods": ["GET", "OPTIONS"],
-        },
         r"/users": {
             "origins": [frontend_url],
             "methods": ["GET", "POST", "OPTIONS"],
@@ -89,7 +80,7 @@ CORS(
         },
         r"/users/me": {
             "origins": [frontend_url],
-            "methods": ["PUT", "OPTIONS"],
+            "methods": ["GET", "PUT", "DELETE", "OPTIONS"],
         },
         r"/users/me/avatar-frame": {
             "origins": [frontend_url],
@@ -170,18 +161,6 @@ db.init_app(app)
 bcrypt.init_app(app)
 socketio.init_app(app, cors_allowed_origins=[frontend_url])
 init_oauth(app)
-
-
-@app.route("/me", methods=["GET"])
-@jwt_required()
-def me():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, int(user_id))
-
-    if user is None or not user.is_active:
-        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
-
-    return jsonify({"success": True, **user.to_dict()}), 200
 
 
 # Crée les tables si elles n'existent pas encore
