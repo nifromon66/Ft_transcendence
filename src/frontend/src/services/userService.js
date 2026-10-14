@@ -57,12 +57,6 @@ export async function updateMyProfile(userData, token) {
     return data.user || data
 }
 
-export async function updateAvatarFrame(frame, token) {
-    if (!navigator.onLine) throw new Error("Vous êtes hors ligne.")
-    if (!token) throw new Error("SESSION_EXPIRED")
-    const baseUrl = import.meta.env.VITE_API_URL || ''
-    return data.user
-}
 
 export async function uploadAvatar(token, file, onProgress) {
     const data = await uploadFileToServer(token, file, '/api/users/me/avatar', "l'image", onProgress)

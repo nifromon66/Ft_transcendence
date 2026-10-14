@@ -3,7 +3,7 @@
 import json
 
 from flask import current_app, jsonify
-from recipe_management.analysis import AnalysisUnavailable, analyze_content
+from recipes_management.analysis import AnalysisUnavailable, analyze_content
 
 INGREDIENT_CATEGORY_RULES = {
     "Légumes": (

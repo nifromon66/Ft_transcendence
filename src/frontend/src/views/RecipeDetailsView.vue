@@ -1,11 +1,9 @@
 <script setup>
 import { computed, ref, watch, onUnmounted } from 'vue'
 import { fetchRecipeById, deleteRecipe, rateRecipe, updateRecipeRating, deleteRecipeRating } from '@/services/recipeService'
-import { fetchAvatarBlob } from '@/services/avatarService'
 import { useRouter } from 'vue-router'
 import StarRating from '@/components/StarRating.vue'
 import { useAuthStore } from '@/stores/authState'
-import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const props = defineProps({

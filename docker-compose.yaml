@@ -138,6 +138,8 @@ services:
     environment:
       RECIPE_AI_URL: http://ollama:11434
       RECIPE_AI_MODEL: qwen3:4b
+      PYTHONDONTWRITEBYTECODE: "1"
+
     build:
       context: ${BACKEND_BUILD_CONTEXT_PATH}
       dockerfile: ${BACKEND_BUILD_DOCKERFILE_PATH}
@@ -164,8 +166,7 @@ services:
       - ${WAF_NETWORK}
       - ${DB_NETWORK}
       - ${FRONTEND_NETWORK}
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
+
   ##########################################
   # Database : PostGreSQL                  #
   ##########################################
