@@ -24,9 +24,9 @@ class RecipeStep(db.Model):
 
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
-    image_url: Mapped[str | None] = mapped_column(String)
+    image_filename: Mapped[str | None] = mapped_column(String)
 
-    recipe: Mapped["Recipe"] = relationship(back_populates="steps")
+    recipe: Mapped[Recipe] = relationship(back_populates="steps")
 
     def __init__(
         self,
@@ -35,23 +35,25 @@ class RecipeStep(db.Model):
         recipe: Recipe | None = None,
         step_number: int,
         description: str,
-        image_url: str | None = None,
+        image_filename: str | None = None,
     ):
         if recipe is not None:
             self.recipe = recipe
         elif recipe_id is not None:
             self.recipe_id = recipe_id
-        # else:
-        #     raise ValueError("Init RecipeStep: recipe or recipe_id must be provided")
-
         self.step_number = step_number
         self.description = description
-        self.image_url = image_url
+        self.image_filename = image_filename
 
     def to_dict(self):
+        full_image_path = (
+            f"/api/recipes/{self.recipe_id}/steps/{self.id}/image"
+            if self.image_filename
+            else None
+        )
         return {
             "id": self.id,
             "step_number": self.step_number,
             "description": self.description,
-            "image_url": self.image_url,
+            "image_url": full_image_path,
         }

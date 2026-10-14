@@ -1,6 +1,6 @@
-import { ref, watch, onMounted, unref } from 'vue'
-import { useAuthStore } from '@/authState'
-import { fetchAvatarBlob } from '@/services/avatarService'
+import { ref, watch, onMounted, onBeforeUnmount, unref } from 'vue'
+import { useAuthStore } from '@/stores/authState.js'
+import { fetchAvatarBlob } from '@/services/userService.js'
 
 export function useAvatar(userRef) {
     const authStore = useAuthStore()
@@ -8,10 +8,17 @@ export function useAvatar(userRef) {
     const avatarImageSrc = ref(null)
     const errorMessage = ref('')
 
+    const cleanupAvatarUrl = () => {
+        if (avatarImageSrc.value) {
+            URL.revokeObjectURL(avatarImageSrc.value)
+            avatarImageSrc.value = null
+        }
+    }
+
     const loadAvatar = async () => {
         const user = unref(userRef)
         if (!user || !user.avatar_url) {
-            avatarImageSrc.value = null
+            cleanupAvatarUrl()
             return
         }
 
@@ -20,23 +27,28 @@ export function useAvatar(userRef) {
 
             if (!token) {
                 errorMessage.value = "Utilisateur non authentifié"
-                avatarImageSrc.value = null
+                cleanupAvatarUrl()
                 return
             }
 
             const blob = await fetchAvatarBlob(user.avatar_url, token)
+
+            cleanupAvatarUrl()
 
             avatarImageSrc.value = URL.createObjectURL(blob)
             errorMessage.value = ''
 
         } catch (error) {
             errorMessage.value = error.message
-            avatarImageSrc.value = null
+            cleanupAvatarUrl()
         }
     }
 
     onMounted(loadAvatar)
-    watch(userRef, loadAvatar, { deep: true })
+
+    watch(() => unref(userRef)?.avatar_url, loadAvatar)
+
+    onBeforeUnmount(cleanupAvatarUrl)
 
     return {
         avatarImageSrc,

@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from .rating import Rating
     from .tag import Tag
     from .user import User
-    from .utensil import Utensil
 
 
 class Recipe(db.Model):
@@ -39,39 +38,56 @@ class Recipe(db.Model):
 
     difficulty: Mapped[str | None] = mapped_column(String)
 
-    image_url: Mapped[str | None] = mapped_column(String)
+    image_filename: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
     updated_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    steps: Mapped[list[RecipeStep]] = relationship(back_populates="recipe", cascade="all, delete-orphan", order_by="RecipeStep.step_number")
+    steps: Mapped[list[RecipeStep]] = relationship(
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        order_by="RecipeStep.step_number",
+    )
 
     user: Mapped[User] = relationship(back_populates="recipes")
 
     category: Mapped[Category] = relationship(back_populates="recipes")
 
-    comments: Mapped[list["Comment"]] = relationship(back_populates="recipe")
+    comments: Mapped[list[Comment]] = relationship(
+        back_populates="recipe", cascade="all, delete-orphan"
+    )
 
-    ingredients: Mapped[list["RecipeIngredient"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    ingredients: Mapped[list[RecipeIngredient]] = relationship(
+        back_populates="recipe", cascade="all, delete-orphan"
+    )
 
-    utensils: Mapped[list["Utensil"]] = relationship(secondary="recipe_utensil", back_populates="recipes")
+    tags: Mapped[list[Tag]] = relationship(
+        secondary="recipe_tag", back_populates="recipes"
+    )
 
-    tags: Mapped[list["Tag"]] = relationship(secondary="recipe_tag", back_populates="recipes")
+    favorites: Mapped[list[Favorite]] = relationship(
+        back_populates="recipe", cascade="all, delete-orphan"
+    )
 
-    favorites: Mapped[list["Favorite"]] = relationship(back_populates="recipe")
+    ratings: Mapped[list[Rating]] = relationship(
+        back_populates="recipe", cascade="all, delete-orphan"
+    )
 
-    ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe")
-
-    def __init__(self, *,
-        user_id: int | None = None, user: User | None = None,
-        category_id: int | None = None, category: Category | None = None,
+    def __init__(
+        self,
+        *,
+        user_id: int | None = None,
+        user: User | None = None,
+        category_id: int | None = None,
+        category: Category | None = None,
         title: str,
         description: str | None = None,
         cooking_time: int | None = None,
         difficulty: str | None = None,
-        image_url: str | None = None,
-        steps: list["RecipeStep"] | None = None):
+        image_filename: str | None = None,
+        steps: list[RecipeStep] | None = None,
+    ):
 
         if user is not None:
             self.user = user
@@ -91,7 +107,7 @@ class Recipe(db.Model):
         self.description = description
         self.cooking_time = cooking_time
         self.difficulty = difficulty
-        self.image_url = image_url
+        self.image_filename = image_filename
         self.created_at = datetime.now(timezone.utc)
         self.updated_at = None
 
@@ -105,7 +121,7 @@ class Recipe(db.Model):
         description: str | None,
         cooking_time: int | None,
         difficulty: str | None,
-        steps: list["RecipeStep"],
+        steps: list[RecipeStep],
     ) -> None:
         self.title = title
         self.category = category
@@ -115,21 +131,27 @@ class Recipe(db.Model):
         self.steps = steps
         self.updated_at = datetime.now(timezone.utc)
 
-# no list ratings, list favorites, list comments in this function
+    # no list ratings, list favorites, list comments in this function
     def to_dict(self) -> dict:
+        full_image_path = (
+            f"/api/recipes/{self.id}/image" if self.image_filename else None
+        )
         return {
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "cooking_time": self.cooking_time,
-            "difficulty": self.difficulty,
-            "image_url": self.image_url,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": (
-                self.updated_at.isoformat()
-                if self.updated_at
+            "rating": (
+                round(
+                    sum(rating.score for rating in self.ratings) / len(self.ratings), 1
+                )
+                if self.ratings
                 else None
             ),
+            "cooking_time": self.cooking_time,
+            "difficulty": self.difficulty,
+            "image_url": full_image_path,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
             "category": {
                 "id": self.category.id,
                 "name": self.category.name,
@@ -137,21 +159,13 @@ class Recipe(db.Model):
             "author": {
                 "id": self.user.id,
                 "username": self.user.username,
+                "avatar_url": (
+                    f"/api/users/avatars/{self.user.avatar_filename}"
+                    if self.user.avatar_filename
+                    else None
+                ),
             },
-            "steps": [
-                step.to_dict()
-                for step in self.steps
-            ],
-            "ingredients": [
-                ingredient.to_dict()
-                for ingredient in self.ingredients
-            ],
-            "utensils": [
-                utensil.to_dict()
-                for utensil in self.utensils
-            ],
-            "tags": [
-                tag.to_dict()
-                for tag in self.tags
-            ],
+            "steps": [step.to_dict() for step in self.steps],
+            "ingredients": [ingredient.to_dict() for ingredient in self.ingredients],
+            "tags": [tag.to_dict() for tag in self.tags],
         }

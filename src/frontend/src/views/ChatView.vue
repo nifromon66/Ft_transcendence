@@ -1,7 +1,7 @@
 <script setup>
-import { useChatStore } from '@/chatState';
+import { useChatStore } from '@/stores/chatState';
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
-import { useAuthStore } from '@/authState';
+import { useAuthStore } from '@/stores/authState';
 import FriendAvatar from '@/components/FriendAvatar.vue';
 import DocumentUpload from '@/components/DocumentUpload.vue';
 import { fetchDocumentBlob } from '@/services/fileService';
@@ -42,47 +42,26 @@ const handleSend = () => {
 }
 
 const downloadFile = async (fileUrl, fileName) => {
-    const token = authStore.token || localStorage.getItem('token')
-
     try {
+        const token = authStore.token || localStorage.getItem('token')
         const blob = await fetchDocumentBlob(fileUrl, token)
-        const blobUrl = window.URL.createObjectURL(blob)
-
-        const link = document.createElement('a')
-        link.href = blobUrl
-        link.download = fileName || 'document.pdf'
-        document.body.appendChild(link)
-        link.click()
-
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(blobUrl)
-
-    } catch (error) {
-        chatStore.chatError = error.message || "Impossible de télécharger le document."
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName || 'document'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+    } catch {
+        useNotificationStore().addError('Erreur lors du téléchargement')
+        alert('Impossible de télécharger le document.')
     }
 }
 
-const deleteMessage = async (messageId) => {
-    const token = authStore.token || localStorage.getItem('token')
-
-    try {
-        const response = await fetch(`messages/${messageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-
-        const result = await response.json()
-
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || "Impossible de supprimer le message.")
-        }
-
-        chatStore.messages = chatStore.messages.filter(m => m.id !== messageId)
-
-    } catch (error) {
-        chatStore.chatError = error.message
+const deleteMessage = (messageId) => {
+    if (confirm('Voulez-vous vraiment supprimer ce message ?')) {
+        chatStore.deleteMessage(messageId)
     }
 }
 
@@ -161,7 +140,7 @@ watch(() => chatStore.messages.length, async () => {
                             <p v-if="msg.content" :class="msg.file_url ? 'mb-2' : ''">{{ msg.content }}</p>
 
                             <div v-if="msg.file_url"
-                                class="flex items-center justify-between rounded-lg bg-white p-3 border border-gray-200 w-full min-w-[250px]">
+                                class="flex items-center justify-between rounded-lg bg-white p-3 border border-gray-200 w-full min-w-62.5">
                                 <div class="flex items-center space-x-3 overflow-hidden">
                                     <svg class="h-8 w-8 shrink-0 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                                         <path
