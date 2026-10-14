@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/authState'
+import { useAuthStore } from '@/stores/authState'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -22,7 +22,7 @@ async function login() {
   isLoading.value = true
 
   try {
-    const response = await fetch('/api/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

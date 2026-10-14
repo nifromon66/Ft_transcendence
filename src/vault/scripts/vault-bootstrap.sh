@@ -33,7 +33,19 @@ else
     log_ok "Vault Already Unsealed."
 fi
 
+log_info "Waiting for Vault to become active leader..."
+
+while ! vault status 2>/dev/null | grep -E "HA Mode[[:space:]]+active" > /dev/null
+do
+    sleep 1
+done
+
+log_ok "Vault is active leader."
+
 log_info "Configuring Vault..."
 
 vault_with_root "${VAULT_SH_CONFIGURE_PATH}"
 
+${VAULT_SH_SECRETS_PATH}
+
+log_ok "Vault initialization complete!"

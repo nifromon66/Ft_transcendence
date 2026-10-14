@@ -31,54 +31,31 @@ function submitSearch() {
 </script>
 
 <template>
-  <form
-    class="flex w-full max-w-2xl gap-3"
-    @submit.prevent="submitSearch"
-  >
-    <input
-      v-model="search"
-      type="search"
-      placeholder="Rechercher une recette..."
-      aria-label="Rechercher une recette"
+  <form class="flex w-full max-w-2xl gap-3" @submit.prevent="submitSearch">
+    <input v-model="search" type="search" placeholder="Rechercher une recette..." aria-label="Rechercher une recette"
       class="flex-1 rounded-lg border border-gray-300 px-4 py-3
              text-gray-900 outline-none
-             focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-    />
+             focus:border-gray-500 focus:ring-2 focus:ring-gray-200" />
 
-    <select
-      v-model="category"
-      class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-    >
+    <select v-model="category"
+      class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200">
       <option value="">Catégorie</option>
-      <option
-        v-for="item in categories"
-        :key="item.id"
-        :value="item.name"
-      >
+      <option v-for="item in categories" :key="item.id" :value="item.name">
         {{ item.name }}
       </option>
     </select>
 
-    <select
-      v-model="difficulty"
-      class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-    >
-    <option value="">Difficulty</option>
-      <option
-        v-for="option in difficulties"
-        :key="option.value || 'all'"
-        :value="option.value"
-      >
+    <select v-model="difficulty"
+      class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200">
+      <option value="">Difficulté</option>
+      <option v-for="option in difficulties" :key="option.value || 'all'" :value="option.value">
         {{ option.label }}
       </option>
     </select>
 
-    <button
-      type="submit"
-      class="rounded-lg bg-gray-900 px-6 py-3
+    <button type="submit" class="rounded-lg bg-gray-900 px-6 py-3
              font-medium text-white
-             hover:bg-gray-700"
-    >
+             hover:bg-gray-700">
       Rechercher
     </button>
   </form>

@@ -93,7 +93,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="max-w-4xl mx-auto p-4 sm:p-6 space-y-10">
+    <div class="flex-1 max-w-4xl mx-auto p-4 sm:p-6 space-y-10">
         <header>
             <h1 class="text-3xl font-bold text-gray-800">Gestion des amis</h1>
         </header>
