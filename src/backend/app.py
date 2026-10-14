@@ -4,6 +4,7 @@ import uuid
 from file_upload_management.routes import delete_file_physically, upload_bp
 from flask_socketio import join_room
 from friends_management.routes import friends_bp
+from ingredient_management.routes import ingredient_bp
 from jwt import ExpiredSignatureError, InvalidTokenError
 from seeds import seed_database
 from sqlalchemy.exc import SQLAlchemyError
@@ -563,6 +564,7 @@ with app.app_context():
 app.register_blueprint(upload_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(recipe_bp)
+app.register_blueprint(ingredient_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)  ##for search func
 app.register_blueprint(users_bp)

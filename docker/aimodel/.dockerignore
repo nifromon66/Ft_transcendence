@@ -1,0 +1,5 @@
+# Only the build files and startup script are needed.
+**
+!Dockerfile
+!.dockerignore
+!entrypoint.sh

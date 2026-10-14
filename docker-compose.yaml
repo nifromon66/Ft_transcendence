@@ -7,6 +7,38 @@ name: ${PROJECT_NAME}
 # Services                               #
 ##########################################
 services:
+  ##########################################
+  # Local recipe analysis : Ollama         #
+  ##########################################
+  ollama:
+    build:
+      context: ${AIMODEL_BUILD_CONTEXT_PATH}
+      dockerfile: ${AIMODEL_BUILD_DOCKERFILE_PATH}
+    image: ${AIMODEL_CONTAINER_NAME}:${AIMODEL_AUTHOR}
+    container_name: ${AIMODEL_CONTAINER_NAME}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - ${AIMODEL_ENV_FILE_PATH}
+    volumes:
+      - ${AIMODEL_VOLUME_DATA_IN}:${AIMODEL_VOLUME_DATA_OUT}
+    expose:
+      - "${AIMODEL_EXPOSE_PORT}"
+    #deploy:
+      #resources:
+       # reservations:
+        #  devices:
+         #   - driver: nvidia
+          #    count: 1
+           #   capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama show \"$$RECIPE_AI_MODEL\" >/dev/null 2>&1"]
+      interval: ${AIMODEL_HEALTHCHECK_INTERVAL}
+      timeout: ${AIMODEL_HEALTHCHECK_TIMEOUT}
+      retries: ${AIMODEL_HEALTHCHECK_RETRIES}
+      start_period: ${AIMODEL_HEALTHCHECK_START_PERIOD}
+    networks:
+      - ${AIMODEL_NETWORK}
   ####################################################
   # Vault : HashiCorp Vault Hardened + Raft database #
   ####################################################
@@ -92,6 +124,9 @@ services:
   # Backend                                #
   ##########################################
   backend:
+    environment:
+      RECIPE_AI_URL: http://ollama:11434
+      RECIPE_AI_MODEL: qwen3:4b
     build:
       context: ${BACKEND_BUILD_CONTEXT_PATH}
       dockerfile: ${BACKEND_BUILD_DOCKERFILE_PATH}
@@ -143,6 +178,7 @@ services:
 # Volumes                                #
 ##########################################
 volumes:
+  ollama_data:
   db_data:
     name: db_data
 
