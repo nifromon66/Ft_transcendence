@@ -4,6 +4,7 @@ import { ref, watch } from 'vue'
 import { useAuthStore } from '@/authState'
 import { fetchRecipeById, updateRecipe } from '@/services/recipeService'
 import RecipeForm from '@/components/RecipeForm.vue'
+import RecipeErrorNotice from '@/components/RecipeErrorNotice.vue'
 import {
   deleteRecipeImage,
   deleteRecipeStepImage,
@@ -25,11 +26,14 @@ const authStore = useAuthStore()
 const recipe = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const submitErrorMessage = ref('')
 const formRecipe = ref(null)
 
 const loadRecipe = async () => {
   isLoading.value = true
   errorMessage.value = ''
+  submitErrorMessage.value = ''
+  formRecipe.value = null
   recipe.value = null
 
   try {
@@ -88,11 +92,11 @@ const submitRecipe = async (
   stepImageChanges = [],
 ) => {
   if (!authStore.token) {
-    errorMessage.value = 'Tu dois être connecté pour modifier cette recette.'
+    submitErrorMessage.value = 'Tu dois être connecté pour modifier cette recette.'
     return
   }
 
-  errorMessage.value = ''
+  submitErrorMessage.value = ''
   isSubmitting.value = true
 
   try {
@@ -167,7 +171,7 @@ const submitRecipe = async (
       params: { id: props.id },
     })
   } catch (error) {
-    errorMessage.value =
+    submitErrorMessage.value =
       error.message || 'Impossible de modifier la recette.'
   } finally {
     isSubmitting.value = false
@@ -209,13 +213,10 @@ watch(
             @submit="submitRecipe"
         />
 
-        <p
-            v-if="errorMessage"
-            role="alert"
-            class="mt-4 rounded-md bg-red-50 p-3 text-red-700"
-        >
-            {{ errorMessage }}
-        </p>
+        <RecipeErrorNotice
+            :message="submitErrorMessage"
+            @close="submitErrorMessage = ''"
+        />
     </div>
   </main>
 </template>

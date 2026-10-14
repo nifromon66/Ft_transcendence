@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/authState'
 import { createRecipe } from '@/services/recipeService'
 import RecipeForm from '@/components/RecipeForm.vue'
+import RecipeErrorNotice from '@/components/RecipeErrorNotice.vue'
 import {
   uploadRecipeImage,
   uploadRecipeStepImage,
@@ -104,13 +105,10 @@ const submitRecipe = async (
         @submit="submitRecipe"
       />
 
-      <p
-        v-if="errorMessage"
-        role="alert"
-        class="mt-4 rounded-md bg-red-50 p-3 text-red-700"
-      >
-        {{ errorMessage }}
-      </p>
+      <RecipeErrorNotice
+        :message="errorMessage"
+        @close="errorMessage = ''"
+      />
     </div>
   </main>
 </template>
