@@ -1,6 +1,17 @@
 import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/authState.js'
-import * as friendService from '@/services/friendService.js'
+import {
+    acceptFriendRequest,
+    cancelFriendRequest,
+    denyFriendRequest,
+    fetchDiscoverUsers,
+    fetchFriends,
+    fetchReceivedRequests,
+    fetchSentRequests,
+    removeFriend,
+    searchUsers,
+    sendFriendRequest
+} from '@/services/friendService.js'
 
 export const useFriendStore = defineStore('friend', {
     state: () => ({
@@ -22,7 +33,7 @@ export const useFriendStore = defineStore('friend', {
 
             this.isLoading = true
             try {
-                this.friendsList = await friendService.fetchFriends(authStore.token)
+                this.friendsList = await fetchFriends(authStore.token)
                 this.errorMessage = ''
             } catch (error) {
                 this.errorMessage = error.message
@@ -39,7 +50,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                this.receivedRequestsList = await friendService.fetchReceivedRequests(authStore.token)
+                this.receivedRequestsList = await fetchReceivedRequests(authStore.token)
                 this.errorMessage = ''
             } catch (error) {
                 this.errorMessage = error.message
@@ -53,7 +64,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                this.sentRequestsList = await friendService.fetchSentRequests(authStore.token)
+                this.sentRequestsList = await fetchSentRequests(authStore.token)
                 this.errorMessage = ''
             } catch (error) {
                 this.errorMessage = error.message
@@ -68,7 +79,7 @@ export const useFriendStore = defineStore('friend', {
 
             this.isLoading = true
             try {
-                this.discoverList = await friendService.fetchDiscoverUsers(authStore.token)
+                this.discoverList = await fetchDiscoverUsers(authStore.token)
                 this.errorMessage = ''
             } catch (error) {
                 this.errorMessage = error.message
@@ -90,7 +101,7 @@ export const useFriendStore = defineStore('friend', {
 
             this.isLoading = true
             try {
-                this.searchResults = await friendService.searchUsers(query, authStore.token)
+                this.searchResults = await searchUsers(query, authStore.token)
                 this.errorMessage = ''
             } catch (error) {
                 this.errorMessage = error.message
@@ -107,7 +118,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                await friendService.sendFriendRequest(targetUserId, authStore.token)
+                await sendFriendRequest(targetUserId, authStore.token)
                 this.errorMessage = ''
 
                 const discUser = this.discoverList.find(u => u.id === targetUserId)
@@ -140,7 +151,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                await friendService.acceptFriendRequest(senderId, authStore.token)
+                await acceptFriendRequest(senderId, authStore.token)
                 this.errorMessage = ''
 
                 const acceptedUser = this.receivedRequestsList.find(req => req.id === senderId)
@@ -169,7 +180,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                await friendService.denyFriendRequest(senderId, authStore.token)
+                await denyFriendRequest(senderId, authStore.token)
                 this.errorMessage = ''
 
                 this.receivedRequestsList = this.receivedRequestsList.filter(req => req.id !== senderId)
@@ -191,7 +202,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                await friendService.cancelFriendRequest(targetUserId, authStore.token)
+                await cancelFriendRequest(targetUserId, authStore.token)
                 this.errorMessage = ''
 
                 const userToRestore = this.sentRequestsList.find(req => req.id === targetUserId)
@@ -222,7 +233,7 @@ export const useFriendStore = defineStore('friend', {
             }
 
             try {
-                await friendService.removeFriend(friendId, authStore.token)
+                await removeFriend(friendId, authStore.token)
                 this.errorMessage = ''
 
                 const friendObj = this.friendsList.find(f => f.id === friendId)

@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/authState.js'
 import { socket } from '@/services/socketService.js'
-
-import * as friendService from '@/services/friendService'
-import * as messageService from '@/services/messageService'
+import { fetchFriends } from '@/services/friendService'
+import { fetchConversation, deleteMessage } from '@/services/messageService'
 
 export const useChatStore = defineStore('chat', {
     state: () => ({
@@ -18,7 +17,7 @@ export const useChatStore = defineStore('chat', {
             const authStore = useAuthStore()
 
             try {
-                this.friendsList = await friendService.fetchFriends(authStore.token)
+                this.friendsList = await fetchFriends(authStore.token)
             } catch (error) {
                 this.chatError = error.message || "Impossible de charger la liste d'amis."
             }
@@ -40,10 +39,8 @@ export const useChatStore = defineStore('chat', {
         async fetchConversation(friendId) {
             const authStore = useAuthStore()
 
-            const token = authStore.token || localStorage.getItem('token')
-
             try {
-                this.messages = await messageService.fetchConversation(friendId, authStore.token)
+                this.messages = await fetchConversation(friendId, authStore.token)
             } catch (error) {
                 this.chatError = error.message || "Erreur lors du chargement des messages."
             }
@@ -146,7 +143,7 @@ export const useChatStore = defineStore('chat', {
             }
 
             try {
-                await messageService.deleteMessage(messageId, authStore.token)
+                await deleteMessage(messageId, authStore.token)
                 this.messages = this.messages.filter(m => m.id !== messageId)
             } catch (error) {
                 this.chatError = error.message || "Erreur lors de la suppression du message."

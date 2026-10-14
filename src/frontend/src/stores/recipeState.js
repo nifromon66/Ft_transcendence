@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-
-import * as recipeService from '@/services/recipeService.js'
+import { getRecipes } from '@/services/recipeService.js'
 
 export const useRecipeStore = defineStore('recipe', {
     state: () => ({
@@ -15,7 +14,7 @@ export const useRecipeStore = defineStore('recipe', {
             this.errorMessage = null
 
             try {
-                const result = await recipeService.getRecipes(search)
+                const result = await getRecipes(search)
                 this.recipes = Array.isArray(result) ? result : (result?.recipes || [])
             } catch (error) {
                 console.error('Failed to load recipes:', error)

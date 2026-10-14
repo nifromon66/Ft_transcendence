@@ -1,6 +1,6 @@
 import { ref, watch, onMounted, onBeforeUnmount, unref } from 'vue'
 import { useAuthStore } from '@/stores/authState.js'
-import * as userService from '@/services/userService.js'
+import { fetchAvatarBlob } from '@/services/userService.js'
 
 export function useAvatar(userRef) {
     const authStore = useAuthStore()
@@ -31,7 +31,7 @@ export function useAvatar(userRef) {
                 return
             }
 
-            const blob = await userService.fetchAvatarBlob(user.avatar_url, token)
+            const blob = await fetchAvatarBlob(user.avatar_url, token)
 
             cleanupAvatarUrl()
 
