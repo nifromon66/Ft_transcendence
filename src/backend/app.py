@@ -12,8 +12,9 @@ from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from users_management.routes import users_bp
-from vault import VaultClient
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+from vault import VaultClient
 
 vault = VaultClient()
 

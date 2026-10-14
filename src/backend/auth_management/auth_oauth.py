@@ -12,7 +12,8 @@ auth_oauth_bp = Blueprint("auth_oauth", __name__)
 @auth_oauth_bp.route("/auth/login/42", methods=["GET"])
 def login_42():
     client = oauth.create_client("42")
-    redirect_uri = "https://localhost:8443/api/auth/callback/42"
+    base_url = os.environ.get("VITE_API_URL")
+    redirect_uri = base_url + "/api/auth/callback/42"
     response = client.authorize_redirect(redirect_uri)
     return response
 
@@ -61,7 +62,7 @@ def callback_42():
 
     access_token = create_access_token(identity=str(user.id))
 
-    frontend_url = os.environ.get("FRONTEND_URL", "https://localhost:8443")
+    frontend_url = os.environ.get("VITE_API_URL")
     redirect_target = f"{frontend_url}/oauth-success?token={access_token}"
 
     return redirect(redirect_target)

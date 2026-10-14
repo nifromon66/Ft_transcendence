@@ -129,7 +129,8 @@ const cancel2Fa = () => {
 }
 
 const loginWith42 = () => {
-  window.location.href = 'https://localhost:8443/api/auth/login/42'
+  const baseUrl = import.meta.env.VITE_API_URL
+  window.location.href = `${baseUrl}/api/auth/login/42`
 }
 </script>
 
