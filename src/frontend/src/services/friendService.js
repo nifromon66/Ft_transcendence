@@ -14,7 +14,7 @@ export async function sendFriendRequest(targetUserId, token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/${encodeURIComponent(targetUserId)}`, {
+        response = await fetch(`${baseUrl}/api/friends/request/${encodeURIComponent(targetUserId)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -67,7 +67,7 @@ export async function acceptFriendRequest(senderId, token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/${encodeURIComponent(senderId)}/accept`, {
+        response = await fetch(`${baseUrl}/api/friends/request/${encodeURIComponent(senderId)}/accept`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -120,7 +120,7 @@ export async function cancelFriendRequest(targetUserId, token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/${encodeURIComponent(targetUserId)}/cancel`, {
+        response = await fetch(`${baseUrl}/api/friends/request/${encodeURIComponent(targetUserId)}/cancel`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -173,7 +173,7 @@ export async function denyFriendRequest(senderId, token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/${encodeURIComponent(senderId)}/deny`, {
+        response = await fetch(`${baseUrl}/api/friends/request/${encodeURIComponent(senderId)}/deny`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -332,7 +332,7 @@ export async function fetchReceivedRequests(token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/received`, {
+        response = await fetch(`${baseUrl}/api/friends/request/received`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -381,7 +381,7 @@ export async function fetchSentRequests(token) {
 
     let response
     try {
-        response = await fetch(`${baseUrl}/api/friends/requests/sent`, {
+        response = await fetch(`${baseUrl}/api/friends/request/sent`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
