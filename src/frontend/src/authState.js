@@ -18,6 +18,23 @@ export const useAuthStore = defineStore('auth', {
     }
   },
   actions: {
+    updateRewards(data) {
+      if (!this.user) return
+      this.user.avatar_frame = data.avatar_frame
+      this.user.level_rewards = data.level_rewards
+      this.user.xp_progress = data.xp_progress
+      localStorage.setItem('user', JSON.stringify(this.user))
+    },
+    async refreshRewards() {
+      const token = this.token
+      if (!token || !this.user) return
+      try {
+        const data = await fetchUserProfile(token)
+        if (this.token === token) this.updateRewards(data)
+      } catch (error) {
+        console.warn('Impossible d’actualiser les récompenses du compte.', error)
+      }
+    },
     setAuth(token, user) {
       this.token = token
       this.user = user

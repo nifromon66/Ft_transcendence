@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/authState'
 
 async function fetchRecipeOptions(endpoint, key, errorMessage) {
   const response = await fetch(`/api/${endpoint}`)
@@ -110,6 +111,7 @@ export async function createRecipe(token, recipeData) {
     throw new Error(data.error || data.msg || 'Impossible de publier la recette.')
   }
 
+  await useAuthStore().refreshRewards()
   return data
 }
 
@@ -160,6 +162,7 @@ export async function deleteRecipe(token, id) {
     )
   }
 
+  await useAuthStore().refreshRewards()
   return data
 }
 
@@ -290,6 +293,7 @@ export async function rateRecipe(token, recipeId, score) {
     )
   }
 
+  await useAuthStore().refreshRewards()
   return data
 }
 
@@ -312,6 +316,7 @@ export async function deleteRecipeRating(token, recipeId) {
     )
   }
 
+  await useAuthStore().refreshRewards()
   return data
 }
 

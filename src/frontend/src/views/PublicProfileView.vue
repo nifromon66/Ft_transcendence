@@ -43,8 +43,7 @@ const selectAvatarFrame = async (frame) => {
         profile.value.level_rewards = data.level_rewards
         profile.value.xp_progress = data.xp_progress
         if (authStore.user) {
-            authStore.user.avatar_frame = data.avatar_frame
-            localStorage.setItem('user', JSON.stringify(authStore.user))
+            authStore.updateRewards(data)
         }
     } catch (error) {
         if (error.message === 'SESSION_EXPIRED') {
@@ -123,6 +122,10 @@ onMounted(async () => {
         }
 
         profile.value = await fetchPublicProfile(props.id, token)
+
+        if (profile.value?.friendship_status === 'self') {
+            authStore.updateRewards(profile.value)
+        }
 
         if (profile.value?.avatar_url) {
             const blob = await fetchAvatarBlob(profile.value.avatar_url, token)
