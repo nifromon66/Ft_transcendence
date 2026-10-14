@@ -15,8 +15,7 @@ RUN apt-get update \
 
 COPY src/backend/requirements.txt .
 
-RUN export RUSTFLAGS="-C target-cpu=generic" \
-    && pip install --no-cache-dir --no-binary=cryptography,cffi, -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY src/backend .
 
