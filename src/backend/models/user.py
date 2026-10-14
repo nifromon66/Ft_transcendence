@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from extensions import bcrypt, db
 from sqlalchemy import JSON, Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from user_xp_management.rewards import get_active_frame
 
 from .association import friend
 
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
     from .message import Message
     from .rating import Rating
     from .recipe import Recipe
-    from .user_avatar_frame import UserAvatarFrame
 
 
 class User(db.Model):
@@ -47,15 +45,11 @@ class User(db.Model):
 
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
 
-    avatar_filename: Mapped[str | None] = mapped_column(String)
+    avatar_url: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
 
     xp: Mapped[int | None] = mapped_column(Integer)
-
-    avatar_frame_preference: Mapped[UserAvatarFrame | None] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
 
     recipes: Mapped[list[Recipe]] = relationship(back_populates="user")
 
@@ -114,18 +108,13 @@ class User(db.Model):
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict[str, int | str | None]:
-        full_avatar_path = (
-            f"/api/users/avatars/{self.avatar_filename}"
-            if self.avatar_filename
-            else None
-        )
+        full_avatar_path = f"/uploads/{self.avatar_url}" if self.avatar_url else None
 
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
             "avatar_url": full_avatar_path,
-            "avatar_frame": get_active_frame(self),
             "is_2fa_enabled": self.is_2fa_enabled,
             "oauth_provider": self.oauth_provider,
         }

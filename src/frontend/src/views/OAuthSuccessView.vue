@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authState'
+import { useAuthStore } from '@/authState'
 
 const route = useRoute()
 const router = useRouter()

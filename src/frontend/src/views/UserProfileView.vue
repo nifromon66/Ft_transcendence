@@ -1,10 +1,9 @@
 <script setup>
-import AvatarFrame from '@/components/AvatarFrame.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore } from '@/stores/authState'
-import { fetchUserProfile, deleteAccount, updateMyProfile, deleteAvatar } from '@/services/userService'
-import { uploadAvatar } from '@/services/userService'
-import { fetchAvatarBlob } from '@/services/userService'
+import { useAuthStore } from '@/authState'
+import { fetchUserProfile, deleteAccount, updateMyProfile } from '@/services/userService'
+import { uploadAvatar } from '@/services/uploadService'
+import { fetchAvatarBlob } from '@/services/avatarService'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import QrcodeVue from 'qrcode.vue'
@@ -357,8 +356,15 @@ const handleDeleteAvatar = async () => {
 
     try {
         const token = authStore.token
+        const response = await fetch('/api/users/avatar', {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
 
-        const data = await deleteAvatar(token)
+        const data = await response.json()
+        if (!response.ok || data.success === false) {
+            throw new Error(data.error || "Erreur lors de la suppression de l'avatar.")
+        }
 
         if (avatarImageSrc.value) {
             URL.revokeObjectURL(avatarImageSrc.value)
@@ -447,23 +453,19 @@ const cancelEdit = () => {
                 class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
 
                 <div class="flex flex-col items-center space-y-4">
+                    <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
+                            rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
+                        @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
+                        <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
+                            class="h-full w-full object-cover" />
+                        <span v-else-if="authStore.user.username">
+                            {{ authStore.user.username.charAt(0).toUpperCase() }}
+                        </span>
+                        <span v-else>?</span>
 
-                    <div class="relative">
-                        <AvatarFrame :frame="authStore.user.avatar_frame" />
-                        <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
-                                rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
-                            @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
-                            <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
-                                class="h-full w-full object-cover" />
-                            <span v-else-if="authStore.user.username">
-                                {{ authStore.user.username.charAt(0).toUpperCase() }}
-                            </span>
-                            <span v-else>?</span>
-
-                            <div
-                                class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100">
-                                <span class="text-sm font-medium text-white">Modifier</span>
-                            </div>
+                        <div
+                            class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100">
+                            <span class="text-sm font-medium text-white">Modifier</span>
                         </div>
                     </div>
 
@@ -567,56 +569,56 @@ const cancelEdit = () => {
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <div v-if="avatarError || (errorMessage && authStore.user)" class="mt-4">
-                        <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
-                        <p v-if="errorMessage && authStore.user" class="text-sm text-red-500">{{ errorMessage }}</p>
-                    </div>
+                <div v-if="avatarError || (errorMessage && authStore.user)" class="mt-4">
+                    <p v-if="avatarError" class="text-sm text-red-500">{{ avatarError }}</p>
+                    <p v-if="errorMessage && authStore.user" class="text-sm text-red-500">{{ errorMessage }}</p>
+                </div>
 
-                    <div v-if="authStore.user && !authStore.user.oauth_provider"
-                        class="mt-8 pt-6 border-t border-gray-200">
-                        <h2 class="mb-4 text-lg font-semibold text-gray-800">Sécurité</h2>
+                <div v-if="authStore.user && !authStore.user.oauth_provider" class="mt-8 pt-6 border-t border-gray-200">
+                    <h2 class="mb-4 text-lg font-semibold text-gray-800">Sécurité</h2>
 
-                        <div
-                            class="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-betwwen gap-4">
-                            <div>
-                                <p class="font-bold text-gray-700 text-base">Authentification à double facteur (2FA)</p>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    <template v-if="authStore.user.is_2fa_enabled">
-                                        Le 2FA est activé. Votre compte bénéficie d'une sécurité renforcée.
-                                    </template>
-                                    <template v-else>
-                                        Ajoutez une couche de sécurité supplémentaire en activant l'authentification à
-                                        double facteurs (2FA).
-                                    </template>
-                                </p>
-                            </div>
-                            <button v-if="!authStore.user.is_2fa_enabled" @click="open2FaModal"
-                                class="px-4 py-2 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap">
-                                Activer le 2FA
+                    <div
+                        class="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-betwwen gap-4">
+                        <div>
+                            <p class="font-bold text-gray-700 text-base">Authentification à double facteur (2FA)</p>
+                            <p class="text-sm text-gray-500 mt-1">
+                                <template v-if="authStore.user.is_2fa_enabled">
+                                    Le 2FA est activé. Votre compte bénéficie d'une sécurité renforcée.
+                                </template>
+                                <template v-else>
+                                    Ajoutez une couche de sécurité supplémentaire en activant l'authentification à
+                                    double facteurs (2FA).
+                                </template>
+                            </p>
+                        </div>
+                        <button v-if="!authStore.user.is_2fa_enabled" @click="open2FaModal"
+                            class="px-4 py-2 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 transition-colors whitespace-nowrap">
+                            Activer le 2FA
+                        </button>
+                        <div v-else class="flex items-center space-x-3">
+                            <span
+                                class="px-3 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded border border-green-200">
+                                ✓ Activé
+                            </span>
+                            <button @click="openDisable2FaModal"
+                                class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline transition-colors whitespace-nowrap">
+                                Désactiver
                             </button>
-                            <div v-else class="flex items-center space-x-3">
-                                <span
-                                    class="px-3 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded border border-green-200">
-                                    ✓ Activé
-                                </span>
-                                <button @click="openDisable2FaModal"
-                                    class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline transition-colors whitespace-nowrap">
-                                    Désactiver
-                                </button>
-                            </div>
                         </div>
                     </div>
+                </div>
 
 
-                    <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
-                        <button @click="openDeleteModal"
-                            class="text-red-600 hover:text-red-800 font-medium text-sm underline transition-colors">
-                            Supprimer mon compte
-                        </button>
-                    </div>
+                <div class="mt-8 pt-4 border-t border-gray-200 flex justify-end">
+                    <button @click="openDeleteModal"
+                        class="text-red-600 hover:text-red-800 font-medium text-sm underline transition-colors">
+                        Supprimer mon compte
+                    </button>
                 </div>
             </div>
+
             <div v-else class="text-red-500">
                 Impossible de charger le profil.
             </div>
@@ -628,8 +630,7 @@ const cancelEdit = () => {
                 <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer mon compte</h3>
 
                 <p class="text-gray-700 mb-4 text-sm">
-                    Attention, cette action est définitive. Vos données personnelles et votre avatar seront effacés.
-                    Vos
+                    Attention, cette action est définitive. Vos données personnelles et votre avatar seront effacés. Vos
                     contributions seront conservées, mais anonymisées.
                 </p>
 
@@ -663,8 +664,7 @@ const cancelEdit = () => {
 
                 <div v-if="twoFaStep === 1">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
-                    <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
-                    </p>
+                    <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.</p>
                     <input type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
                         @keyup.enter="submit2FaPassword">
@@ -682,8 +682,7 @@ const cancelEdit = () => {
 
                 <div v-else-if="twoFaStep === 2">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Scanner le QR Code</h3>
-                    <p class="text-gray-600 mb-4 text-sm text-center">Utilisez Google Authenticator pour scanner ce
-                        QR
+                    <p class="text-gray-600 mb-4 text-sm text-center">Utilisez Google Authenticator pour scanner ce QR
                         Code :
                     </p>
 
@@ -714,8 +713,7 @@ const cancelEdit = () => {
                     <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-5">
                         <p class="text-yellow-800 text-sm text-center font-medium">
                             Sauvegardez ces codes en lieu sûr.
-                            Ils ne seront affichés qu'une seule fois et vous permettront de récupérer votre compte
-                            si
+                            Ils ne seront affichés qu'une seule fois et vous permettront de récupérer votre compte si
                             vous
                             perdez l'accès à Google Authenticator.
                         </p>

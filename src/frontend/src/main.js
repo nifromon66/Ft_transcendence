@@ -4,9 +4,21 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { registerSW } from 'virtual:pwa-register'
+
+const updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+
+    },
+    onOfflineReady() {
+
+    }
+})
 
 const app = createApp(App)
-const pinia = createPinia()
-app.use(pinia)
+
+app.use(createPinia())
 app.use(router)
+
 app.mount('#app')

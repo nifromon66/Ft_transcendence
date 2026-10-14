@@ -27,15 +27,10 @@ services:
       - ${VAULT_TMPFS_RUN_PATH}
     volumes:
       - ${VAULT_VOLUME_INIT_IN}:${VAULT_VOLUME_INIT_OUT}
-      #- ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
-      - vault_data:${VAULT_VOLUME_DATA_OUT}
+      - ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
       - ${VAULT_VOLUME_LOGS_IN}:${VAULT_VOLUME_LOGS_OUT}
       - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
-      #- ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
-      - vault_approles:${VAULT_VOLUME_APPROLES_OUT}
-      - vault_init:/vault/init
-      - vault_tls:/vault/tls
-      - vault_logs:/vault/logs
+      - ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
     expose:
       - "${VAULT_EXPOSE_API_PORT}"
     healthcheck:
@@ -43,11 +38,8 @@ services:
       interval: ${VAULT_HEALTHCHECK_INTERVAL}
       timeout: ${VAULT_HEALTHCHECK_TIMEOUT}
       retries: ${VAULT_HEALTHCHECK_RETRIES}
-      start_period: ${VAULT_HEALTHCHECK_START_PERIOD}
     networks:
       - ${VAULT_NETWORK}
-    environment:
-      - VAULT_SKIP_VERIFY=true
   ##########################################
   # WAF : Modsecurity + CRS + Nginx        #
   ##########################################
@@ -61,10 +53,8 @@ services:
     env_file:
       - ${WAF_ENV_FILE_PATH}
     volumes:
-      #- "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
-      #- "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
-      - waf_ssl:/waf/ssl
-      - waf_logs:/waf/logs
+      - "${WAF_VOLUME_LOG_IN}:${WAF_VOLUME_LOG_OUT}"
+      - "${WAF_VOLUME_SSL_IN}:${WAF_VOLUME_SSL_OUT}"
     depends_on:
       - frontend
       - backend
@@ -90,7 +80,6 @@ services:
     volumes:
       - ${FRONTEND_VOLUME_APP_IN}:${FRONTEND_VOLUME_APP_OUT}
       - /app/node_modules
-      - ${FRONTEND_VOLUME_APP_OUT}/dev-dist
     depends_on:
       - backend
     expose:
@@ -114,8 +103,7 @@ services:
       - ${FRONTEND_ENV_FILE_PATH}
     volumes:
       - ${BACKEND_VOLUME_APP_IN}:${BACKEND_VOLUME_APP_OUT}
-      #- ${BACKEND_VOLUME_APPROLE_IN}:${BACKEND_VOLUME_APPROLE_OUT}:ro
-      - vault_approles:/vault/approles:ro
+      - ${BACKEND_VOLUME_APPROLE_IN}:${BACKEND_VOLUME_APPROLE_OUT}:ro
     depends_on:
       db:
         condition: service_healthy
@@ -129,8 +117,6 @@ services:
       - ${WAF_NETWORK}
       - ${DB_NETWORK}
       - ${FRONTEND_NETWORK}
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
   ##########################################
   # Database : PostGreSQL                  #
   ##########################################
@@ -141,7 +127,7 @@ services:
     env_file:
       - ${DB_ENV_FILE_PATH}
     volumes:
-      - db_data:${DB_VOLUME_DATA_OUT}
+      - ${DB_VOLUME_DATA_IN}:${DB_VOLUME_DATA_OUT}
     expose:
       - "${DB_EXPOSE_PORT}"
     healthcheck:
@@ -149,7 +135,6 @@ services:
       interval: ${DB_HEALTHCHECK_INTERVAL}
       timeout: ${DB_HEALTHCHECK_TIMEOUT}
       retries: ${DB_HEALTHCHECK_RETRIES}
-      start_period: ${DB_HEALTHCHECK_START_PERIOD}
     networks:
       - ${DB_NETWORK}
       - ${BACKEND_NETWORK}
@@ -160,20 +145,6 @@ services:
 volumes:
   db_data:
     name: db_data
-  vault_approles:
-    name: vault_approles
-  vault_data:
-    name: vault_data
-  vault_init:
-    name: vault_init
-  vault_tls:
-    name: vault_tls
-  vault_logs:
-    name: vault_logs
-  waf_ssl:
-    name: waf_ssl
-  waf_logs:
-    name: waf_logs
 
 ##########################################
 # Networks                               #

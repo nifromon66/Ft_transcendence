@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import { useAuthStore } from '@/stores/authState'
+import { useAuthStore } from '@/authState'
 import Burger from './Burger.vue'
 import SiteBrand from './SiteBrand.vue'
 
@@ -26,13 +26,20 @@ const authStore = useAuthStore()
         Mes amis
       </RouterLink>
 
-      <RouterLink v-if="authStore.user" :to="{ name: 'postRecipe' }"
-        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light" @click="emit('close-menu')">
+      <RouterLink
+        v-if="authStore.user"
+        :to="{ name: 'postRecipe' }"
+        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light"
+        @click="emit('close-menu')"
+      >
         Poster une recette
       </RouterLink>
-
-      <RouterLink :to="{ name: 'about' }" class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light"
-        @click="emit('close-menu')">
+      
+      <RouterLink
+        :to="{ name: 'about' }"
+        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light"
+        @click="emit('close-menu')"
+      >
         A propos
       </RouterLink>
     </nav>

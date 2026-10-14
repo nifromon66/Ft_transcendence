@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import HomeView from '../views/HomeView.vue'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
 
 const router = createRouter({
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView,
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: HomeView,
     },
     {
       path: '/profile',
@@ -65,6 +71,11 @@ const router = createRouter({
       name: 'postRecipe',
       component: () => import('../views/PostRecipeView.vue'),
       props: true,
+    },
+    {
+      path: '/test-upload',
+      name: 'test-upload',
+      component: () => import('@/views/TestUploadView.vue'),
     },
     {
       path: '/recipe/:id/edit',

@@ -19,9 +19,11 @@ class VaultClient:
             with open(path, "r") as file:
                 value = file.read().strip()
         except OSError as error:
-            raise VaultError(f"Unable to read Vault credential file: {path}") from error
+            raise VaultError(
+                "Unable to read Vault credential file: {}".format(path)
+            ) from error
         if not value:
-            raise VaultError(f"Vault credential file is empty: {path}")
+            raise VaultError("Vault credential file is empty: {}".format(path))
         return value
 
     def authenticate(self):
@@ -40,7 +42,9 @@ class VaultClient:
 
         if response.status_code != 200:
             raise VaultError(
-                f"Vault AppRole authentication failed: HTTP {response.status_code}"
+                "Vault AppRole authentication failed: HTTP {}".format(
+                    response.status_code
+                )
             )
         data = response.json()
         try:
@@ -63,13 +67,17 @@ class VaultClient:
 
         if response.status_code != 200:
             raise VaultError(
-                f"Vault secret retrieval failed for '{path}': HTTP {response.status_code}"
+                "Vault secret retrieval failed for '{}': HTTP {}".format(
+                    path, response.status_code
+                )
             )
 
         try:
             return response.json()["data"]["data"]
         except (KeyError, TypeError):
-            raise VaultError(f"Invalid response receive from Vault for '{path}'.")
+            raise VaultError(
+                "Invalid response receive from Vault for '{}'.".format(path)
+            )
 
     def load_secrets(self):
         return {

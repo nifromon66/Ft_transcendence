@@ -17,8 +17,10 @@ mkdir -p \
     ${VAULT_TLS_DIR} \
     ${VAULT_STORAGE_DATA_DIR} \
     ${VAULT_STORAGE_DATABASE_DIR} \
-    ${VAULT_LOGS_DIR} \
-    ${VAULT_APPROLE_ID_DIR} \
+	${VAULT_LOGS_DIR} \
+    ${VAULT_APPROLE_ID_DIR}
+
+mkdir -p \
     ${VAULT_APPROLE_BACKEND_ID_DIR} \
     ${VAULT_APPROLE_ADMIN_ID_DIR}
 
@@ -67,10 +69,7 @@ chown -R vault:vault \
     ${VAULT_TLS_DIR} \
     ${VAULT_STORAGE_DATA_DIR} \
     ${VAULT_STORAGE_DATABASE_DIR} \
-    ${VAULT_LOGS_DIR} \
-    ${VAULT_APPROLE_ID_DIR} \
-    ${VAULT_APPROLE_BACKEND_ID_DIR} \
-    ${VAULT_APPROLE_ADMIN_ID_DIR}
+    ${VAULT_LOGS_DIR}
 
 log_info "Starting Vault..."
 

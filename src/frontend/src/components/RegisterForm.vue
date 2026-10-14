@@ -6,9 +6,9 @@ import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
-import { registerUser } from '@/services/authService'
+import { registerUser } from '@/services/userService'
 import { loginUser } from '@/services/authService'
-import { uploadAvatar } from '@/services/userService'
+import { uploadAvatar } from '@/services/uploadService'
 
 const router = useRouter()
 

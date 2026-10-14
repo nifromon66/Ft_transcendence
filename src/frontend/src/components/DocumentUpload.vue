@@ -66,8 +66,7 @@ onUnmounted(() => {
                 </svg>
                 <span class="text-sm font-medium">Joindre un PDF</span>
             </button>
-            <input id="document-upload" name="document-upload" type="file" ref="fileInput" class="hidden" accept=".pdf"
-                @change="handleFileSelect" />
+            <input type="file" ref="fileInput" class="hidden" accept=".pdf" @change="handleFileSelect" />
         </div>
 
         <div v-else class="flex items-center justify-between rounded-lg bg-gray-50 p-3 border border-gray-200">

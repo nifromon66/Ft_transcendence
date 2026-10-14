@@ -62,13 +62,14 @@ class Rating(db.Model):
         else:
             raise ValueError("Init Rating: value must be provided")
 
-        if type(score) is not int or not 1 <= score <= 5:
-            raise ValueError("Init Rating: score must be an integer between 1 and 5")
+        if not 1 <= score <= 5:
+            raise ValueError("Init Rating: score must be between 1 and 5")
         self.score = score
 
         self.created_at = datetime.now(timezone.utc)
 
     def update_score(self, score: int) -> None:
-        if type(score) is not int or not 1 <= score <= 5:
-            raise ValueError("Init Rating: score must be an integer between 1 and 5")
+        if not 1 <= score <= 5:
+            raise ValueError("Rating: score must be between 1 and 5")
         self.score = score
+        self.created_at = datetime.now(timezone.utc)

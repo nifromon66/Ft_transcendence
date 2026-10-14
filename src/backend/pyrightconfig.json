@@ -1,12 +1,10 @@
 {
     "pythonVersion": "3.12",
-    "typeCheckingMode": "off",
+    "typeCheckingMode": "basic",
     "include": [
         "."
     ],
-    "reportMissingImports": "none",
-    "reportMissingTypeStubs": false,
-    "reportMissingModuleSource": "none",
     "reportUnusedImport": true,
-    "reportUnusedVariable": true
+    "reportUnusedVariable": true,
+    "reportMissingTypeStubs": false
 }

@@ -19,9 +19,9 @@ class Tag(db.Model):
 
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    recipes: Mapped[list[Recipe]] = relationship(
+    recipes: Mapped[list["Recipe"]] = relationship(
         secondary=recipe_tag, back_populates="tags"
     )
 
-    def __init__(self, name: str):
+    def __init__(self, name : str):
         self.name = name.capitalize()

@@ -94,13 +94,6 @@ class RecipeIngredient(db.Model):
 
         self.quantity = quantity
 
-    def to_dict(self) -> dict:
-        return {
-            "ingredient_id": self.ingredient_id,
-            "name": self.ingredient.name,
-            "quantity": self.quantity,
-        }
-
 
 friend = Table(
     "friend",
@@ -109,6 +102,14 @@ friend = Table(
     Column("friend_id", ForeignKey("users.id"), primary_key=True),
     Column("status", String, default="pending", nullable=False),
     Column("created_at", DateTime, server_default=func.now(), nullable=False),
+)
+
+
+recipe_utensil = Table(
+    "recipe_utensil",
+    db.metadata,
+    Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
+    Column("utensil_id", ForeignKey("utensils.id"), primary_key=True),
 )
 
 

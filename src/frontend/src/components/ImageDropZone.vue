@@ -24,31 +24,31 @@ const handleDrop = (event) => {
         return
     }
 
-    const files = event.dataTransfer?.files
-    if (files && files.length > 0) {
+    const files = event.dataTransfer.files
+    if (files.length > 0) {
         emit('file-selected', files[0])
     }
 }
 
 const handleFileSelect = (event) => {
-    const target = /** @type {HTMLInputElement} */ (event.target)
-    const files = target.files
-    if (files && files.length > 0) {
+    const files = event.target.files
+    if (files.length > 0) {
         emit('file-selected', files[0])
-        target.value = ''
+        event.target.value = ''
     }
 }
 </script>
 
 <template>
     <div class="w-full max-w-sm my-4">
-        <label class="block border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-        ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+        <label for="avatar"
+            class="block border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
+                disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+            ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
             @drop.stop.prevent="handleDrop">
-            <input id="avatar" type="file" name="image" class="hidden" @change="handleFileSelect" :disabled="disabled"
-                :accept="accept" />
+            <input type="file" id="avatar" name="avatar" ref="fileInput" class="hidden" @change="handleFileSelect"
+                :disabled="disabled" accept=".png, .jpg, .jpeg, .gif, .webp" />
 
             <div class="text-gray-600">
                 <p class="mb-1 text-sm">Glissez-déposez un fichier ici</p>

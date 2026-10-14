@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { useAuthStore } from '@/stores/authState'
+import { useAuthStore } from '@/authState'
 import {
     fetchFriends,
     searchUsers,

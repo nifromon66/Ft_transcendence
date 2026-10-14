@@ -1,10 +1,9 @@
-import { formatFileSize } from "@/utils/formatters.js"
-
 const validateFile = (file, options) => {
     const {
         allowedExtensions,
         allowedMimeTypes,
         maxSize,
+        maxSizeLabel,
         typeName
     } = options
 
@@ -32,10 +31,9 @@ const validateFile = (file, options) => {
     }
 
     if (file.size > maxSize) {
-        const readableMaxSize = formatFileSize(maxSize)
         return {
             isValid: false,
-            error: `Le fichier dépasse la taille autorisée (${readableMaxSize} max).`
+            error: `Le fichier dépasse la taille autorisée (${maxSizeLabel} max).`
         }
     }
     return {
@@ -49,7 +47,8 @@ export const validateAvatar = (file) => {
         typeName: "avatar",
         allowedExtensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
         allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-        maxSize: 10 * 1024 * 1024
+        maxSize: 10 * 1024 * 1024,
+        maxSizeLabel: "10 Mo"
     })
 }
 
@@ -58,7 +57,8 @@ export const validateDocument = (file) => {
         typeName: "document",
         allowedExtensions: ['pdf'],
         allowedMimeTypes: ['application/pdf'],
-        maxSize: 5 * 1024 * 1024
+        maxSize: 5 * 1024 * 1024,
+        maxSizeLabel: "5 Mo"
     })
 }
 
@@ -71,6 +71,7 @@ export const validateRecipeImage = (file) => {
             'image/jpeg',
             'image/webp',
         ],
-        maxSize: 10 * 1024 * 1024
+        maxSize: 10 * 1024 * 1024,
+        maxSizeLabel: "10 Mo",
     })
 }

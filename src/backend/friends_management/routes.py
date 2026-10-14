@@ -270,7 +270,7 @@ def get_friends():
     return jsonify({"success": True, "friends": result}), 200
 
 
-@friends_bp.route("/friends/request/received", methods=["GET"])
+@friends_bp.route("/friends/requests/received", methods=["GET"])
 @jwt_required()
 def get_received_requests():
     current_user_id = int(get_jwt_identity())
@@ -299,7 +299,7 @@ def get_received_requests():
     return jsonify({"success": True, "received_requests": result}), 200
 
 
-@friends_bp.route("/friends/request/sent", methods=["GET"])
+@friends_bp.route("/friends/requests/sent", methods=["GET"])
 @jwt_required()
 def get_sent_requests():
     current_user_id = int(get_jwt_identity())
