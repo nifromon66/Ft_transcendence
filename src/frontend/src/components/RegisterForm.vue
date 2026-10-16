@@ -51,17 +51,21 @@ async function register() {
   errorMessage.value = ''
 
   try {
-    await registerUser({
+    const registerToken = await registerUser({
       username: username.value,
       email: email.value,
       password: password.value
     })
 
     if (avatarFile.value) {
-      const token = await loginUser({
-        email: email.value,
-        password: password.value
-      })
+      let token = registerToken
+      if (!token) {
+        const loginData = await loginUser({
+          email: email.value,
+          password: password.value
+        })
+        token = loginData.token
+      }
 
       isUploading.value = true
       uploadProgress.value = 0

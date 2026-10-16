@@ -18,7 +18,8 @@ export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgr
         formData.append('file', file)
 
         xhr.open('POST', `${baseUrl}${endpoint}`)
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        const tokenString = typeof token === 'object' && token !== null ? (token.token || token.access_token || '') : (token || '')
+        xhr.setRequestHeader('Authorization', `Bearer ${tokenString}`)
         xhr.setRequestHeader('Accept', 'application/json')
 
         xhr.upload.onprogress = (event) => {
