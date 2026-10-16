@@ -40,8 +40,7 @@ onMounted(async () => {
         try {
           await authStore.silentRefresh()
         } catch (e) {
-          console.warn("Periodic session refresh failed", e)
-          window.location.href = '/login' // Force redirect to login on fatal expiration
+          window.location.href = '/login'
         }
       }
     }, 10 * 60 * 1000)

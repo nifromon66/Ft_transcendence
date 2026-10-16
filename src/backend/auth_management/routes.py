@@ -41,8 +41,8 @@ def register():
         if existing_user.email == email:
             return jsonify(
                 {"success": False, "error": "Cet email est déjà utilisé."}
-            ), 409
-        return jsonify({"success": False, "error": "Ce pseudo est déjà pris."}), 409
+            ), 200
+        return jsonify({"success": False, "error": "Ce pseudo est déjà pris."}), 200
 
     try:
         new_user = User(username=username, email=email, password=password)
@@ -80,7 +80,7 @@ def login():
     if not email or not password:
         return jsonify(
             {"success": False, "error": "Email et mot de passe requis."}
-        ), 400
+        ), 200
 
     user = db.session.execute(
         select(User).where(User.email == email)
@@ -89,7 +89,7 @@ def login():
     if user is None or not user.is_active or not user.check_password(password):
         return jsonify(
             {"success": False, "error": "Email ou mot de passe incorrect."}
-        ), 401
+        ), 200
 
     if user.is_2fa_enabled:
         temp_token = create_access_token(

@@ -352,7 +352,7 @@ def get_avatar_file(filename):
     file_path = os.path.join(avatar_folder, filename)
 
     if not os.path.exists(file_path):
-        return jsonify({"success": False, "error": "Fichier introuvable"}), 404
+        return jsonify({"success": False, "error": "Fichier introuvable"}), 200
 
     try:
         mimetype = magic.from_file(file_path, mime=True)

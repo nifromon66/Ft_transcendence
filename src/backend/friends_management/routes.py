@@ -23,7 +23,7 @@ def send_friend_request(target_user_id):
 
     target_user = db.session.get(User, target_user_id)
     if not target_user or not target_user.is_active:
-        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     existing_relation = (
         db.session.execute(
@@ -93,7 +93,7 @@ def accept_friend_request(sender_id):
     if not sender or not sender.is_active:
         return jsonify(
             {"success": False, "error": "Cet utilisateur n'existe plus."}
-        ), 404
+        ), 200
 
     stmt = select(friend).where(
         and_(
@@ -257,7 +257,7 @@ def get_friends():
 
     current_user = db.session.get(User, current_user_id)
     if not current_user:
-        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     friends_list = current_user.get_friends()
 
