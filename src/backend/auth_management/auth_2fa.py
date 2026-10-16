@@ -52,6 +52,7 @@ def setup_2fa():
 
     return jsonify(
         {
+            "success": True,
             "secret": secret,
             "qr_uri": qr_uri,
         }
@@ -75,7 +76,7 @@ def verify_2fa_setup():
 
     if not code:
         return jsonify(
-            {"success": False, "error": "Le code à 6 chiffres est requis"}
+            {"success": False, "error": "Le code à 6 chiffres est requis."}
         ), 200
 
     totp = pyotp.TOTP(user.totp_secret)
@@ -95,6 +96,7 @@ def verify_2fa_setup():
     db.session.commit()
     return jsonify(
         {
+            "success": True,
             "message": "L'authentification à double facteur est activée avec succès !",
             "recovery_codes": raw_recovery_codes,
         }
@@ -126,7 +128,7 @@ def verify_login_2fa():
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
 
-    if not user or not user.is_2fa_enabled:
+    if not user or not user.is_2fa_enabled or not user.totp_secret:
         return jsonify({"success": False, "error": "Requête invalide."}), 200
 
     data = request.get_json()
@@ -178,6 +180,7 @@ def verify_login_2fa():
 
 @auth_2fa_bp.route("/auth/2fa/disable", methods=["POST"])
 @jwt_required()
+@limiter.limit("5 per minute")
 def disable_2fa():
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
@@ -188,6 +191,11 @@ def disable_2fa():
     if user.oauth_provider:
         return jsonify(
             {"success": False, "error": "Action non autorisée pour les comptes OAuth."}
+        ), 200
+
+    if not user.is_2fa_enabled or not user.totp_secret:
+        return jsonify(
+            {"success": False, "error": "Le 2FA n'est pas activé sur ce compte."}
         ), 200
 
     data = request.get_json()
@@ -214,5 +222,8 @@ def disable_2fa():
     db.session.commit()
 
     return jsonify(
-        {"message": "L'authentification à double facteur a été désactivée."}
+        {
+            "success": True,
+            "message": "L'authentification à double facteur a été désactivée.",
+        }
     ), 200
