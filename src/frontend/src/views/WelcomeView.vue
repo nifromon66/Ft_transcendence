@@ -1,60 +1,47 @@
 <script setup>
 
 import RecipeCard from '@/components/RecipeCard.vue'
-import { computed, onMounted, ref } from 'vue'
-import { fetchLatestRecipes } from '@/services/recipeService'
+import { onMounted, ref } from 'vue'
+import { fetchLatestRecipes, getRecipes } from '@/services/recipeService'
 import SearchBar from '@/components/SearchBar.vue'
-
-import tartePommeImage from '../assets/temp_assets/DSC01764.jpg'
-import carboImage from '../assets/temp_assets/carbonara-e1521461363147-1024x670.jpg'
-import soupeLegumeImage from '../assets/temp_assets/Soupe_jardiniere_aux_legumes.png.1200x627_q64.jpg'
-import soupePoissonImage from '../assets/temp_assets/poissonsoupe.jpg'
-
-
-const recipes = [
-  {
-    id: 1,
-    title: 'Tarte aux pommes',
-    description: 'Une tarte simple et rapide à préparer.',
-    cookingTime: '45 min',
-    likes: 12,
-    imageUrl: tartePommeImage,
-  },
-  {
-    id: 2,
-    title: 'Pâtes carbonara',
-    description: 'Une recette italienne généreuse.',
-    cookingTime: '25 min',
-    likes: 34,
-    imageUrl: carboImage,
-  },
-  {
-    id: 3,
-    title: 'Soupe de légumes',
-    description: 'Une soupe maison avec des légumes de saison.',
-    cookingTime: '40 min',
-    likes: 22,
-    imageUrl: soupeLegumeImage,
-  },
-  {
-    id: 4,
-    title: 'Soupe de poisson',
-    description: 'Une soupe maison.',
-    cookingTime: '1 heure',
-    likes: 9,
-    imageUrl: soupePoissonImage,
-  },
-]
-
-const mostLikedRecipes = computed(() => {
-  return [...recipes]
-    .sort((firstRecipe, secondRecipe) => secondRecipe.likes - firstRecipe.likes)
-    .slice(0, 4)
-})
 
 const latestRecipes = ref([])
 const isLoadingLatestRecipes = ref(true)
 const latestRecipesError = ref('')
+
+const recipes = ref([])
+const isLoadingRecipes = ref(true)
+const recipesError = ref('')
+
+const mostLikedRecipes = ref([])
+const isLoadingMostLikedRecipes = ref(true)
+const mostLikedRecipesError = ref('')
+
+onMounted(async () => {
+  try {
+    const result = await getRecipes({ per_page: 4, sort_by: 'random' })
+    recipes.value = result.recipes
+  } catch (error) {
+    recipesError.value = error.message || 'Une erreur inattendue est survenue.'
+  } finally {
+    isLoadingRecipes.value = false
+  }
+})
+
+onMounted(async () => {
+  try {
+    const result = await getRecipes({
+      per_page: 4,
+      sort_by: 'rating',
+      sort_order: 'DESC',
+    })
+    mostLikedRecipes.value = result.recipes
+  } catch (error) {
+    mostLikedRecipesError.value = error.message || 'Une erreur inattendue est survenue.'
+  } finally {
+    isLoadingMostLikedRecipes.value = false
+  }
+})
 
 onMounted(async () => {
   try {
@@ -79,7 +66,13 @@ onMounted(async () => {
         Découvrez nos recettes
       </h1>
 
-      <section class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <p v-if="isLoadingRecipes">Chargement des recettes...</p>
+      <p v-else-if="recipesError" class="text-red-600" role="alert">
+        {{ recipesError }}
+      </p>
+      <p v-else-if="recipes.length === 0">Aucune recette publiée pour le moment.</p>
+
+      <section v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <RecipeCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
       </section>
 
@@ -88,7 +81,13 @@ onMounted(async () => {
           Les plus appréciées
         </h2>
 
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <p v-if="isLoadingMostLikedRecipes">Chargement des recettes les plus appréciées...</p>
+        <p v-else-if="mostLikedRecipesError" class="text-red-600" role="alert">
+          {{ mostLikedRecipesError }}
+        </p>
+        <p v-else-if="mostLikedRecipes.length === 0">Aucune recette publiée pour le moment.</p>
+
+        <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <RecipeCard v-for="recipe in mostLikedRecipes" :key="recipe.id" :recipe="recipe" />
         </div>
       </section>

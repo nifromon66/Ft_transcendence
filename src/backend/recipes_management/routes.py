@@ -844,6 +844,8 @@ def get_recipes():
         )
     elif sort_by == "cooking_time":
         column = Recipe.cooking_time
+    elif sort_by == "random":
+        column = func.random()
     else:
         column = func.coalesce(Recipe.updated_at, Recipe.created_at)
 

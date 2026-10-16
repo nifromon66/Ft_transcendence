@@ -188,7 +188,7 @@ recipes = [
         description="Une sauce mexicaine fraîche à base d'avocats, de citron vert et de coriandre.",
         cooking_time=10,
         difficulty="Facile",
-        image_filename="",
+        image_filename="guacamole-maison-3.jpg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -219,7 +219,7 @@ recipes = [
         description="Un plat de riz crémeux réconfortant parfumé au parmesan et champignons de paris.",
         cooking_time=40,
         difficulty="Moyen",
-        image_filename="",
+        image_filename="risotto-champignons-960x540.png",
         steps=[
             RecipeStep(
                 step_number=1,
