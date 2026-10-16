@@ -15,8 +15,8 @@
     accountMenuOpen.value = !accountMenuOpen.value
   }
 
-  function logout() {
-    authStore.clearAuth()
+  async function logout() {
+    await authStore.logout()
     accountMenuOpen.value = false
     router.push({ name: 'welcome' })
   }

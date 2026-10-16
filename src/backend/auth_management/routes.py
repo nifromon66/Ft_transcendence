@@ -1,8 +1,15 @@
 from datetime import timedelta
 
 from extensions import db
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token
+from flask import Blueprint, jsonify, make_response, request
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+    set_refresh_cookies,
+    unset_jwt_cookies,
+)
 from models import User
 from sqlalchemy import or_, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -43,10 +50,21 @@ def register():
         db.session.commit()
 
         access_token = create_access_token(identity=str(new_user.id))
+        refresh_token = create_refresh_token(identity=str(new_user.id))
 
-        return jsonify(
-            {"success": True, "access_token": access_token, "user": new_user.to_dict()}
-        ), 201
+        response = make_response(
+            jsonify(
+                {
+                    "success": True,
+                    "access_token": access_token,
+                    "user": new_user.to_dict(),
+                }
+            ),
+            201,
+        )
+        set_refresh_cookies(response, refresh_token)
+        return response
+
     except SQLAlchemyError:
         db.session.rollback()
         return jsonify({"success": False, "error": "Erreur serveur."}), 500
@@ -89,6 +107,37 @@ def login():
         ), 200
 
     access_token = create_access_token(identity=str(user.id))
-    return jsonify(
-        {"success": True, "access_token": access_token, "user": user.to_dict()}
-    ), 200
+    refresh_token = create_refresh_token(identity=str(user.id))
+
+    response = make_response(
+        jsonify(
+            {"success": True, "access_token": access_token, "user": user.to_dict()}
+        ),
+        200,
+    )
+    set_refresh_cookies(response, refresh_token)
+    return response
+
+
+@auth_bp.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    """
+    Refreshes the access token using the HTTP-Only refresh token cookie.
+    """
+    current_user_id = get_jwt_identity()
+    new_access_token = create_access_token(identity=current_user_id)
+    return jsonify({"success": True, "access_token": new_access_token}), 200
+
+
+@auth_bp.route("/logout", methods=["POST"])
+@jwt_required(optional=True)
+def logout():
+    """
+    Logs out the user by clearing the HTTP-Only refresh token cookie.
+    """
+    response = make_response(
+        jsonify({"success": True, "message": "Déconnexion réussie."}), 200
+    )
+    unset_jwt_cookies(response)
+    return response

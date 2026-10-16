@@ -3,12 +3,14 @@ import string
 
 import pyotp
 from extensions import bcrypt, db, limiter
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, make_response, request
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
     get_jwt,
     get_jwt_identity,
     jwt_required,
+    set_refresh_cookies,
 )
 from models import User
 
@@ -142,14 +144,20 @@ def verify_login_2fa():
 
     if is_valid:
         final_token = create_access_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))
 
-        return jsonify(
-            {
-                "success": True,
-                "access_token": final_token,
-                "user": user.to_dict(),
-            }
-        ), 200
+        response = make_response(
+            jsonify(
+                {
+                    "success": True,
+                    "access_token": final_token,
+                    "user": user.to_dict(),
+                }
+            ),
+            200,
+        )
+        set_refresh_cookies(response, refresh_token)
+        return response
     else:
         return jsonify({"error": "Code 2FA invalide."}), 401
 

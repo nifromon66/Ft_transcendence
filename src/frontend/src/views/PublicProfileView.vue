@@ -92,7 +92,7 @@ const handleFriendAction = async (apiFunction, newStatus) => {
         profile.value.friendship_status = newStatus
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             errorMessage.value = "Votre session a expiré. Veuillez vous reconnecter."
         } else {
             alert(err.message)
@@ -142,7 +142,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             errorMessage.value = "Votre session a expiré. Veuillez vous reconnecter."
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."

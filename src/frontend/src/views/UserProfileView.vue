@@ -88,7 +88,7 @@ const saveProfileInfo = async () => {
         setTimeout(() => infoSuccessMessage.value = '', 3000)
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             infoErrorMessage.value = err.message
@@ -235,14 +235,14 @@ const confirmDelete = async () => {
         await deleteAccount(deletePassword.value, token)
 
         closeDeleteModal()
-        authStore.clearAuth()
+        await authStore.logout()
         router.push('/')
 
         alert("Votre compte a été supprimé avec succès.")
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
             closeDeleteModal()
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             deleteError.value = err.message || "Impossible de supprimer le compte."
@@ -330,7 +330,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."
@@ -358,7 +358,7 @@ const handleDeleteAvatar = async () => {
     try {
         const token = authStore.token
 
-        const data = await deleteAvatar(token)
+        await deleteAvatar(token)
 
         if (avatarImageSrc.value) {
             URL.revokeObjectURL(avatarImageSrc.value)
@@ -453,8 +453,8 @@ const cancelEdit = () => {
                         <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
                                 rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
                             @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
-                            <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
-                                class="h-full w-full object-cover" />
+                            <img v-if="avatarImageSrc" :src="avatarImageSrc"
+                                :alt="`Avatar de ${authStore.user.username}`" class="h-full w-full object-cover" />
                             <span v-else-if="authStore.user.username">
                                 {{ authStore.user.username.charAt(0).toUpperCase() }}
                             </span>

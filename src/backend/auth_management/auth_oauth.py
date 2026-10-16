@@ -3,7 +3,11 @@ import os
 from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
 from extensions import db, oauth
 from flask import Blueprint, jsonify, redirect
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    set_refresh_cookies,
+)
 from models import User
 
 auth_oauth_bp = Blueprint("auth_oauth", __name__)
@@ -65,4 +69,7 @@ def callback_42():
     frontend_url = os.environ.get("VITE_API_URL")
     redirect_target = f"{frontend_url}/oauth-success?token={access_token}"
 
-    return redirect(redirect_target)
+    response = redirect(redirect_target)
+    refresh_token = create_refresh_token(identity=str(user.id))
+    set_refresh_cookies(response, refresh_token)
+    return response

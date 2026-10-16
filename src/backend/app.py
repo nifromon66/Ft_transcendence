@@ -148,12 +148,35 @@ CORS(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
+app.json.ensure_ascii = False
 app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 2592000
+app.config["JWT_COOKIE_SECURE"] = True
+app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+
+
 jwt.init_app(app)
+
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({"success": False, "error": "Session expiree"}), 200
+
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({"success": False, "error": "Token invalide"}), 200
+
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({"success": False, "error": "Authentification requise"}), 200
+
 db.init_app(app)
 bcrypt.init_app(app)
 socketio.init_app(app, cors_allowed_origins=[frontend_url])
