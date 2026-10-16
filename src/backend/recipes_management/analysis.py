@@ -100,14 +100,14 @@ def check_recipe_analysis(validated, ingredients_by_id):
     except AnalysisInputTooLarge:
         return jsonify(success=False, error=(
             "La recette est trop longue pour être vérifiée. Raccourcis les étapes."
-        )), 400
+        )), 200
     except AnalysisUnavailable:
         current_app.logger.warning("Analyse IA indisponible ou réponse invalide")
         return jsonify(success=False, error=(
             "La vérification de la recette est momentanément indisponible. Réessaie plus tard."
-        )), 503
+        )), 200
     if not verdict["accepted"]:
         return jsonify(success=False, error=(
             "La recette doit être corrigée : " + verdict["reason"].strip()
-        )), 422
+        )), 200
     return None

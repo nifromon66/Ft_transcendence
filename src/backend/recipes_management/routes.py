@@ -60,7 +60,7 @@ def create_recipe():
                 "success": False,
                 "error": str(error),
             }
-        ), 400
+        ), 200
 
     title = validated["title"]
     category_id = validated["category_id"]
@@ -79,15 +79,15 @@ def create_recipe():
     try:
         user_id = int(user_id)
     except (TypeError, ValueError):
-        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 200
 
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     category = db.session.get(Category, category_id)
     if category is None:
-        return jsonify({"success": False, "error": "Catégorie introuvable"}), 404
+        return jsonify({"success": False, "error": "Catégorie introuvable"}), 200
 
     ingredients = (
         db.session.execute(
@@ -113,7 +113,7 @@ def create_recipe():
                 "success": False,
                 "error": "Un ou plusieurs ingrédients sont introuvables",
             }
-        ), 404
+        ), 200
 
     missing_tag_ids = selected_tag_ids - tags_by_id.keys()
     if missing_tag_ids:
@@ -122,7 +122,7 @@ def create_recipe():
                 "success": False,
                 "error": "Un ou plusieurs tags sont introuvables",
             }
-        ), 404
+        ), 200
 
     analysis_error = check_recipe_analysis(validated, ingredients_by_id)
     if analysis_error is not None:
@@ -191,10 +191,10 @@ def upload_recipe_image(recipe_id: int):
     max_mb = MAX_RECIPE_IMAGE_SIZE // (1024 * 1024)
 
     if request.content_length and request.content_length > MAX_RECIPE_IMAGE_SIZE:
-        return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
+        return jsonify({"success": False, "error": f"File too large (Max {max_mb}MB)"}), 200
 
     if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+        return jsonify({"success": False, "error": "No file part in the request"}), 200
 
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -204,7 +204,7 @@ def upload_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         user_id = int(get_jwt_identity())
@@ -214,7 +214,7 @@ def upload_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -222,7 +222,7 @@ def upload_recipe_image(recipe_id: int):
                 "success": False,
                 "error": ("Tu ne peux modifier que tes propres recettes"),
             }
-        ), 403
+        ), 200
 
     file = request.files["file"]
 
@@ -297,7 +297,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": f"Fichier trop volumineux (Max {max_mb}MB)",
             }
-        ), 413
+        ), 200
 
     if "file" not in request.files:
         return jsonify(
@@ -305,7 +305,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": "Aucun fichier dans la requête",
             }
-        ), 400
+        ), 200
 
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -315,7 +315,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         user_id = int(get_jwt_identity())
@@ -325,7 +325,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -333,7 +333,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": ("Tu ne peux modifier que tes propres recettes"),
             }
-        ), 403
+        ), 200
 
     step = db.session.get(RecipeStep, step_id)
 
@@ -343,7 +343,7 @@ def upload_recipe_step_image(
                 "success": False,
                 "error": "Étape introuvable pour cette recette",
             }
-        ), 404
+        ), 200
 
     file = request.files["file"]
 
@@ -409,7 +409,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     user_id = get_jwt_identity()
 
@@ -421,7 +421,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -429,7 +429,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Tu ne peux modifier que tes propres recettes",
             }
-        ), 403
+        ), 200
 
     data = request.get_json(silent=True)
 
@@ -441,7 +441,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": str(error),
             }
-        ), 400
+        ), 200
 
     title = validated["title"]
     category_id = validated["category_id"]
@@ -464,7 +464,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Catégorie introuvable",
             }
-        ), 404
+        ), 200
 
     ingredients = (
         db.session.execute(
@@ -490,7 +490,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Un ou plusieurs ingrédients sont introuvables",
             }
-        ), 404
+        ), 200
 
     if selected_tag_ids - tags_by_id.keys():
         return jsonify(
@@ -498,7 +498,7 @@ def update_recipe(recipe_id: int):
                 "success": False,
                 "error": "Un ou plusieurs tags sont introuvables",
             }
-        ), 404
+        ), 200
 
     existing_steps_by_id = {step.id: step for step in recipe.steps}
 
@@ -522,7 +522,7 @@ def update_recipe(recipe_id: int):
                     "Une ou plusieurs étapes sont introuvables pour cette recette"
                 ),
             }
-        ), 404
+        ), 200
 
     analysis_error = check_recipe_analysis(validated, ingredients_by_id)
     if analysis_error is not None:
@@ -621,7 +621,7 @@ def delete_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         user_id = int(get_jwt_identity())
@@ -631,7 +631,7 @@ def delete_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -639,7 +639,7 @@ def delete_recipe_image(recipe_id: int):
                 "success": False,
                 "error": ("Tu ne peux modifier que tes propres recettes"),
             }
-        ), 403
+        ), 200
 
     if not recipe.image_filename:
         return jsonify(
@@ -647,7 +647,7 @@ def delete_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Cette recette n'a pas d'image",
             }
-        ), 404
+        ), 200
 
     filename = recipe.image_filename
 
@@ -698,7 +698,7 @@ def delete_recipe_step_image(
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         user_id = int(get_jwt_identity())
@@ -708,7 +708,7 @@ def delete_recipe_step_image(
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -716,7 +716,7 @@ def delete_recipe_step_image(
                 "success": False,
                 "error": ("Tu ne peux modifier que tes propres recettes"),
             }
-        ), 403
+        ), 200
 
     step = db.session.get(RecipeStep, step_id)
 
@@ -726,7 +726,7 @@ def delete_recipe_step_image(
                 "success": False,
                 "error": "Étape introuvable pour cette recette",
             }
-        ), 404
+        ), 200
 
     if not step.image_filename:
         return jsonify(
@@ -734,7 +734,7 @@ def delete_recipe_step_image(
                 "success": False,
                 "error": "Cette étape n'a pas d'image",
             }
-        ), 404
+        ), 200
 
     filename = step.image_filename
 
@@ -925,7 +925,7 @@ def get_recipe(recipe_id: int):
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     my_rating = None
     identity = get_jwt_identity()
@@ -1018,7 +1018,7 @@ def delete_recipe(recipe_id: int):
                 "success": False,
                 "error": "Recette introuvable",
             }
-        ), 404
+        ), 200
 
     user_id = get_jwt_identity()
 
@@ -1030,7 +1030,7 @@ def delete_recipe(recipe_id: int):
                 "success": False,
                 "error": "Utilisateur non authentifié",
             }
-        ), 401
+        ), 200
 
     if recipe.user_id != user_id:
         return jsonify(
@@ -1038,7 +1038,7 @@ def delete_recipe(recipe_id: int):
                 "success": False,
                 "error": "Tu ne peux supprimer que tes propres recettes",
             }
-        ), 403
+        ), 200
 
     image_paths = [step.image_filename for step in recipe.steps if step.image_filename]
 
@@ -1077,19 +1077,19 @@ def rate_recipe(recipe_id: int):
     try:
         user_id = int(user_id)
     except (TypeError, ValueError):
-        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 200
 
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     recipe = db.session.get(Recipe, recipe_id)
     if recipe is None:
-        return jsonify({"success": False, "error": "Recette introuvable"}), 404
+        return jsonify({"success": False, "error": "Recette introuvable"}), 200
     if recipe.user_id == user_id:
         return jsonify(
             {"success": False, "error": "Tu ne peux pas noter ta propre recette"}
-        ), 403
+        ), 200
 
     existing_rating = db.session.scalar(
         select(Rating).where(
@@ -1104,7 +1104,7 @@ def rate_recipe(recipe_id: int):
                 "success": False,
                 "error": "Tu as déjà noté cette recette",
             }
-        ), 409
+        ), 200
 
     data = request.get_json(silent=True)
 
@@ -1114,7 +1114,7 @@ def rate_recipe(recipe_id: int):
                 "success": False,
                 "error": "Un objet JSON est attendu",
             }
-        ), 400
+        ), 200
 
     score = data.get("score")
 
@@ -1124,7 +1124,7 @@ def rate_recipe(recipe_id: int):
                 "success": False,
                 "error": "La note doit être un entier entre 1 et 5",
             }
-        ), 400
+        ), 200
 
     rating = Rating(
         user_id=user_id,
@@ -1152,7 +1152,7 @@ def rate_recipe(recipe_id: int):
                     "success": False,
                     "error": "Tu as déjà noté cette recette",
                 }
-            ), 409
+            ), 200
 
         return jsonify(
             {
@@ -1184,11 +1184,11 @@ def delete_recipe_rating(recipe_id: int):
     try:
         user_id = int(user_id)
     except (TypeError, ValueError):
-        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 200
 
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     rating = db.session.scalar(
         select(Rating).where(
@@ -1203,7 +1203,7 @@ def delete_recipe_rating(recipe_id: int):
                 "success": False,
                 "error": "Tu n’as pas encore noté cette recette",
             }
-        ), 404
+        ), 200
 
     try:
         db.session.delete(rating)
@@ -1228,11 +1228,11 @@ def update_recipe_rating(recipe_id: int):
     try:
         user_id = int(user_id)
     except (TypeError, ValueError):
-        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 401
+        return jsonify({"success": False, "error": "Utilisateur non authentifié"}), 200
 
     user = db.session.get(User, user_id)
     if user is None:
-        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 401
+        return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
 
     rating = db.session.scalar(
         select(Rating).where(
@@ -1247,7 +1247,7 @@ def update_recipe_rating(recipe_id: int):
                 "success": False,
                 "error": "Tu n’as pas encore noté cette recette",
             }
-        ), 404
+        ), 200
 
     data = request.get_json(silent=True)
 
@@ -1257,7 +1257,7 @@ def update_recipe_rating(recipe_id: int):
                 "success": False,
                 "error": "Un objet JSON est attendu",
             }
-        ), 400
+        ), 200
 
     score = data.get("score")
 
@@ -1267,7 +1267,7 @@ def update_recipe_rating(recipe_id: int):
                 "success": False,
                 "error": "La note doit être un entier entre 1 et 5",
             }
-        ), 400
+        ), 200
 
     rating.update_score(score)
 
@@ -1295,7 +1295,7 @@ def get_public_recipe_image(recipe_id: int):
     recipe = db.session.get(Recipe, recipe_id)
 
     if recipe is None or not recipe.image_filename:
-        return jsonify({"success": False, "error": "Image introuvable"}), 404
+        return jsonify({"success": False, "error": "Image introuvable"}), 200
 
     recipe_upload_folder = os.path.join(
         UPLOAD_FOLDER, "recipes", str(recipe.id), "cover"
@@ -1309,7 +1309,7 @@ def get_public_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Image introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         mimetype = magic.from_file(file_path, mime=True)
@@ -1319,7 +1319,7 @@ def get_public_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Image illisible",
             }
-        ), 404
+        ), 200
 
     if mimetype not in ALLOWED_RECIPE_IMAGE_MIMETYPES:
         return jsonify(
@@ -1327,7 +1327,7 @@ def get_public_recipe_image(recipe_id: int):
                 "success": False,
                 "error": "Type d'image non autorisé",
             }
-        ), 415
+        ), 200
 
     return send_from_directory(
         recipe_upload_folder,
@@ -1341,7 +1341,7 @@ def get_public_recipe_step_image(recipe_id: int, step_id: int):
     step = db.session.get(RecipeStep, step_id)
 
     if step is None or step.recipe_id != recipe_id or not step.image_filename:
-        return jsonify({"success": False, "error": "Image d'étape introuvable"}), 404
+        return jsonify({"success": False, "error": "Image d'étape introuvable"}), 200
 
     recipe_upload_folder = os.path.join(
         UPLOAD_FOLDER, "recipes", str(recipe_id), "steps", str(step.id)
@@ -1354,7 +1354,7 @@ def get_public_recipe_step_image(recipe_id: int, step_id: int):
                 "success": False,
                 "error": "Image introuvable",
             }
-        ), 404
+        ), 200
 
     try:
         mimetype = magic.from_file(file_path, mime=True)
@@ -1364,7 +1364,7 @@ def get_public_recipe_step_image(recipe_id: int, step_id: int):
                 "success": False,
                 "error": "Image illisible",
             }
-        ), 404
+        ), 200
 
     if mimetype not in ALLOWED_RECIPE_IMAGE_MIMETYPES:
         return jsonify(
@@ -1372,7 +1372,7 @@ def get_public_recipe_step_image(recipe_id: int, step_id: int):
                 "success": False,
                 "error": "Type d'image non autorisé",
             }
-        ), 415
+        ), 200
 
     return send_from_directory(
         recipe_upload_folder,

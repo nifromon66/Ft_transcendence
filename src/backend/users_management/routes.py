@@ -110,7 +110,7 @@ def upload_avatar():
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+        return jsonify({"success": False, "error": "Compte inactif ou supprimé"}), 200
 
     max_mb = MAX_AVATAR_SIZE // (1024 * 1024)
 
@@ -118,7 +118,7 @@ def upload_avatar():
         return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
 
     if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+        return jsonify({"success": False, "error": "No file part in the request"}), 200
 
     file = request.files["file"]
     file_data, err_resp, err_code = handle_file_upload(
@@ -346,7 +346,7 @@ def get_avatar_file(filename):
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"error": "Accès refusé"}), 403
+        return jsonify({"success": False, "error": "Accès refusé"}), 200
 
     avatar_folder = os.path.join(UPLOAD_FOLDER, "avatars")
     file_path = os.path.join(avatar_folder, filename)
@@ -357,10 +357,10 @@ def get_avatar_file(filename):
     try:
         mimetype = magic.from_file(file_path, mime=True)
     except (OSError, magic.MagicException):
-        return jsonify({"success": False, "error": "Fichier illisible"}), 422
+        return jsonify({"success": False, "error": "Fichier illisible"}), 200
 
     if mimetype not in ALLOWED_AVATAR_MIMETYPES:
-        return jsonify({"success": False, "error": "Type de fichier non autorisé"}), 415
+        return jsonify({"success": False, "error": "Type de fichier non autorisé"}), 200
 
     return send_from_directory(avatar_folder, filename, mimetype=mimetype)
 
@@ -370,10 +370,10 @@ def get_avatar_file(filename):
 def update_avatar_frame():
     data = request.get_json(silent=True)
     if not isinstance(data, dict) or "frame" not in data:
-        return jsonify({"success": False, "error": "Le cercle est requis."}), 400
+        return jsonify({"success": False, "error": "Le cercle est requis."}), 200
     frame = data["frame"]
     if frame is not None and (not isinstance(frame, str) or frame not in FRAME_LEVELS):
-        return jsonify({"success": False, "error": "Cercle invalide."}), 400
+        return jsonify({"success": False, "error": "Cercle invalide."}), 200
 
     try:
         # Serialize preference changes with other changes to this user's XP.
@@ -381,7 +381,7 @@ def update_avatar_frame():
             select(User).where(User.id == int(get_jwt_identity())).with_for_update()
         )
         if user is None or not user.is_active:
-            return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+            return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
         if (
             frame is not None
             and get_xp_progress(user.xp)["level"] < FRAME_LEVELS[frame]

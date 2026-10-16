@@ -61,11 +61,11 @@ def getbadge():
 
     data = request.get_json()
     if not data or "badge_id" not in data:
-        return jsonify({"success": False, "error": "badge_id is required"}), 400
+        return jsonify({"success": False, "error": "badge_id is required"}), 200
     badge_id = data["badge_id"]
     badge = db.session.get(Badge, badge_id)
     if badge is None:
-        return jsonify({"success": False, "error": "Badge not found"}), 404
+        return jsonify({"success": False, "error": "Badge not found"}), 200
 
     eligible = check_badge_eligibility(
         user_id=user_id,
@@ -82,7 +82,7 @@ def getbadge():
     )
 
     if not awarded:
-        return jsonify({"success": False, "error": "Badge already owned"}), 409
+        return jsonify({"success": False, "error": "Badge already owned"}), 200
 
     db.session.commit()
 

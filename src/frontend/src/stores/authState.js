@@ -31,7 +31,6 @@ export const useAuthStore = defineStore('auth', {
                 const data = await fetchUserProfile(token)
                 if (this.token === token) this.updateRewards(data)
             } catch (error) {
-                console.warn('Impossible d’actualiser les récompenses du compte.', error)
             }
         },
 

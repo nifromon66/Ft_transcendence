@@ -112,12 +112,12 @@ def check_ingredient_analysis(name, category_name):
         return jsonify(
             success=False,
             error="La vérification de l'ingrédient est momentanément indisponible. Réessaie plus tard."
-        ), 503
+        ), 200
 
     if not verdict["accepted"]:
         return jsonify(
             success=False,
             error="L'ingrédient doit être corrigé : " + verdict["reason"].strip()
-        ), 422
+        ), 200
 
     return None
