@@ -17,7 +17,7 @@ onMounted(async () => {
             await authStore.fetchUser()
 
             router.push({ name: 'welcome' })
-        } catch (error) {
+        } catch {
             router.push({ name: 'login' })
         }
     } else {

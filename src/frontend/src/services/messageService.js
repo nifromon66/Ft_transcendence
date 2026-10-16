@@ -22,7 +22,7 @@ export async function fetchConversation(friendId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -48,7 +48,7 @@ export async function fetchConversation(friendId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {

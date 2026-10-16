@@ -105,14 +105,14 @@ const router = createRouter({
   }
 })
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
   if (!authStore.isInitialized) {
     if (!authStore.token) {
       try {
         await authStore.silentRefresh()
-      } catch (e) {
+      } catch {
       }
     }
     authStore.isInitialized = true

@@ -25,7 +25,8 @@ onMounted(async () => {
   if (!authStore.isInitialized) {
     try {
       await authStore.silentRefresh()
-    } catch (e) {
+    } catch {
+      // Ignore initial silent refresh error
     }
     authStore.isInitialized = true
   }
@@ -39,7 +40,7 @@ onMounted(async () => {
       if (authStore.token) {
         try {
           await authStore.silentRefresh()
-        } catch (e) {
+        } catch {
           window.location.href = '/login'
         }
       }

@@ -4,6 +4,7 @@ import { fetchRecipeById, deleteRecipe, rateRecipe, updateRecipeRating, deleteRe
 import { useRouter } from 'vue-router'
 import StarRating from '@/components/StarRating.vue'
 import { useAuthStore } from '@/stores/authState'
+import { fetchAvatarBlob } from '@/services/userService'
 
 const authStore = useAuthStore()
 const props = defineProps({

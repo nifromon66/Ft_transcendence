@@ -139,7 +139,7 @@ const submit2FaPassword = async () => {
         try {
             data = await response.json()
         } catch (parseError) {
-            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
         if (!response.ok) {
@@ -178,7 +178,7 @@ const confirm2FaCode = async () => {
         try {
             data = await response.json()
         } catch (parseError) {
-            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
         if (!response.ok) {
@@ -208,8 +208,8 @@ const copyRecoveryCodes = async () => {
         await navigator.clipboard.writeText(textToCopy)
         isCopied.value = true
         setTimeout(() => { isCopied.value = false }, 2000)
-    } catch (err) {
-
+    } catch {
+        // Ignore clipboard write failures
     }
 }
 
@@ -291,8 +291,8 @@ const confirmDisable2Fa = async () => {
         let data = {}
         try {
             data = await response.json()
-        } catch (e) {
-
+        } catch {
+            // Ignore response parsing errors on disable 2FA
         }
 
         if (!response.ok) {

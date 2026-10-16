@@ -56,7 +56,6 @@ const downloadFile = async (fileUrl, fileName) => {
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
     } catch {
-        useNotificationStore().addError('Erreur lors du téléchargement')
         alert('Impossible de télécharger le document.')
     }
 }

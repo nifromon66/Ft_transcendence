@@ -16,7 +16,7 @@ const props = defineProps({
 
 const emit = defineEmits(['activate'])
 
-const { avatarImageSrc, errorMessage } = useAvatar(toRef(props, 'user'))
+const { avatarImageSrc } = useAvatar(toRef(props, 'user'))
 </script>
 
 <template>

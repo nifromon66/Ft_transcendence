@@ -22,7 +22,7 @@ export async function sendFriendRequest(targetUserId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -44,7 +44,7 @@ export async function sendFriendRequest(targetUserId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -75,7 +75,7 @@ export async function acceptFriendRequest(senderId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -97,7 +97,7 @@ export async function acceptFriendRequest(senderId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -128,7 +128,7 @@ export async function cancelFriendRequest(targetUserId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -150,7 +150,7 @@ export async function cancelFriendRequest(targetUserId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -181,7 +181,7 @@ export async function denyFriendRequest(senderId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -203,7 +203,7 @@ export async function denyFriendRequest(senderId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -234,7 +234,7 @@ export async function removeFriend(friendId, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -256,7 +256,7 @@ export async function removeFriend(friendId, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -287,7 +287,7 @@ export async function fetchFriends(token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -309,7 +309,7 @@ export async function fetchFriends(token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -340,7 +340,7 @@ export async function fetchReceivedRequests(token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -358,7 +358,7 @@ export async function fetchReceivedRequests(token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -389,7 +389,7 @@ export async function fetchSentRequests(token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -407,7 +407,7 @@ export async function fetchSentRequests(token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -438,7 +438,7 @@ export async function fetchDiscoverUsers(token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -456,7 +456,7 @@ export async function fetchDiscoverUsers(token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -487,7 +487,7 @@ export async function searchUsers(query, token) {
             }
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status === 401) {
@@ -505,7 +505,7 @@ export async function searchUsers(query, token) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {

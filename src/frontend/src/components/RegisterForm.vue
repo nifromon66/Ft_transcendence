@@ -35,7 +35,7 @@ const processFile = async (rawFile) => {
 
     errorMessage.value = ''
     avatarFile.value = optimizedFile
-  } catch (err) {
+  } catch {
     errorMessage.value = "Erreur lors du redimensionnement automatique de cette image."
     avatarFile.value = null
   }

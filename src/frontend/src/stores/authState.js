@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const data = await fetchUserProfile(token)
                 if (this.token === token) this.updateRewards(data)
-            } catch (error) {
+            } catch {
             }
         },
 

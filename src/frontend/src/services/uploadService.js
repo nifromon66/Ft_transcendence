@@ -36,11 +36,11 @@ export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgr
                 return reject(new Error("Votre session a expiré. Veuillez vous reconnecter."))
             }
 
-            let responseData = {}
+            let responseData
             try {
                 responseData = JSON.parse(xhr.responseText)
             } catch (error) {
-                return reject(new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard."))
+                return reject(new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error }))
             }
 
             if (xhr.status >= 200 && xhr.status < 300) {

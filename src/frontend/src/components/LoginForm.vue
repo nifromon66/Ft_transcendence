@@ -35,7 +35,7 @@ async function login() {
     try {
       data = await response.json()
     } catch (e) {
-      throw new Error("Erreur de communication avec le serveur.")
+      throw new Error("Erreur de communication avec le serveur.", { cause: e })
     }
 
     if (!response.ok) {
@@ -98,7 +98,7 @@ async function confirm2FaLogin() {
     try {
       data = await response.json()
     } catch (e) {
-      throw new Error("Erreur serveur.")
+      throw new Error("Erreur serveur.", { cause: e })
     }
 
     if (!response.ok) {

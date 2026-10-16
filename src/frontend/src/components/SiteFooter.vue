@@ -1,7 +1,3 @@
-<script>
-import { RouterLink } from 'vue-router'
-</script>
-
 <template>
   <footer class="bg-primary px-6 py-4 text-center text-sm text-white">
     <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
