@@ -24,6 +24,7 @@ async function login() {
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value,
@@ -38,7 +39,7 @@ async function login() {
       throw new Error("Erreur de communication avec le serveur.", { cause: e })
     }
 
-    if (!response.ok) {
+    if (!response.ok || data.success === false) {
       throw new Error(data.error || "Email ou mot de passe incorrect.")
     }
 
@@ -46,6 +47,10 @@ async function login() {
       tempToken.value = data.temp_token
       is2FaStep.value = true
       return
+    }
+
+    if (!data.access_token) {
+      throw new Error("Impossible de se connecter.")
     }
 
     authStore.setAuth(data.access_token, null)
@@ -106,6 +111,10 @@ async function confirm2FaLogin() {
         throw new Error("Le code est incorrect ou a expiré.")
       }
       throw new Error(data.error || "Code invalide.")
+    }
+
+    if (!data.access_token) {
+      throw new Error("Impossible de se connecter.")
     }
 
     authStore.setAuth(data.access_token, null)
