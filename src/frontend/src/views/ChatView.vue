@@ -28,17 +28,19 @@ onMounted(async () => {
     await chatStore.fetchFriends()
 })
 
-const handleSend = () => {
+const handleSend = async () => {
     if (!canSend.value) {
         return
     }
 
-    chatStore.sendMessage(newMessage.value, pendingDocument.value)
+    await chatStore.sendMessage(newMessage.value, pendingDocument.value)
 
-    newMessage.value = ''
-    pendingDocument.value = null
-    showDocumentUpload.value = false
-    uploadKey.value++
+    if (!chatStore.chatError) {
+        newMessage.value = ''
+        pendingDocument.value = null
+        showDocumentUpload.value = false
+        uploadKey.value++
+    }
 }
 
 const downloadFile = async (fileUrl, fileName) => {
