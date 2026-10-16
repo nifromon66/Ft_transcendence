@@ -136,6 +136,8 @@ services:
     build:
       context: ${BACKEND_BUILD_CONTEXT_PATH}
       dockerfile: ${BACKEND_BUILD_DOCKERFILE_PATH}
+      args:
+        BACKEND_MAC_ARM: ${BACKEND_MAC_ARM:-false}
     image: ${BACKEND_CONTAINER_NAME}:${BACKEND_AUTHOR}
     container_name: ${BACKEND_CONTAINER_NAME}
     restart: unless-stopped
