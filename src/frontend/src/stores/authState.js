@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { fetchUserProfile } from '@/services/userService.js'
 import { connectSocket, disconnectSocket } from '@/services/socketService.js'
+import { refreshAccessToken, logoutUser } from '@/services/authService.js'
 
 export const useAuthStore = defineStore('auth', {
     state: () => {
@@ -10,7 +11,8 @@ export const useAuthStore = defineStore('auth', {
 
         return {
             token: token,
-            user: parsedUser
+            user: parsedUser,
+            isInitialized: false,
         }
     },
     actions: {
@@ -50,6 +52,27 @@ export const useAuthStore = defineStore('auth', {
             } else {
                 localStorage.removeItem('user');
             }
+        },
+
+        async silentRefresh() {
+            try {
+                const newToken = await refreshAccessToken()
+                this.token = newToken
+                localStorage.setItem('token', newToken)
+                if (!this.user) {
+                    await this.fetchUser()
+                } else {
+                    connectSocket(this.token)
+                }
+            } catch (error) {
+                this.clearAuth()
+                throw error
+            }
+        },
+
+        async logout() {
+            await logoutUser()
+            this.clearAuth()
         },
 
         clearAuth() {

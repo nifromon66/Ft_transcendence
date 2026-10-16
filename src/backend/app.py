@@ -7,8 +7,7 @@ from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
 from flask import Flask, jsonify
 from flask_cors import CORS
 from friends_management.routes import friends_bp
-from ingredient_management.routes import ingredient_bp
-from gamification_management.routes import gamification_api
+from gamification_management.routes import gamification_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
@@ -136,14 +135,6 @@ CORS(
             "origins": [frontend_url],
             "methods": ["DELETE", "OPTIONS"],
         },
-        r"/badges": {
-            "origins": [frontend_url],
-            "methods": ["GET", "OPTIONS"],
-        },
-        r"/getbadge": {
-            "origins": [frontend_url],
-            "methods": ["POST", "OPTIONS"],
-        },
         r"/recipe/\d+": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -152,17 +143,45 @@ CORS(
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
+        r"/gamification/.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "OPTIONS"],
+        },
     },
     supports_credentials=True,
     allow_headers=["Authorization", "Content-Type"],
 )
 
-app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
+app.json.ensure_ascii = False
 app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 2592000
+app.config["JWT_COOKIE_SECURE"] = True
+app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+
+
 jwt.init_app(app)
+
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({"success": False, "error": "Session expiree"}), 200
+
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({"success": False, "error": "Token invalide"}), 200
+
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({"success": False, "error": "Authentification requise"}), 200
+
+
 db.init_app(app)
 bcrypt.init_app(app)
 socketio.init_app(app, cors_allowed_origins=[frontend_url])
@@ -175,8 +194,7 @@ with app.app_context():
     seed_database()
 
 
-app.register_blueprint(gamification_api)
-app.register_blueprint(ingredient_bp)
+app.register_blueprint(gamification_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)

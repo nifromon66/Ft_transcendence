@@ -28,7 +28,7 @@ function fillPercentage(index) {
 <template>
     <fieldset v-if="interactive" class="inline-flex gap-1" :disabled="disabled">
         <label v-for="score in 5" :key="score" class="cursor-pointer">
-            <input type="radio" class="peer sr-only" :name="groupName" :value="score" :checked="rating === score"
+            <input :id="`${groupName}-${score}`" type="radio" class="peer sr-only" :name="groupName" :value="score" :checked="rating === score"
                 :aria-label="`${score} sur 5`" @change="emit('update:rating', score)" />
 
             <svg viewBox="0 0 24 24" stroke="black" stroke-width="1" stroke-linejoin="round" aria-hidden="true"

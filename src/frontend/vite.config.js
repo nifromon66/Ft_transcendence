@@ -5,6 +5,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
@@ -16,10 +17,13 @@ export default defineConfig({
         type: 'module',
       },
       workbox: {
+        disableDevLogs: true,
         inlineWorkboxRuntime: true,
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,png,svg,jpg}']
+        globPatterns: ['**/*.{js,css,html,png,svg,jpg}'],
+        navigateFallbackAllowlist: [/^\//],
+        navigateFallbackDenylist: [/^\/api\//]
       },
       includeAssets: [
         'favicon.svg',
@@ -58,7 +62,9 @@ export default defineConfig({
         ]
       }
     }),
-    vueDevTools((process.env.EDITOR ? { launchEditor: process.env.EDITOR } : {})),
+    vueDevTools({
+      ...(process.env.EDITOR ? { launchEditor: process.env.EDITOR } : {}),
+    }),
     tailwindcss(),
   ],
   resolve: {
@@ -68,53 +74,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/auth': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
       '/api': {
         target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/friends': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/users': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/messages': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/badges': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/getbadge': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/recipe': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/upload': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/uploads': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/login': {
-        target: 'http://backend:5000',
-        changeOrigin: true
-      },
-      '/me': {
-        target: 'http://backend:5000',
-        changeOrigin: true
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
       },
       '/socket.io': {
         target: 'http://backend:5000',

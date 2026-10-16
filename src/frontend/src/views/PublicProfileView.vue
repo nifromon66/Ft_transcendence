@@ -21,13 +21,6 @@ import { socket } from '@/services/socketService'
 const router = useRouter()
 const chatStore = useChatStore()
 
-const openChat = () => {
-    if (profile.value) {
-        chatStore.setActiveContact(profile.value)
-        router.push('/chat')
-    }
-}
-
 const props = defineProps({
     id: {
         type: [String, Number],
@@ -100,7 +93,7 @@ const handleFriendAction = async (apiFunction, newStatus) => {
         profile.value.friendship_status = newStatus
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             errorMessage.value = "Votre session a expiré. Veuillez vous reconnecter."
         } else {
             alert(err.message)
@@ -118,6 +111,13 @@ const denyRequest = () => handleFriendAction(denyFriendRequest, 'none')
 const removeCurrentFriend = (username) => {
     if (confirm(`Êtes-vous sûr de vouloir retirer ${username} de vos amis ?`)) {
         handleFriendAction(removeFriend, 'none')
+    }
+}
+
+const goToChatWithFriend = async () => {
+    if (profile.value) {
+        await chatStore.setActiveContact(profile.value)
+        router.push('/chat')
     }
 }
 
@@ -147,7 +147,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             errorMessage.value = "Votre session a expiré. Veuillez vous reconnecter."
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."
@@ -238,7 +238,7 @@ onUnmounted(() => {
                         </div>
 
                         <template v-else-if="profile.friendship_status === 'accepted'">
-                            <button @click="openChat"
+                            <button @click="goToChatWithFriend"
                                 class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors cursor-pointer">
                                 Envoyer un message à cet ami
                             </button>

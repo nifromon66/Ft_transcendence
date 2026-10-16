@@ -3,6 +3,7 @@ import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
+import { useAuthStore } from '@/stores/authState.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +26,8 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/UserProfileView.vue')
+      component: () => import('@/views/UserProfileView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/about',
@@ -65,6 +67,7 @@ const router = createRouter({
       name: 'postRecipe',
       component: () => import('../views/PostRecipeView.vue'),
       props: true,
+      meta: { requiresAuth: true },
     },
     {
       path: '/recipe/:id/edit',
@@ -102,16 +105,46 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !localStorage.getItem('token')) {
+router.beforeEach(async (to, from) => {
+  const authStore = useAuthStore()
+
+  if (!authStore.isInitialized) {
+    if (!authStore.token) {
+      try {
+        await authStore.silentRefresh()
+      } catch (e) {
+      }
+    }
+    authStore.isInitialized = true
+  }
+
+  const isAuthenticated = !!authStore.token
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
     return { name: 'login' }
+  }
+
+  const guestOnlyRoutes = ['login', 'register']
+  if (guestOnlyRoutes.includes(to.name) && isAuthenticated) {
+    return { name: 'welcome' }
   }
 })
 
-router.onError((error) => {
+const isChunkLoadFailed = (error) => {
+  return error.name === 'ChunkLoadError' || (error.name === 'TypeError' && error.message.includes('dynamically imported module'))
+}
+
+
+router.onError((error, to) => {
   if (!navigator.onLine) {
     return
   }
+
+  if (isChunkLoadFailed(error)) {
+    window.location.href = to.fullPath
+    return
+  }
+
   throw error
 })
 

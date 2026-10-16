@@ -82,3 +82,45 @@ export async function loginUser(credentials) {
         user: data.user
     }
 }
+
+export async function refreshAccessToken() {
+    if (!navigator.onLine) {
+        throw new Error("Hors ligne")
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    const response = await fetch(`${baseUrl}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error("Session expirée")
+    }
+
+    const data = await response.json()
+    if (data.success === false) {
+        throw new Error(data.error || "Session expirée")
+    }
+
+    return data.access_token
+}
+
+export async function logoutUser() {
+    if (!navigator.onLine) return;
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    try {
+        await fetch(`${baseUrl}/api/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+    } catch (e) {
+    }
+}

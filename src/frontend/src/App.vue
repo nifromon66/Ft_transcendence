@@ -2,11 +2,12 @@
 import { ref, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import { useChatStore } from './stores/chatState.js'
+import { useAuthStore } from './stores/authState.js'
+
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import OfflineBanner from './components/OfflineBanner.vue'
-import { useAuthStore } from './stores/authState.js'
 
 const authStore = useAuthStore()
 const chatStore = useChatStore()
@@ -20,10 +21,29 @@ function closeMenu() {
   menuOpen.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (!authStore.isInitialized) {
+    try {
+      await authStore.silentRefresh()
+    } catch (e) {
+    }
+    authStore.isInitialized = true
+  }
+
   authStore.initializeAuth()
+
   if (authStore.token) {
     chatStore.initializeSocketListeners()
+
+    setInterval(async () => {
+      if (authStore.token) {
+        try {
+          await authStore.silentRefresh()
+        } catch (e) {
+          window.location.href = '/login'
+        }
+      }
+    }, 10 * 60 * 1000)
   }
 })
 

@@ -7,6 +7,16 @@ import router from './router'
 
 const app = createApp(App)
 const pinia = createPinia()
+
+app.config.errorHandler = () => {
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    event.preventDefault()
+  })
+}
+
 app.use(pinia)
 app.use(router)
 app.mount('#app')
