@@ -142,8 +142,8 @@ const submit2FaPassword = async () => {
             throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
-        if (!response.ok) {
-            throw new Error(data.error)
+        if (!response.ok || data.success === false) {
+            throw new Error(data.error || "Mot de passe incorrect.")
         }
 
         qrCodeUrl.value = data.qr_uri
@@ -181,7 +181,7 @@ const confirm2FaCode = async () => {
             throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
-        if (!response.ok) {
+        if (!response.ok || data.success === false) {
             if (response.status === 401) {
                 throw new Error("Le code est incorrect ou a expiré.")
             }
@@ -295,7 +295,7 @@ const confirmDisable2Fa = async () => {
             // Ignore response parsing errors on disable 2FA
         }
 
-        if (!response.ok) {
+        if (!response.ok || data.success === false) {
             throw new Error(data.error || "Erreur lors de la désactivation.")
         }
 
