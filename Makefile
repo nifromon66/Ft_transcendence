@@ -34,12 +34,4 @@ prune:
 
 re: clean prune rebuild
 
-ai-pull:
-	docker compose exec ollama ollama pull qwen3:4b
-
-ai-test:
-	python3 scripts/test_recipe_ai.py
-	docker compose exec ollama ollama ps
-
 .PHONY: up rebuild down test-waf logs restart clean prune re insert-secrets
-.PHONY: ai-up ai-pull ai-test ai-stop
