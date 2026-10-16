@@ -24,7 +24,9 @@ def handle_connect(auth=None):
         room_name = f"user_{uid}"
         join_room(room_name)
 
-        online_users[uid] = request.sid
+        if uid not in online_users:
+            online_users[uid] = set()
+        online_users[uid].add(request.sid)
         socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
 
         print(
@@ -61,12 +63,14 @@ def handle_connect(auth=None):
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    for user_id, sid in list(online_users.items()):
-        if sid == request.sid:
-            del online_users[user_id]
-            socketio.emit(
-                "user_status_changed", {"user_id": user_id, "is_online": False}
-            )
+    for user_id, sids in list(online_users.items()):
+        if request.sid in sids:
+            sids.remove(request.sid)
+            if not sids:
+                del online_users[user_id]
+                socketio.emit(
+                    "user_status_changed", {"user_id": user_id, "is_online": False}
+                )
             break
 
 
