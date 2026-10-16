@@ -42,5 +42,5 @@ def init_oauth(app):
 limiter = Limiter(
     get_remote_address,
     storage_uri="memory://",
-    default_limits=["1000 per day", "100 per hour"],
+    default_limits=["2000 per hour", "200 per minute"],
 )

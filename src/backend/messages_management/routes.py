@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import SQLAlchemyError
 
 from config import UPLOAD_FOLDER
-from extensions import db
+from extensions import db, limiter
 from models import User
 from models.message import Message
 from utils.file_services import handle_file_upload
@@ -106,6 +106,7 @@ def get_chat_history(friend_id):
 
 
 @messages_bp.route("/documents/<path:filename>", methods=["GET"])
+@limiter.exempt
 def serve_document(filename):
     """
     Serves a specific document file from the uploads directory securely.

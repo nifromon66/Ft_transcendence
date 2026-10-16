@@ -11,7 +11,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from config import UPLOAD_FOLDER
-from extensions import db, online_users, socketio
+from extensions import db, limiter, online_users, socketio
 from models import User
 from models.association import friend
 from models.user_avatar_frame import UserAvatarFrame
@@ -341,6 +341,7 @@ def get_public_profile(user_id):
 
 
 @users_bp.route("/avatars/<filename>", methods=["GET"])
+@limiter.exempt
 @jwt_required()
 def get_avatar_file(filename):
     user_id = get_jwt_identity()

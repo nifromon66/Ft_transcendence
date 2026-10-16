@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import safe_join
 
 from config import UPLOAD_FOLDER
-from extensions import db
+from extensions import db, limiter
 from models import (
     Category,
     Ingredient,
@@ -1288,6 +1288,7 @@ def update_recipe_rating(recipe_id: int):
 
 
 @recipes_bp.route("/<int:recipe_id>/image", methods=["GET"])
+@limiter.exempt
 def get_public_recipe_image(recipe_id: int):
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -1334,6 +1335,7 @@ def get_public_recipe_image(recipe_id: int):
 
 
 @recipes_bp.route("/<int:recipe_id>/steps/<int:step_id>/image", methods=["GET"])
+@limiter.exempt
 def get_public_recipe_step_image(recipe_id: int, step_id: int):
     step = db.session.get(RecipeStep, step_id)
 
