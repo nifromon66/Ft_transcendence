@@ -624,7 +624,7 @@ const cancelEdit = () => {
 
         <div v-if="isDeleteModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <form @submit.prevent="confirmDelete" class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                 <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer mon compte</h3>
 
                 <p class="text-gray-700 mb-4 text-sm">
@@ -639,48 +639,46 @@ const cancelEdit = () => {
                     </label>
                     <input type="password" id="delete-password" name="password" v-model="deletePassword" placeholder="Mot de passe"
                         autocomplete="current-password"
-                        class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
-                        @keyup.enter="confirmDelete">
+                        class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500">
                     <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button @click="closeDeleteModal"
+                    <button type="button" @click="closeDeleteModal"
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors">
                         Annuler
                     </button>
-                    <button @click="confirmDelete"
+                    <button type="submit"
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors">
                         ⚠️ Supprimer mon compte
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
         <div v-if="is2FaModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
 
-                <div v-if="twoFaStep === 1">
+                <form v-if="twoFaStep === 1" @submit.prevent="submit2FaPassword">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
                     <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
-                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                        @keyup.enter="submit2FaPassword">
+                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
-                        <button @click="close2FaModal"
+                        <button type="button" @click="close2FaModal"
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
-                        <button @click="submit2FaPassword" :disabled="is2FaLoading"
+                        <button type="submit" :disabled="is2FaLoading"
                             class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition-colors">
                             {{ is2FaLoading ? 'Vérification...' : 'Continuer' }}
                         </button>
                     </div>
-                </div>
+                </form>
 
-                <div v-else-if="twoFaStep === 2">
+                <form v-else-if="twoFaStep === 2" @submit.prevent="confirm2FaCode">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Scanner le QR Code</h3>
                     <p class="text-gray-600 mb-4 text-sm text-center">Utilisez Google Authenticator pour scanner ce
                         QR
@@ -694,19 +692,18 @@ const cancelEdit = () => {
                     </div>
 
                     <input id="enable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                        @keyup.enter="confirm2FaCode">
+                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
-                        <button @click="close2FaModal"
+                        <button type="button" @click="close2FaModal"
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
-                        <button @click="confirm2FaCode" :disabled="is2FaLoading"
+                        <button type="submit" :disabled="is2FaLoading"
                             class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium">
                             {{ is2FaLoading ? 'Validation...' : 'Valider et Activer le 2FA' }}
                         </button>
                     </div>
-                </div>
+                </form>
 
                 <div v-else-if="twoFaStep === 3" class="animate-fade-in">
                     <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Codes de récupération</h3>
@@ -747,7 +744,7 @@ const cancelEdit = () => {
 
         <div v-if="isDisable2FaModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <form @submit.prevent="confirmDisable2Fa" class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
 
                 <h3 class="text-xl font-bold text-gray-800 mb-4">Désactiver le 2FA</h3>
                 <p class="text-gray-600 mb-4 text-sm">
@@ -759,22 +756,21 @@ const cancelEdit = () => {
                     class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 
                 <input id="disable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                    @keyup.enter="confirmDisable2Fa" />
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
 
                 <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
 
                 <div class="flex justify-end space-x-3 mt-4">
-                    <button @click="closeDisable2FaModal"
+                    <button type="button" @click="closeDisable2FaModal"
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">
                         Annuler
                     </button>
-                    <button @click="confirmDisable2Fa" :disabled="isDisable2FaLoading"
+                    <button type="submit" :disabled="isDisable2FaLoading"
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium disabled:opacity-50">
                         {{ isDisable2FaLoading ? 'Désactivation...' : 'Désactiver' }}
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
     </main>
