@@ -128,10 +128,12 @@ services:
   # Backend                                #
   ##########################################
   backend:
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       RECIPE_AI_URL: http://ollama:11434
       RECIPE_AI_MODEL: qwen3:4b
       PYTHONDONTWRITEBYTECODE: "1"
+      HOME: /tmp
 
     build:
       context: ${BACKEND_BUILD_CONTEXT_PATH}
