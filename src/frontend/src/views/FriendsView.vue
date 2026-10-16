@@ -26,6 +26,31 @@ const {
 } = useFriends()
 
 const searchQuery = ref('')
+const friendToDelete = ref(null)
+const isDeletingFriend = ref(false)
+
+const openDeleteFriendModal = (user) => {
+    friendToDelete.value = user
+}
+
+const closeDeleteFriendModal = () => {
+    if (!isDeletingFriend.value) {
+        friendToDelete.value = null
+    }
+}
+
+const confirmDeleteFriend = async () => {
+    if (!friendToDelete.value || isDeletingFriend.value) return
+    isDeletingFriend.value = true
+    try {
+        await deleteFriend(friendToDelete.value.id)
+        friendToDelete.value = null
+    } catch {
+        // errorMessage is handled in useFriends
+    } finally {
+        isDeletingFriend.value = false
+    }
+}
 
 const handleSearch = async () => {
     if (searchQuery.value.trim() != '') {
@@ -143,7 +168,7 @@ onUnmounted(() => {
                             class="shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">Accepter
                         </button>
                         <button v-if="user.friendship_status === 'accepted'"
-                            @click="deleteFriend(user.id, user.username)"
+                            @click="openDeleteFriendModal(user)"
                             class="shrink-0 px-4 py-2 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
                         </button>
                     </div>
@@ -243,7 +268,7 @@ onUnmounted(() => {
                             </div>
                         </RouterLink>
 
-                        <button @click="deleteFriend(friend.id, friend.username)"
+                        <button @click="openDeleteFriendModal(friend)"
                             class="shrink-0 px-3 py-1.5 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer</button>
                     </li>
                 </ul>
@@ -277,6 +302,30 @@ onUnmounted(() => {
                     </li>
                 </ul>
             </section>
+        </div>
+
+        <!-- Modal confirmation suppression ami -->
+        <div v-if="friendToDelete"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+            role="dialog" aria-modal="true" aria-labelledby="modal-delete-friend-title">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <h3 id="modal-delete-friend-title" class="text-xl font-bold text-gray-800 mb-4">
+                    Retirer de vos amis
+                </h3>
+                <p class="text-gray-600 mb-6 text-sm">
+                    Êtes-vous sûr de vouloir retirer <span class="font-semibold text-gray-900">{{ friendToDelete.username }}</span> de vos amis ?
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeDeleteFriendModal" :disabled="isDeletingFriend"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors disabled:opacity-50">
+                        Annuler
+                    </button>
+                    <button type="button" @click="confirmDeleteFriend" :disabled="isDeletingFriend"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors disabled:opacity-50">
+                        {{ isDeletingFriend ? 'Suppression...' : 'Confirmer' }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
