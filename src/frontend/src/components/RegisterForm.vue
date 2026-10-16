@@ -1,16 +1,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authState'
 import ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import { registerUser } from '@/services/authService'
-import { loginUser } from '@/services/authService'
 import { uploadAvatar } from '@/services/userService'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const username = ref('')
 const email = ref('')
@@ -39,7 +40,6 @@ const processFile = async (rawFile) => {
     errorMessage.value = "Erreur lors du redimensionnement automatique de cette image."
     avatarFile.value = null
   }
-
 }
 
 const clearFile = () => {
@@ -58,24 +58,17 @@ async function register() {
     })
 
     if (avatarFile.value) {
-      let token = registerToken
-      if (!token) {
-        const loginData = await loginUser({
-          email: email.value,
-          password: password.value
-        })
-        token = loginData.token
-      }
-
       isUploading.value = true
       uploadProgress.value = 0
 
-      await uploadAvatar(token, avatarFile.value, (progress) => {
+      await uploadAvatar(registerToken, avatarFile.value, (progress) => {
         uploadProgress.value = progress
       })
     }
 
-    router.push('/login')
+    authStore.setAuth(registerToken, null)
+    await authStore.fetchUser()
+    router.push({ name: 'welcome' })
   } catch (error) {
     errorMessage.value = error.message || "Une erreur inattendue est survenue."
   } finally {

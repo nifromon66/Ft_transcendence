@@ -9,6 +9,7 @@ export async function registerUser(userData) {
     try {
         response = await fetch(`${baseUrl}/api/auth/register`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -48,6 +49,7 @@ export async function loginUser(credentials) {
     try {
         response = await fetch(`${baseUrl}/api/auth/login`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
