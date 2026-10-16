@@ -3,10 +3,9 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+from extensions import db
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from extensions import db
 
 if TYPE_CHECKING:
     from .association import UserBadge
@@ -21,12 +20,14 @@ class Badge(db.Model):
 
     description: Mapped[str | None] = mapped_column(Text)
 
-    users: Mapped[list[UserBadge]] = relationship(back_populates="badge", cascade="all, delete-orphan")
+    users: Mapped[list[UserBadge]] = relationship(
+        back_populates="badge", cascade="all, delete-orphan"
+    )
 
     def __init__(self, *, id: int | None, name: str, description: str | None = None):
-            self.id = id
-            self.name = name
-            self.description = description
+        self.id = id
+        self.name = name
+        self.description = description
 
 
 class BadgeType(IntEnum):

@@ -1,10 +1,9 @@
+from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from models import Ingredient, IngredientCategory, RecipeIngredient
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
-from extensions import db
-from models import Ingredient, IngredientCategory, RecipeIngredient
 
 from .analysis import check_ingredient_analysis
 

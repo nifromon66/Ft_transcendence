@@ -1,9 +1,8 @@
 """XP rewards shared by server-side actions."""
 
-from sqlalchemy import case, func, update
-
 from extensions import db
 from models.user import User
+from sqlalchemy import case, func, update
 
 RECIPE_CREATED_XP = 30
 RECIPE_RATED_XP = 5

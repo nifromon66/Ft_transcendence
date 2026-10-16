@@ -1,14 +1,13 @@
 import os
 
 from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
+from extensions import db, oauth
 from flask import Blueprint, jsonify, redirect
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     set_refresh_cookies,
 )
-
-from extensions import db, oauth
 from models import User
 
 auth_oauth_bp = Blueprint("auth_oauth", __name__)

@@ -2,6 +2,7 @@ import secrets
 import string
 
 import pyotp
+from extensions import bcrypt, db, limiter
 from flask import Blueprint, jsonify, make_response, request
 from flask_jwt_extended import (
     create_access_token,
@@ -11,8 +12,6 @@ from flask_jwt_extended import (
     jwt_required,
     set_refresh_cookies,
 )
-
-from extensions import bcrypt, db, limiter
 from models import User
 
 auth_2fa_bp = Blueprint("auth_2fa", __name__)
@@ -32,7 +31,10 @@ def setup_2fa():
 
     if user.oauth_provider:
         return jsonify(
-            {"success": False, "error": "Le 2FA n'est pas disponible pour les comptes OAuth."}
+            {
+                "success": False,
+                "error": "Le 2FA n'est pas disponible pour les comptes OAuth.",
+            }
         ), 200
 
     if not password or not user.check_password(password):
@@ -63,17 +65,23 @@ def verify_2fa_setup():
     user = db.session.get(User, user_id)
 
     if not user or not user.totp_secret:
-        return jsonify({"success": False, "error": "Configuration 2FA introuvable."}), 200
+        return jsonify(
+            {"success": False, "error": "Configuration 2FA introuvable."}
+        ), 200
 
     data = request.get_json()
     code = data.get("code")
 
     if not code:
-        return jsonify({"success": False, "error": "Le code à 6 chiffres est requis"}), 200
+        return jsonify(
+            {"success": False, "error": "Le code à 6 chiffres est requis"}
+        ), 200
 
     totp = pyotp.TOTP(user.totp_secret)
     if not totp.verify(code):
-        return jsonify({"success": False, "error": "Code 2FA invalide. Veuillez réessayer."}), 200
+        return jsonify(
+            {"success": False, "error": "Code 2FA invalide. Veuillez réessayer."}
+        ), 200
 
     raw_recovery_codes = generate_recovery_codes()
 
@@ -110,7 +118,9 @@ def generate_recovery_codes(num_codes=8):
 def verify_login_2fa():
     claims = get_jwt()
     if not claims.get("is_2fa_pending"):
-        return jsonify({"success": False, "error": "Token invalide pour cette opération."}), 200
+        return jsonify(
+            {"success": False, "error": "Token invalide pour cette opération."}
+        ), 200
 
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
@@ -123,7 +133,9 @@ def verify_login_2fa():
     recovery_code = data.get("recovery_code")
 
     if not totp_code and not recovery_code:
-        return jsonify({"success": False, "error": "Un code d'authentification est requis."}), 200
+        return jsonify(
+            {"success": False, "error": "Un code d'authentification est requis."}
+        ), 200
 
     is_valid = False
 
@@ -173,7 +185,9 @@ def disable_2fa():
         return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     if user.oauth_provider:
-        return jsonify({"success": False, "error": "Action non autorisée pour les comptes OAuth."}), 200
+        return jsonify(
+            {"success": False, "error": "Action non autorisée pour les comptes OAuth."}
+        ), 200
 
     data = request.get_json()
     password = data.get("password")
@@ -183,11 +197,15 @@ def disable_2fa():
         return jsonify({"success": False, "error": "Mot de passe incorrect."}), 200
 
     if not code:
-        return jsonify({"success": False, "error": "Le code d'authentification est requis."}), 200
+        return jsonify(
+            {"success": False, "error": "Le code d'authentification est requis."}
+        ), 200
 
     totp = pyotp.TOTP(user.totp_secret)
     if not totp.verify(code):
-        return jsonify({"success": False, "error": "Le code 2FA est invalide ou a expiré."}), 200
+        return jsonify(
+            {"success": False, "error": "Le code 2FA est invalide ou a expiré."}
+        ), 200
 
     user.is_2fa_enabled = False
     user.totp_secret = None

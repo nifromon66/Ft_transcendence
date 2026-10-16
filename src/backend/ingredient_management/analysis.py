@@ -3,7 +3,6 @@
 import json
 
 from flask import current_app, jsonify
-
 from recipes_management.analysis import AnalysisUnavailable, analyze_content
 
 INGREDIENT_CATEGORY_RULES = {
@@ -20,15 +19,11 @@ INGREDIENT_CATEGORY_RULES = {
         "sel, poivre et assaisonnements secs."
     ),
     "Viandes": (
-        "Viandes de toutes espèces comestibles, volailles, "
-        "charcuteries et abats."
+        "Viandes de toutes espèces comestibles, volailles, charcuteries et abats."
     ),
-    "Poissons": (
-        "Poissons, crustacés, coquillages et autres fruits de mer."
-    ),
+    "Poissons": ("Poissons, crustacés, coquillages et autres fruits de mer."),
     "Œufs et produits laitiers": (
-        "Œufs, lait, fromages, yaourts, beurre, crème "
-        "et produits dérivés du lait."
+        "Œufs, lait, fromages, yaourts, beurre, crème et produits dérivés du lait."
     ),
     "Céréales et féculents": (
         "Céréales, farines, riz, pâtes, pains, semoules "
@@ -69,18 +64,21 @@ INGREDIENT_CATEGORY_RULES = {
     return None
  """
 
+
 def check_ingredient_analysis(name, category_name):
-    content = json.dumps({
-        "name": name,
-        "category": category_name,
-        "categories": INGREDIENT_CATEGORY_RULES
-    }, ensure_ascii=False)
+    content = json.dumps(
+        {
+            "name": name,
+            "category": category_name,
+            "categories": INGREDIENT_CATEGORY_RULES,
+        },
+        ensure_ascii=False,
+    )
 
     instructions = (
         "Tu valides des ingrédients pour un site de recettes.\n"
         "Le JSON contient un ingrédient, sa catégorie choisie "
         "et les catégories autorisées avec leurs définitions.\n"
-
         "Vérifie les règles suivantes :\n"
         "1. L'ingrédient doit être réel et utilisable en cuisine.\n"
         "2. Son nom doit être correctement orthographié.\n"
@@ -94,7 +92,6 @@ def check_ingredient_analysis(name, category_name):
         "8. En cas de refus, explique brièvement le problème et "
         "indique la bonne catégorie si nécessaire.\n"
         "9. En cas d'acceptation, reason doit être vide.\n"
-
         "Exemples :\n"
         "Fraise / Fruits : accepté.\n"
         "Fraise / Légumes : refusé.\n"
@@ -112,13 +109,13 @@ def check_ingredient_analysis(name, category_name):
         )
         return jsonify(
             success=False,
-            error="La vérification de l'ingrédient est momentanément indisponible. Réessaie plus tard."
+            error="La vérification de l'ingrédient est momentanément indisponible. Réessaie plus tard.",
         ), 200
 
     if not verdict["accepted"]:
         return jsonify(
             success=False,
-            error="L'ingrédient doit être corrigé : " + verdict["reason"].strip()
+            error="L'ingrédient doit être corrigé : " + verdict["reason"].strip(),
         ), 200
 
     return None

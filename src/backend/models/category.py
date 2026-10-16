@@ -3,10 +3,9 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+from extensions import db
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from extensions import db
 
 if TYPE_CHECKING:
     from .recipe import Recipe
@@ -21,10 +20,11 @@ class Category(db.Model):
 
     recipes: Mapped[list[Recipe]] = relationship(back_populates="category")
 
-    def __init__(self, name: str, id:int | None = None):
+    def __init__(self, name: str, id: int | None = None):
         if id is not None:
             self.id = id
         self.name = name.capitalize()
+
 
 # TODO
 # decide a set of categories
@@ -44,4 +44,3 @@ class CategoryType(IntEnum):
     DESSERTS = 13
     PATISSERIES = 14
     BOISSONS = 15
-

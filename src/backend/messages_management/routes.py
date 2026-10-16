@@ -1,13 +1,12 @@
 import os
 
-from flask import Blueprint, jsonify, request, send_from_directory
-from flask_jwt_extended import get_jwt_identity, jwt_required
-from sqlalchemy.exc import SQLAlchemyError
-
 from config import UPLOAD_FOLDER
 from extensions import db
+from flask import Blueprint, jsonify, request, send_from_directory
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import User
 from models.message import Message
+from sqlalchemy.exc import SQLAlchemyError
 from utils.file_services import handle_file_upload
 
 from .constants import (

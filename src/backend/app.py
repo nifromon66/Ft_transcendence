@@ -1,13 +1,11 @@
 import os
 
-from flask import Flask, jsonify
-from flask_cors import CORS
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
+from flask import Flask, jsonify
+from flask_cors import CORS
 from friends_management.routes import friends_bp
 from gamification_management.routes import gamification_bp
 from ingredient_management import ingredient_bp
@@ -15,6 +13,8 @@ from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from users_management.routes import users_bp
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from vault import VaultClient
 
 vault = VaultClient()

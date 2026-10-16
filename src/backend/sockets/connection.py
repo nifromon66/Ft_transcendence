@@ -1,9 +1,8 @@
+from extensions import online_users, socketio
 from flask import request
 from flask_jwt_extended import decode_token
 from flask_socketio import join_room
 from jwt import ExpiredSignatureError, InvalidTokenError
-
-from extensions import online_users, socketio
 
 
 @socketio.on("connect")
