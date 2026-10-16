@@ -34,12 +34,19 @@ ${NGINX_CONF_INCLUDE_PATH}' \
 
 echo "[✔] nginx.conf.template converted to nginx.conf successfully."
 
-echo "[*] Converting nginx.conf.template to nginx.conf..."
+echo "[*] Converting reverse-proxy.conf.template to reverse-proxy.conf..."
+
+if [ -n "$FORWARDED_PORT" ]; then
+    export FORWARDED_PORT_DIRECTIVE="proxy_set_header X-Forwarded-Port $FORWARDED_PORT;"
+else
+    export FORWARDED_PORT_DIRECTIVE=""
+fi
 
 envsubst '
 ${SERVER_NAME}
 ${SERVER_REDIRECT_PORT}
 ${SERVER_REVERSE_PROXY_PORT}
+${FORWARDED_PORT_DIRECTIVE}
 ${SSL_CERT}
 ${SSL_KEY}
 ${BACKEND_HOST}
