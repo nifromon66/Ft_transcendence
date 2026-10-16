@@ -35,10 +35,18 @@ done
 
 if ! ollama show "$model" >/dev/null 2>&1; then
     echo "Downloading model: $model"
-    ollama pull "$model" &
-    pull_pid=$!
-    wait "$pull_pid"
-    pull_pid=""
+    while ! ollama show "$model" >/dev/null 2>&1; do
+        ollama pull "$model" &
+        pull_pid=$!
+        if wait "$pull_pid"; then
+            pull_pid=""
+            break
+        fi
+        pull_pid=""
+        echo "Download of $model failed or was interrupted. Retrying in 5s..."
+        sleep 5 &
+        wait $!
+    done
 fi
 
 echo "Warming up model: $model..."
