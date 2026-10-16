@@ -7,7 +7,7 @@ from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
 from flask import Flask, jsonify
 from flask_cors import CORS
 from friends_management.routes import friends_bp
-from gamification_management.routes import gamification_api
+from gamification_management.routes import gamification_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
@@ -131,14 +131,6 @@ CORS(
             "origins": [frontend_url],
             "methods": ["DELETE", "OPTIONS"],
         },
-        r"/badges": {
-            "origins": [frontend_url],
-            "methods": ["GET", "OPTIONS"],
-        },
-        r"/getbadge": {
-            "origins": [frontend_url],
-            "methods": ["POST", "OPTIONS"],
-        },
         r"/recipe/\d+": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -146,6 +138,10 @@ CORS(
         r"/messages/\d+": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
+        },
+        r"/gamification/.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "OPTIONS"],
         },
     },
     supports_credentials=True,
@@ -170,7 +166,7 @@ with app.app_context():
     seed_database()
 
 
-app.register_blueprint(gamification_api)
+app.register_blueprint(gamification_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)
