@@ -65,7 +65,7 @@ export const useChatStore = defineStore('chat', {
                 const authStore = useAuthStore()
                 try {
                     const uploadResult = await messageService.uploadDocument(fileData, authStore.token)
-                    payload.file_url = `/messages/documents/${uploadResult.filename}`
+                    payload.file_url = `/api/messages/documents/${uploadResult.filename}`
                     payload.file_name = fileData.name
                     payload.file_type = fileData.type
                     payload.file_size = fileData.size

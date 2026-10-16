@@ -1,6 +1,10 @@
 export async function fetchDocumentBlob(fileUrl, token) {
     const baseUrl = import.meta.env.VITE_API_URL || ''
-    const url = fileUrl.startsWith('http') ? fileUrl : `${baseUrl}${fileUrl}`
+    let finalPath = fileUrl;
+    if (!finalPath.startsWith('http') && !finalPath.startsWith('/api/')) {
+        finalPath = '/api' + (finalPath.startsWith('/') ? '' : '/') + finalPath;
+    }
+    const url = finalPath.startsWith('http') ? finalPath : `${baseUrl}${finalPath}`;
 
     const response = await fetch(url, {
         method: 'GET',
