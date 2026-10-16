@@ -74,7 +74,7 @@ def analyze_content(content, instructions):
                 os.environ.get("RECIPE_AI_URL", "http://ollama:11434").rstrip("/")
                 + "/api/chat",
                 json=payload,
-                timeout=(3, 15),
+                timeout=(5, 60),
             )
             response.raise_for_status()
             result = response.json()
