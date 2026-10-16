@@ -101,7 +101,7 @@ async function confirm2FaLogin() {
       throw new Error("Erreur serveur.", { cause: e })
     }
 
-    if (!response.ok) {
+    if (!response.ok || data.success === false) {
       if (response.status === 401) {
         throw new Error("Le code est incorrect ou a expiré.")
       }

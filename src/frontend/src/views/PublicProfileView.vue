@@ -108,9 +108,24 @@ const acceptRequest = () => handleFriendAction(acceptFriendRequest, 'accepted')
 const cancelRequest = () => handleFriendAction(cancelFriendRequest, 'none')
 const denyRequest = () => handleFriendAction(denyFriendRequest, 'none')
 
-const removeCurrentFriend = (username) => {
-    if (confirm(`Êtes-vous sûr de vouloir retirer ${username} de vos amis ?`)) {
-        handleFriendAction(removeFriend, 'none')
+const isRemoveFriendModalOpen = ref(false)
+
+const openRemoveFriendModal = () => {
+    isRemoveFriendModalOpen.value = true
+}
+
+const closeRemoveFriendModal = () => {
+    if (!isActionLoading.value) {
+        isRemoveFriendModalOpen.value = false
+    }
+}
+
+const confirmRemoveFriend = async () => {
+    try {
+        await handleFriendAction(removeFriend, 'none')
+        isRemoveFriendModalOpen.value = false
+    } catch {
+        // handleFriendAction handles error display
     }
 }
 
@@ -242,7 +257,7 @@ onUnmounted(() => {
                                 class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition-colors cursor-pointer">
                                 Envoyer un message à cet ami
                             </button>
-                            <button @click="removeCurrentFriend(profile.username)" :disabled="isActionLoading"
+                            <button @click="openRemoveFriendModal" :disabled="isActionLoading"
                                 class="px-4 py-2 bg-red-50 text-red-600 text-sm font-semibold rounded border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50 cursor-pointer">
                                 Supprimer cet ami
                             </button>
@@ -293,5 +308,29 @@ onUnmounted(() => {
             :error="rewardError" @select="selectAvatarFrame" />
 
 
+
+        <!-- Modal confirmation suppression ami -->
+        <div v-if="isRemoveFriendModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+            role="dialog" aria-modal="true" aria-labelledby="modal-remove-friend-title">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <h3 id="modal-remove-friend-title" class="text-xl font-bold text-gray-800 mb-4">
+                    Retirer de vos amis
+                </h3>
+                <p class="text-gray-600 mb-6 text-sm">
+                    Êtes-vous sûr de vouloir retirer <span class="font-semibold text-gray-900">{{ profile?.username }}</span> de vos amis ?
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeRemoveFriendModal" :disabled="isActionLoading"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors disabled:opacity-50">
+                        Annuler
+                    </button>
+                    <button type="button" @click="confirmRemoveFriend" :disabled="isActionLoading"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors disabled:opacity-50">
+                        {{ isActionLoading ? 'Suppression...' : 'Confirmer' }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 </template>

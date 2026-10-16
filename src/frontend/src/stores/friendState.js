@@ -222,11 +222,7 @@ export const useFriendStore = defineStore('friend', {
             }
         },
 
-        async deleteFriend(friendId, username) {
-            if (!confirm(`Êtes-vous sûr de vouloir retirer ${username} de vos amis ?`)) {
-                return
-            }
-
+        async deleteFriend(friendId) {
             const authStore = useAuthStore()
             if (!authStore.token) {
                 return

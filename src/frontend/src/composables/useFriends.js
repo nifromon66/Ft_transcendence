@@ -235,11 +235,7 @@ export function useFriends() {
         }
     }
 
-    const deleteFriend = async (friendId, username) => {
-        if (!confirm(`Êtes-vous sûr de vouloir retirer ${username} de vos amis ?`)) {
-            return
-        }
-
+    const deleteFriend = async (friendId) => {
         const token = authStore.token
         if (!token) {
             errorMessage.value = "Utilisateur non authentifié"
