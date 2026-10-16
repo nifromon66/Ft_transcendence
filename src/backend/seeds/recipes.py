@@ -1,6 +1,9 @@
+import shutil
 from extensions import db
 from models.recipe import Recipe
 from models.recipe_step import RecipeStep
+from pathlib import Path
+from config import UPLOAD_FOLDER
 
 recipes = [
     Recipe(
@@ -10,7 +13,7 @@ recipes = [
         description="Un plat de pâtes italien traditionnel préparé avec des œufs, du parmesan et de la pancetta.",
         cooking_time=25,
         difficulty="Facile",
-        image_filename="",
+        image_filename="carbonara-e1521461363147-1024x670.jpg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -46,7 +49,7 @@ recipes = [
         description="Une entrée italienne simple préparée avec des tomates fraîches, de l'ail, du basilic et du pain grillé.",
         cooking_time=15,
         difficulty="Facile",
-        image_filename="",
+        image_filename="Bruschetta-a-la-tomate.jpg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -77,7 +80,7 @@ recipes = [
         description="De délicieuses crêpes moelleuses, parfaites pour le petit-déjeuner.",
         cooking_time=20,
         difficulty="Facile",
-        image_filename="",
+        image_filename="crepes.jpeg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -113,7 +116,7 @@ recipes = [
         description="Un curry thaïlandais parfumé au lait de coco, piment vert et légumes frais.",
         cooking_time=35,
         difficulty="Moyen",
-        image_filename="",
+        image_filename="poulet-au-curry-vert.jpg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -149,7 +152,7 @@ recipes = [
         description="Une tarte aux pommes caramélisées renversée, symbole de la pâtisserie française.",
         cooking_time=50,
         difficulty="Moyen",
-        image_filename="",
+        image_filename="tarte-tatin-1200.jpg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -205,7 +208,7 @@ recipes = [
             RecipeStep(
                 step_number=4,
                 description="Assaisonner de sel, poivre et une pincée de piment d'Espelette.",
-                image_filename="",
+                image_filename="guacamole-maison-3.jpg",
             ),
         ],
     ),
@@ -252,7 +255,7 @@ recipes = [
         description="Une salade estivale méditerranéenne complète au thon, œufs durs et olives.",
         cooking_time=20,
         difficulty="Facile",
-        image_filename="",
+        image_filename="i34581-salade-nicoise-rapide.jpeg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -288,7 +291,7 @@ recipes = [
         description="Un plat du Moyen-Orient composé d'œufs pochés dans une sauce tomate pimentée.",
         cooking_time=30,
         difficulty="Facile",
-        image_filename="",
+        image_filename="shakshuka.webp",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -324,7 +327,7 @@ recipes = [
         description="Un dessert classique gourmand, aérien et riche en chocolat noir.",
         cooking_time=15,
         difficulty="Facile",
-        image_filename="",
+        image_filename="mousse-au-chocolat.webp",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -349,7 +352,7 @@ recipes = [
             RecipeStep(
                 step_number=5,
                 description="Répartir dans des ramequins et réserver au frais pendant au moins 4 heures.",
-                image_filename="",
+                image_filename="mousse-au-chocolat.webp",
             ),
         ],
     ),
@@ -360,7 +363,7 @@ recipes = [
         description="Un grand classique français réconfortant surmonté de pain grillé et fromage fondu.",
         cooking_time=60,
         difficulty="Facile",
-        image_filename="",
+        image_filename="soupe-oignon-gratinee-delicieuse-et-reconfortante.webp",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -396,7 +399,7 @@ recipes = [
         description="Des tortillas garnies de viande hachée épicée, de fromage et de condiments frais.",
         cooking_time=20,
         difficulty="Facile",
-        image_filename="",
+        image_filename="tacos-au-boeuf-effiloche.jpeg",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -427,7 +430,7 @@ recipes = [
         description="Pavé de saumon poêlé et nappé d'une sauce teriyaki sucrée-salée maison.",
         cooking_time=15,
         difficulty="Facile",
-        image_filename="",
+        image_filename="salmon-teriyaki-11.webp",
         steps=[
             RecipeStep(
                 step_number=1,
@@ -462,5 +465,34 @@ recipes = [
 def seed_recipes():
     if db.session.scalar(db.select(Recipe.id).limit(1)) is not None:
         return
+
+    source_folder = (
+        Path(__file__).resolve().parent.parent
+        / "assets"
+        / "seed_recipe_images"
+    )
+
     db.session.add_all(recipes)
+    db.session.flush()
+
+    for recipe in recipes:
+        if not recipe.image_filename:
+            continue
+
+        source = source_folder / recipe.image_filename
+
+        destination_folder = (
+            Path(UPLOAD_FOLDER)
+            / "recipes"
+            / str(recipe.id)
+            / "cover"
+        )
+
+        destination_folder.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(
+            source,
+            destination_folder / recipe.image_filename,
+        )
+
     db.session.commit()
