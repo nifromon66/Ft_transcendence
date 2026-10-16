@@ -1,7 +1,8 @@
-from extensions import db, online_users, socketio
 from flask import request
-from models import Message, User
 from sqlalchemy.exc import SQLAlchemyError
+
+from extensions import db, online_users, socketio
+from models import Message, User
 
 
 @socketio.on("send_message")

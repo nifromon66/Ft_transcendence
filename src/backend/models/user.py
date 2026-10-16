@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from extensions import bcrypt, db
 from sqlalchemy import JSON, Boolean, DateTime, Integer, String, and_, or_, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from extensions import bcrypt, db
 from user_xp_management.rewards import get_active_frame
 
 from .association import friend

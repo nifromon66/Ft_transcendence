@@ -2,7 +2,6 @@ import secrets
 import string
 
 import pyotp
-from extensions import bcrypt, db, limiter
 from flask import Blueprint, jsonify, make_response, request
 from flask_jwt_extended import (
     create_access_token,
@@ -12,6 +11,8 @@ from flask_jwt_extended import (
     jwt_required,
     set_refresh_cookies,
 )
+
+from extensions import bcrypt, db, limiter
 from models import User
 
 auth_2fa_bp = Blueprint("auth_2fa", __name__)

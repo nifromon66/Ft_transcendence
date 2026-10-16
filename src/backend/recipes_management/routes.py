@@ -1,13 +1,17 @@
 import os
 
 import magic
-from config import UPLOAD_FOLDER
-from extensions import db
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from werkzeug.security import safe_join
+
+from config import UPLOAD_FOLDER
+from extensions import db
 from models import (
     Category,
     Ingredient,
@@ -18,8 +22,6 @@ from models import (
     Tag,
     User,
 )
-from sqlalchemy import func, or_, select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from user_xp_management.experience import (
     RECIPE_CREATED_XP,
     RECIPE_RATED_XP,
@@ -31,7 +33,6 @@ from utils.file_services import (
     delete_file_physically,
     handle_file_upload,
 )
-from werkzeug.security import safe_join
 
 from .analysis import check_recipe_analysis
 from .constants import (

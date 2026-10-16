@@ -2,18 +2,19 @@ import os
 import uuid
 
 import magic
-from config import UPLOAD_FOLDER
-from extensions import db, online_users, socketio
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from sqlalchemy import and_, or_, select
+from sqlalchemy.exc import SQLAlchemyError
+
+from config import UPLOAD_FOLDER
+from extensions import db, online_users, socketio
 from models import User
 from models.association import friend
 from models.user_avatar_frame import UserAvatarFrame
-from sqlalchemy import and_, or_, select
-from sqlalchemy.exc import SQLAlchemyError
 from user_xp_management.leveling import get_xp_progress
 from user_xp_management.rewards import FRAME_LEVELS, get_active_frame, get_level_rewards
 from utils.file_services import delete_file_physically, handle_file_upload

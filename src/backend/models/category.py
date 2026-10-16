@@ -3,9 +3,10 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from extensions import db
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from extensions import db
 
 if TYPE_CHECKING:
     from .recipe import Recipe
