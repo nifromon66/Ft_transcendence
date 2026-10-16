@@ -8,6 +8,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from friends_management.routes import friends_bp
 from gamification_management.routes import gamification_bp
+from ingredient_management import ingredient_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
@@ -87,10 +88,6 @@ CORS(
             "origins": [frontend_url],
             "methods": ["PUT", "OPTIONS"],
         },
-        r"/users/me/avatar-frame": {
-            "origins": [frontend_url],
-            "methods": ["PUT", "OPTIONS"],
-        },
         r"/users/me/delete": {
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
@@ -136,6 +133,18 @@ CORS(
             "methods": ["DELETE", "OPTIONS"],
         },
         r"/recipe/\d+": {
+            "origins": [frontend_url],
+            "methods": ["GET", "OPTIONS"],
+        },
+        r"/recipes.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        },
+        r"/ingredients.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        },
+        r"/ingredient-categories.*": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
@@ -202,6 +211,7 @@ app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
 app.register_blueprint(auth_2fa_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(ingredient_bp)
 
 import sockets.chat
 import sockets.connection
