@@ -17,6 +17,7 @@ export default defineConfig({
         type: 'module',
       },
       workbox: {
+        disableDevLogs: true,
         inlineWorkboxRuntime: true,
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
