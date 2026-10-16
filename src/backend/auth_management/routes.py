@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from extensions import db
 from flask import Blueprint, jsonify, make_response, request
 from flask_jwt_extended import (
     create_access_token,
@@ -10,9 +9,11 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     unset_jwt_cookies,
 )
-from models import User
 from sqlalchemy import or_, select
 from sqlalchemy.exc import SQLAlchemyError
+
+from extensions import db
+from models import User
 
 auth_bp = Blueprint("auth_management", __name__, url_prefix="/auth")
 

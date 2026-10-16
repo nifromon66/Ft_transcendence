@@ -1,9 +1,11 @@
-from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from models import Ingredient, IngredientCategory, RecipeIngredient
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
+from extensions import db
+from models import Ingredient, IngredientCategory, RecipeIngredient
+
 from .analysis import check_ingredient_analysis
 
 ingredient_bp = Blueprint("ingredients", __name__)
@@ -11,10 +13,17 @@ ingredient_bp = Blueprint("ingredients", __name__)
 
 @ingredient_bp.route("/ingredient-categories", methods=["GET"])
 def get_ingredient_categories():
-    categories = db.session.scalars(select(IngredientCategory).order_by(IngredientCategory.name)).all()
-    return jsonify({"success": True, "ingredient_categories": [
-        {"id": category.id, "name": category.name} for category in categories
-    ]}), 200
+    categories = db.session.scalars(
+        select(IngredientCategory).order_by(IngredientCategory.name)
+    ).all()
+    return jsonify(
+        {
+            "success": True,
+            "ingredient_categories": [
+                {"id": category.id, "name": category.name} for category in categories
+            ],
+        }
+    ), 200
 
 
 @ingredient_bp.route("/ingredients", methods=["GET"])
@@ -47,7 +56,12 @@ def create_ingredient():
     name = data.get("name")
     category_id = data.get("category_id")
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 100:
-        return jsonify({"success": False, "error": "Le nom doit contenir entre 1 et 100 caractères"}), 200
+        return jsonify(
+            {
+                "success": False,
+                "error": "Le nom doit contenir entre 1 et 100 caractères",
+            }
+        ), 200
     if not isinstance(category_id, int) or isinstance(category_id, bool):
         return jsonify({"success": False, "error": "Catégorie invalide"}), 200
     category = db.session.get(IngredientCategory, category_id)
@@ -58,10 +72,12 @@ def create_ingredient():
         select(Ingredient).where(func.lower(Ingredient.name) == name.lower())
     )
     if existing is not None:
-        return jsonify({
-            "success": False,
-            "error": f'Cet ingrédient existe déjà dans la catégorie « {existing.category.name} »'
-        }), 200
+        return jsonify(
+            {
+                "success": False,
+                "error": f"Cet ingrédient existe déjà dans la catégorie « {existing.category.name} »",
+            }
+        ), 200
     analysis_error = check_ingredient_analysis(name, category.name)
     if analysis_error is not None:
         return analysis_error
@@ -74,12 +90,19 @@ def create_ingredient():
         return jsonify({"success": False, "error": "Cet ingrédient existe déjà"}), 200
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"success": False, "error": "Impossible de créer l'ingrédient"}), 200
-    return jsonify({"success": True, "ingredient": {
-        "id": ingredient.id,
-        "name": ingredient.name,
-        "category_id": ingredient.category_id,
-    }}), 201
+        return jsonify(
+            {"success": False, "error": "Impossible de créer l'ingrédient"}
+        ), 200
+    return jsonify(
+        {
+            "success": True,
+            "ingredient": {
+                "id": ingredient.id,
+                "name": ingredient.name,
+                "category_id": ingredient.category_id,
+            },
+        }
+    ), 201
 
 
 @ingredient_bp.route("/ingredients/<int:ingredient_id>", methods=["PUT"])
@@ -95,7 +118,12 @@ def update_ingredient(ingredient_id: int):
     name = data.get("name")
     category_id = data.get("category_id")
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 100:
-        return jsonify({"success": False, "error": "Le nom doit contenir entre 1 et 100 caractères"}), 200
+        return jsonify(
+            {
+                "success": False,
+                "error": "Le nom doit contenir entre 1 et 100 caractères",
+            }
+        ), 200
     if not isinstance(category_id, int) or isinstance(category_id, bool):
         return jsonify({"success": False, "error": "Catégorie invalide"}), 200
     if db.session.get(IngredientCategory, category_id) is None:
@@ -120,13 +148,20 @@ def update_ingredient(ingredient_id: int):
         return jsonify({"success": False, "error": "Cet ingrédient existe déjà"}), 200
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"success": False, "error": "Impossible de modifier l'ingrédient"}), 200
+        return jsonify(
+            {"success": False, "error": "Impossible de modifier l'ingrédient"}
+        ), 200
 
-    return jsonify({"success": True, "ingredient": {
-        "id": ingredient.id,
-        "name": ingredient.name,
-        "category_id": ingredient.category_id,
-    }}), 200
+    return jsonify(
+        {
+            "success": True,
+            "ingredient": {
+                "id": ingredient.id,
+                "name": ingredient.name,
+                "category_id": ingredient.category_id,
+            },
+        }
+    ), 200
 
 
 @ingredient_bp.route("/ingredients/<int:ingredient_id>", methods=["DELETE"])
@@ -142,16 +177,22 @@ def delete_ingredient(ingredient_id: int):
         .limit(1)
     )
     if used is not None:
-        return jsonify({"success": False, "error": "Cet ingrédient est utilisé dans une recette"}), 200
+        return jsonify(
+            {"success": False, "error": "Cet ingrédient est utilisé dans une recette"}
+        ), 200
 
     try:
         db.session.delete(ingredient)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"success": False, "error": "Cet ingrédient est utilisé dans une recette"}), 200
+        return jsonify(
+            {"success": False, "error": "Cet ingrédient est utilisé dans une recette"}
+        ), 200
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({"success": False, "error": "Impossible de supprimer l'ingrédient"}), 200
+        return jsonify(
+            {"success": False, "error": "Impossible de supprimer l'ingrédient"}
+        ), 200
 
     return jsonify({"success": True}), 200

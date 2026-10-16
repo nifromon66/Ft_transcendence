@@ -1,5 +1,6 @@
 from extensions import db
 from models import Ingredient, IngredientCategory
+
 from .ingredient_categories import category_name_for
 
 INGREDIENTS = [

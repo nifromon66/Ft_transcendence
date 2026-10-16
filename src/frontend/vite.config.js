@@ -62,9 +62,7 @@ export default defineConfig({
         ]
       }
     }),
-    vueDevTools({
-      ...(process.env.EDITOR ? { launchEditor: process.env.EDITOR } : {}),
-    }),
+    vueDevTools((process.env.EDITOR ? { launchEditor: process.env.EDITOR } : {})),
     tailwindcss(),
   ],
   resolve: {

@@ -1,8 +1,9 @@
 import os
 
+from sqlalchemy import select
+
 from extensions import db
 from models import User
-from sqlalchemy import select
 
 
 def seed_users():

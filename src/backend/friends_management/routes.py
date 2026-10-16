@@ -1,9 +1,10 @@
-from extensions import db, online_users, socketio
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy import and_, case, delete, insert, or_, select, update
+
+from extensions import db, online_users, socketio
 from models import User
 from models.association import friend
-from sqlalchemy import and_, case, delete, insert, or_, select, update
 
 friends_bp = Blueprint("friends", __name__)
 
