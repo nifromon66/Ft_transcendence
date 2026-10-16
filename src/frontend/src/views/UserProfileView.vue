@@ -508,12 +508,12 @@ const cancelEdit = () => {
                             <form @submit.prevent="saveProfileInfo" class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
-                                    <input v-model="editForm.username" type="text" required
+                                    <input id="edit-username" name="username" autocomplete="username" v-model="editForm.username" type="text" required
                                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input v-model="editForm.email" type="email" required
+                                    <input id="edit-email" name="email" autocomplete="email" v-model="editForm.email" type="email" required
                                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                 </div>
 
@@ -637,7 +637,7 @@ const cancelEdit = () => {
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
-                    <input type="password" id="delete-password" v-model="deletePassword" placeholder="Mot de passe"
+                    <input type="password" id="delete-password" name="password" v-model="deletePassword" placeholder="Mot de passe"
                         autocomplete="current-password"
                         class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
                         @keyup.enter="confirmDelete">
@@ -665,7 +665,7 @@ const cancelEdit = () => {
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
-                    <input type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
+                    <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
                         @keyup.enter="submit2FaPassword">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
@@ -693,7 +693,7 @@ const cancelEdit = () => {
                         </div>
                     </div>
 
-                    <input type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                    <input id="enable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
                         class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
                         @keyup.enter="confirm2FaCode">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
@@ -755,10 +755,10 @@ const cancelEdit = () => {
                     continuer.
                 </p>
 
-                <input type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
+                <input id="disable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
                     class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 
-                <input type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                <input id="disable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
                     class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
                     @keyup.enter="confirmDisable2Fa" />
 

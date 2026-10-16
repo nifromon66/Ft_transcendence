@@ -106,7 +106,7 @@ onUnmounted(() => {
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Rechercher un utilisateur</h2>
 
             <div class="flex gap-2 mb-6">
-                <input v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
+                <input id="search-friend" name="search-friend" v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
                     class="flex-1 px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                     @keyup.enter="handleSearch" />
                 <button @click="handleSearch" :disabled="isLoading"

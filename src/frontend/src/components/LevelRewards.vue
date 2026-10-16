@@ -40,7 +40,7 @@ function selectReward(event, reward) {
                     <span class="relative m-1 inline-flex h-12 w-12 shrink-0 rounded-full bg-white">
                         <AvatarFrame :frame="reward.id" :locked="!reward.unlocked" />
                     </span>
-                    <input type="checkbox" class="h-4 w-4 accent-indigo-600" :checked="selected === reward.id"
+                    <input :id="`reward-${reward.id}`" :name="`reward-${reward.id}`" type="checkbox" class="h-4 w-4 accent-indigo-600" :checked="selected === reward.id"
                         :disabled="!editable || !reward.unlocked || saving"
                         :aria-label="`Afficher le cercle ${reward.name}`"
                         :aria-describedby="`${tooltipId}-${reward.id}`" @change="selectReward($event, reward)" />

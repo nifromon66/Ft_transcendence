@@ -191,7 +191,7 @@ watch(() => chatStore.messages.length, async () => {
                         📎
                     </button>
 
-                    <input v-model="newMessage" @keyup.enter="handleSend" type="text"
+                    <input id="chat-message" name="chat-message" v-model="newMessage" @keyup.enter="handleSend" type="text"
                         placeholder="Écrivez un message..."
                         class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-gray-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
 

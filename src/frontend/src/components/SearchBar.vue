@@ -32,12 +32,12 @@ function submitSearch() {
 
 <template>
   <form class="flex w-full max-w-2xl gap-3" @submit.prevent="submitSearch">
-    <input v-model="search" type="search" placeholder="Rechercher une recette..." aria-label="Rechercher une recette"
+    <input id="search-recipe" name="search-recipe" v-model="search" type="search" placeholder="Rechercher une recette..." aria-label="Rechercher une recette"
       class="flex-1 rounded-lg border border-gray-300 px-4 py-3
              text-gray-900 outline-none
              focus:border-gray-500 focus:ring-2 focus:ring-gray-200" />
 
-    <select v-model="category"
+    <select id="search-category" name="search-category" v-model="category"
       class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200">
       <option value="">Catégorie</option>
       <option v-for="item in categories" :key="item.id" :value="item.name">
@@ -45,7 +45,7 @@ function submitSearch() {
       </option>
     </select>
 
-    <select v-model="difficulty"
+    <select id="search-difficulty" name="search-difficulty" v-model="difficulty"
       class="rounded-lg border border-gray-300 bg-white px-3 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200">
       <option value="">Difficulté</option>
       <option v-for="option in difficulties" :key="option.value || 'all'" :value="option.value">
