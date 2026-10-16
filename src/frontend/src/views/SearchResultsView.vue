@@ -95,6 +95,16 @@ function applySort(sortBy, sortOrder = 'asc') {
             Durée : la moins longue
           </button>
 
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('rating', 'desc')">
+            Meilleures notes
+          </button>
+
+          <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            role="menuitem" @click="applySort('rating', 'asc')">
+            Notes les plus basses
+          </button>
+
         </div>
       </div>
 

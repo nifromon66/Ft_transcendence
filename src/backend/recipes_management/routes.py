@@ -807,18 +807,19 @@ def get_recipes():
     if search:
         search_pattern = f"%{search}%"
 
-        query = (
-            query.outerjoin(Recipe.ingredients)
-            .outerjoin(Recipe.tags)
-            .where(
-                or_(
-                    Recipe.title.ilike(search_pattern),
-                    Recipe.description.ilike(search_pattern),
-                    Ingredient.name.ilike(search_pattern),
-                    Tag.name.ilike(search_pattern),
-                )
+        query = query.where(
+            or_(
+                Recipe.title.ilike(search_pattern),
+                Recipe.description.ilike(search_pattern),
+
+                Recipe.ingredients.any(
+                    Ingredient.name.ilike(search_pattern)
+                ),
+
+                Recipe.tags.any(
+                    Tag.name.ilike(search_pattern)
+                ),
             )
-            .distinct()
         )
 
     if category:
@@ -827,17 +828,21 @@ def get_recipes():
     if difficulty:
         query = query.where(Recipe.difficulty.ilike(difficulty))
 
-    # if sort_by=="updated_at":
-    column = Recipe.updated_at
-    if sort_by == "cooking_time":
+    if sort_by == "rating":
+        column = (
+            select(func.avg(Rating.score))
+            .where(Rating.recipe_id == Recipe.id)
+            .scalar_subquery()
+        )
+    elif sort_by == "cooking_time":
         column = Recipe.cooking_time
     else:
         column = func.coalesce(Recipe.updated_at, Recipe.created_at)
 
     if sort_order.upper() == "DESC":
-        column = column.desc()
+        column = column.desc().nulls_last() if sort_by == "rating" else column.desc()
     else:
-        column = column.asc()
+        column = column.asc().nulls_last() if sort_by == "rating" else column.asc()
 
     query = query.order_by(column)
 
