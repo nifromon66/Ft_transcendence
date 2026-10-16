@@ -41,5 +41,8 @@ if ! ollama show "$model" >/dev/null 2>&1; then
     pull_pid=""
 fi
 
+echo "Warming up model: $model..."
+ollama run "$model" "" >/dev/null 2>&1 || true
+
 echo "Model ready: $model"
 wait "$server_pid"

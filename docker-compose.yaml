@@ -24,15 +24,8 @@ services:
       - ${AIMODEL_VOLUME_DATA_IN}:${AIMODEL_VOLUME_DATA_OUT}
     expose:
       - "${AIMODEL_EXPOSE_PORT}"
-    #deploy:
-      #resources:
-       # reservations:
-        #  devices:
-         #   - driver: nvidia
-          #    count: 1
-           #   capabilities: [gpu]
     healthcheck:
-      test: ["CMD-SHELL", "ollama show \"$$RECIPE_AI_MODEL\" >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "ollama show \"$$RECIPE_AI_MODEL\" >/dev/null 2>&1 && ollama ps | grep -q \"$$RECIPE_AI_MODEL\""]
       interval: ${AIMODEL_HEALTHCHECK_INTERVAL}
       timeout: ${AIMODEL_HEALTHCHECK_TIMEOUT}
       retries: ${AIMODEL_HEALTHCHECK_RETRIES}
@@ -157,6 +150,8 @@ services:
       db:
         condition: service_healthy
       vault:
+        condition: service_healthy
+      ollama:
         condition: service_healthy
     expose:
       - "${BACKEND_EXPOSE_PORT}"
