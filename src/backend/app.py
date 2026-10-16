@@ -42,7 +42,7 @@ limiter.init_app(app)
 def ratelimit_handler(e):
     return jsonify(
         {"success": False, "error": "Trop de tentatives. Veuillez réessayer plus tard."}
-    ), 429
+    ), 200
 
 
 CORS(
