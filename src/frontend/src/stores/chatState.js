@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/authState.js'
 import { socket } from '@/services/socketService.js'
 import { fetchFriends } from '@/services/friendService'
-import { fetchConversation, deleteMessage } from '@/services/messageService'
+import { fetchConversation, deleteMessage, uploadDocument } from '@/services/messageService'
 
 export const useChatStore = defineStore('chat', {
     state: () => ({
@@ -64,7 +64,7 @@ export const useChatStore = defineStore('chat', {
             if (fileData) {
                 const authStore = useAuthStore()
                 try {
-                    const uploadResult = await messageService.uploadDocument(fileData, authStore.token)
+                    const uploadResult = await uploadDocument(fileData, authStore.token)
                     payload.file_url = `/api/messages/documents/${uploadResult.filename}`
                     payload.file_name = fileData.name
                     payload.file_type = fileData.type
