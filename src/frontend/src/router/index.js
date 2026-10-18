@@ -2,12 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import { useAuthStore } from '@/stores/authState'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
 import { useAuthStore } from '@/stores/authState.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: "/admin/users", name: "admin-users", component: () => import("@/views/AdminUsersView.vue"), meta: { requiresAuth: true, permission: "users.read" } },
+    { path: "/moderation", name: "moderation", component: () => import("@/views/ModerationView.vue"), meta: { requiresAuth: true, permission: "content.moderate" } },
+    { path: "/forbidden", name: "forbidden", component: () => import("@/views/ForbiddenView.vue") },
     {
       path: '/',
       name: 'welcome',
@@ -61,14 +65,14 @@ const router = createRouter({
       name: 'postRecipe',
       component: () => import('../views/PostRecipeView.vue'),
       props: true,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, permission: 'recipes.create' },
     },
     {
       path: '/recipe/:id/edit',
       name: 'recipe-edit',
       component: () => import('../views/EditRecipeView.vue'),
       props: true,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, refreshPermissions: true },
     },
     {
       path: '/search',
