@@ -1,5 +1,4 @@
 import os
-import uuid
 
 import magic
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
@@ -10,6 +9,12 @@ from flask_jwt_extended import (
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
+from admin_management.services import (
+    anonymize,
+    cleanup_account,
+    is_last_admin,
+    lock_administrators,
+)
 from config import UPLOAD_FOLDER
 from extensions import db, limiter, online_users, socketio
 from gamification_management.routes import check_badge_eligibility
@@ -51,6 +56,9 @@ def update_my_profile():
                 "error": "Aucune donnée fournie.",
             }
         ), 400
+
+    if not isinstance(data, dict) or set(data) - {"username", "email"}:
+        return jsonify(success=False, error="Champs non autorisés."), 400
 
     new_username = data.get("username", "").strip()
     new_email = data.get("email", "").strip()
@@ -100,7 +108,7 @@ def update_my_profile():
         {
             "success": True,
             "message": "Profil mis à jour avec succès.",
-            "user": user.to_dict(),
+            "user": user.to_private_dict(),
         }
     ), 200
 
@@ -219,42 +227,20 @@ def delete_my_account():
             }
         ), 403
 
+    administrators = lock_administrators()
+    db.session.refresh(user, with_for_update=True)
+    if not user.is_active or user.deleted_at:
+        return jsonify(success=False, error="Compte désactivé."), 401
+    if is_last_admin(user, administrators):
+        return jsonify(success=False, error="Le dernier administrateur actif doit être conservé."), 409
     try:
-        if user.avatar_filename:
-            try:
-                delete_file_physically(user.avatar_filename)
-            except OSError:
-                return jsonify(
-                    {
-                        "success": False,
-                        "error": "Erreur lors de la suppression de l'avatar.",
-                    }
-                ), 500
-
-            user.avatar_filename = None
-
-        user.is_active = False
-        user.username = "Utilisateur supprimé"
-        user.email = f"deleted_{uuid.uuid4().hex}@anonymized.invalid"
-        user.password_hash = "!"
-
+        avatar = anonymize(user)
         db.session.commit()
-
-        return jsonify(
-            {
-                "success": True,
-                "message": "Votre compte a été supprimé avec succès.",
-            }
-        ), 200
-
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify(
-            {
-                "success": False,
-                "error": "Erreur lors de la suppression du compte.",
-            }
-        ), 500
+        return jsonify(success=False, error="Erreur lors de la suppression du compte."), 500
+    cleanup_account(user.id, avatar)
+    return jsonify(success=True, message="Votre compte a été supprimé avec succès."), 200
 
 
 @users_bp.route("/me", methods=["GET"])
@@ -274,7 +260,7 @@ def me():
     return jsonify(
         {
             "success": True,
-            "user": user.to_dict(),
+            "user": user.to_private_dict(),
         }
     ), 200
 
@@ -282,7 +268,7 @@ def me():
 @users_bp.route("", methods=["GET"])
 @jwt_required()
 def get_users():
-    users = db.session.execute(select(User)).scalars().all()
+    users = db.session.execute(select(User).where(User.is_active.is_(True))).scalars().all()
     return jsonify(
         {
             "success": True,
@@ -305,8 +291,7 @@ def get_public_profile(user_id):
             }
         ), 404
 
-    public_data = target_user.to_dict()
-    public_data.pop("email", None)
+    public_data = target_user.to_public_dict()
     public_data["xp_progress"] = get_xp_progress(target_user.xp)
     public_data["level_rewards"] = get_level_rewards(target_user)
     public_data["is_online"] = target_user.id in online_users

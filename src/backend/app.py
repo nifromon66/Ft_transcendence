@@ -4,13 +4,14 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from admin_management.routes import admin_bp
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
 from friends_management.routes import friends_bp
 from gamification_management.routes import gamification_bp
-from ingredient_management import ingredient_bp
+from ingredient_management.routes import ingredient_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
@@ -48,6 +49,10 @@ def ratelimit_handler(e):
 CORS(
     app,
     resources={
+        r"/admin/.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        },
         r"/uploads/.*": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -203,7 +208,9 @@ with app.app_context():
     seed_database()
 
 
+app.register_blueprint(admin_bp)
 app.register_blueprint(gamification_bp)
+app.register_blueprint(ingredient_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)

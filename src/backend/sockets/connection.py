@@ -3,7 +3,7 @@ from flask_jwt_extended import decode_token
 from flask_socketio import join_room
 from jwt import ExpiredSignatureError, InvalidTokenError
 
-from extensions import online_users, socketio
+from extensions import online_users, socketio, user_for_token
 
 
 @socketio.on("connect")
@@ -20,6 +20,8 @@ def handle_connect(auth=None):
 
     try:
         decoded = decode_token(token)
+        if decoded.get("is_2fa_pending") or user_for_token(decoded) is None:
+            return False
         uid = int(decoded["sub"])
 
         room_name = f"user_{uid}"

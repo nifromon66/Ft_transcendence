@@ -1,7 +1,7 @@
 import os
 
 from authlib.integrations.flask_client import OAuth
-from flask import request
+from flask import g, request
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
@@ -20,9 +20,39 @@ socketio = SocketIO()
 
 @jwt.token_verification_loader
 def verify_not_pending_2fa(jwt_header, jwt_payload):
+    user = user_for_token(jwt_payload)
+    if user is None:
+        return False
+    g.current_user = user
     if jwt_payload.get("is_2fa_pending"):
         return request.endpoint == "auth_2fa.verify_login_2fa"
     return True
+
+
+def user_for_token(payload):
+    from models import User
+    try:
+        user = db.session.get(User, int(payload["sub"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    if not user or not user.is_active or user.deleted_at:
+        return None
+    if payload.get("token_version", 0) != user.token_version:
+        return None
+    return user
+
+
+@jwt.additional_claims_loader
+def account_claims(identity):
+    from models import User
+    user = db.session.get(User, int(identity))
+    return {"token_version": user.token_version if user else 0}
+
+
+@jwt.token_verification_failed_loader
+def invalid_account(header, payload):
+    from flask import jsonify
+    return jsonify(success=False, error="Session invalide ou compte désactivé."), 401
 
 
 def init_oauth(app):

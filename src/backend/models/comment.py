@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from extensions import db
@@ -25,6 +25,8 @@ class Comment(db.Model):
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("comments.id"))
 
     content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    is_removed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime)
 

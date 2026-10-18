@@ -1,5 +1,6 @@
 from extensions import db
 
+from .admin_audit import AdminAudit
 from .association import RecipeIngredient, UserBadge, recipe_tag
 from .badge import Badge
 from .category import Category
@@ -16,6 +17,7 @@ from .user import User
 from .user_avatar_frame import UserAvatarFrame
 
 __all__ = [
+    "AdminAudit",
     "Badge",
     "Category",
     "Comment",

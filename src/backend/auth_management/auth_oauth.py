@@ -60,6 +60,8 @@ def callback_42():
         )
         db.session.add(user)
         db.session.commit()
+    elif not user.is_active or user.deleted_at:
+        return jsonify(error="Compte désactivé."), 403
     elif not user.oauth_id:
         user.oauth_provider = "42"
         user.oauth_id = oauth_id
