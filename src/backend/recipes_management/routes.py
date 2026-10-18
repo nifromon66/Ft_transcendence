@@ -1,6 +1,8 @@
 import os
 
 import magic
+from admin_management.services import audit
+from auth_management.decorators import can, permission_required
 from config import UPLOAD_FOLDER
 from extensions import db
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
@@ -20,7 +22,6 @@ from models import (
 )
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from .analysis import check_recipe_analysis
 from user_xp_management.experience import (
     RECIPE_CREATED_XP,
     RECIPE_RATED_XP,
@@ -34,6 +35,7 @@ from utils.file_services import (
 )
 from werkzeug.security import safe_join
 
+from .analysis import check_recipe_analysis
 from .constants import (
     ALLOWED_RECIPE_IMAGE_EXTENSIONS,
     ALLOWED_RECIPE_IMAGE_MIMETYPES,
@@ -48,7 +50,7 @@ recipes_bp = Blueprint("recipes_management", __name__, url_prefix="/recipes")
 
 
 @recipes_bp.route("", methods=["POST"])
-@jwt_required()
+@permission_required("recipes.create")
 def create_recipe():
     data = request.get_json(silent=True)
 
@@ -216,7 +218,7 @@ def upload_recipe_image(recipe_id: int):
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("recipes.edit_any"):
         return jsonify(
             {
                 "success": False,
@@ -241,6 +243,8 @@ def upload_recipe_image(recipe_id: int):
 
     try:
         recipe.image_filename = new_filename
+        if recipe.user_id != user_id:
+            audit("recipes.edit", "recipe", recipe.id, operation="upload_recipe_image")
         db.session.commit()
 
     except SQLAlchemyError as error:
@@ -327,7 +331,7 @@ def upload_recipe_step_image(
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("recipes.edit_any"):
         return jsonify(
             {
                 "success": False,
@@ -362,6 +366,8 @@ def upload_recipe_step_image(
 
     try:
         step.image_filename = new_filename
+        if recipe.user_id != user_id:
+            audit("recipes.edit", "recipe", recipe.id, operation="upload_recipe_step_image")
         db.session.commit()
 
     except SQLAlchemyError:
@@ -423,7 +429,7 @@ def update_recipe(recipe_id: int):
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("recipes.edit_any"):
         return jsonify(
             {
                 "success": False,
@@ -572,6 +578,8 @@ def update_recipe(recipe_id: int):
         recipe.tags = [tags_by_id[tag_id] for tag_id in tag_ids]
 
         db.session.add(recipe)
+        if recipe.user_id != user_id:
+            audit("recipes.edit", "recipe", recipe.id, operation="update_recipe")
         db.session.commit()
 
     except SQLAlchemyError:
@@ -633,7 +641,7 @@ def delete_recipe_image(recipe_id: int):
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("recipes.edit_any"):
         return jsonify(
             {
                 "success": False,
@@ -653,6 +661,8 @@ def delete_recipe_image(recipe_id: int):
 
     try:
         recipe.image_filename = None
+        if recipe.user_id != user_id:
+            audit("recipes.edit", "recipe", recipe.id, operation="delete_recipe_image")
         db.session.commit()
     except SQLAlchemyError as error:
         db.session.rollback()
@@ -710,7 +720,7 @@ def delete_recipe_step_image(
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("recipes.edit_any"):
         return jsonify(
             {
                 "success": False,
@@ -740,6 +750,8 @@ def delete_recipe_step_image(
 
     try:
         step.image_filename = None
+        if recipe.user_id != user_id:
+            audit("recipes.edit", "recipe", recipe.id, operation="delete_recipe_step_image")
         db.session.commit()
     except SQLAlchemyError as error:
         db.session.rollback()
@@ -1032,7 +1044,7 @@ def delete_recipe(recipe_id: int):
             }
         ), 401
 
-    if recipe.user_id != user_id:
+    if recipe.user_id != user_id and not can("content.moderate"):
         return jsonify(
             {
                 "success": False,
@@ -1046,8 +1058,11 @@ def delete_recipe(recipe_id: int):
         image_paths.append(recipe.image_filename)
 
     try:
+        if recipe.user_id != user_id:
+            audit("recipes.remove", "recipe", recipe.id)
+        owner_id = recipe.user_id
         db.session.delete(recipe)
-        remove_xp(user_id, RECIPE_CREATED_XP)
+        remove_xp(owner_id, RECIPE_CREATED_XP)
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()

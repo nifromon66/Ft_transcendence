@@ -45,7 +45,7 @@ def register():
         access_token = create_access_token(identity=str(new_user.id))
 
         return jsonify(
-            {"success": True, "access_token": access_token, "user": new_user.to_dict()}
+            {"success": True, "access_token": access_token, "user": new_user.to_private_dict()}
         ), 201
     except SQLAlchemyError:
         db.session.rollback()
@@ -90,5 +90,5 @@ def login():
 
     access_token = create_access_token(identity=str(user.id))
     return jsonify(
-        {"success": True, "access_token": access_token, "user": user.to_dict()}
+        {"success": True, "access_token": access_token, "user": user.to_private_dict()}
     ), 200

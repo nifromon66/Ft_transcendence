@@ -147,7 +147,7 @@ def verify_login_2fa():
             {
                 "success": True,
                 "access_token": final_token,
-                "user": user.to_dict(),
+                "user": user.to_private_dict(),
             }
         ), 200
     else:

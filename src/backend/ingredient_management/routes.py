@@ -1,9 +1,11 @@
+from auth_management.decorators import permission_required
 from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from models import Ingredient, IngredientCategory, RecipeIngredient
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
 from .analysis import check_ingredient_analysis
 
 ingredient_bp = Blueprint("ingredients", __name__)
@@ -82,7 +84,7 @@ def create_ingredient():
 
 
 @ingredient_bp.route("/ingredients/<int:ingredient_id>", methods=["PUT"])
-@jwt_required()
+@permission_required("ingredients.manage")
 def update_ingredient(ingredient_id: int):
     ingredient = db.session.get(Ingredient, ingredient_id)
     if ingredient is None:
@@ -129,7 +131,7 @@ def update_ingredient(ingredient_id: int):
 
 
 @ingredient_bp.route("/ingredients/<int:ingredient_id>", methods=["DELETE"])
-@jwt_required()
+@permission_required("ingredients.manage")
 def delete_ingredient(ingredient_id: int):
     ingredient = db.session.get(Ingredient, ingredient_id)
     if ingredient is None:

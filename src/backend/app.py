@@ -1,5 +1,6 @@
 import os
 
+from admin_management.routes import admin_bp
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
@@ -7,8 +8,8 @@ from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
 from flask import Flask, jsonify
 from flask_cors import CORS
 from friends_management.routes import friends_bp
-from ingredient_management.routes import ingredient_bp
 from gamification_management.routes import gamification_api
+from ingredient_management.routes import ingredient_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
@@ -48,6 +49,10 @@ def ratelimit_handler(e):
 CORS(
     app,
     resources={
+        r"/admin/.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        },
         r"/uploads/.*": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
@@ -83,10 +88,6 @@ CORS(
         r"/users/me": {
             "origins": [frontend_url],
             "methods": ["GET", "PUT", "DELETE", "OPTIONS"],
-        },
-        r"/users/me/avatar-frame": {
-            "origins": [frontend_url],
-            "methods": ["PUT", "OPTIONS"],
         },
         r"/users/me/avatar-frame": {
             "origins": [frontend_url],
@@ -175,6 +176,7 @@ with app.app_context():
     seed_database()
 
 
+app.register_blueprint(admin_bp)
 app.register_blueprint(gamification_api)
 app.register_blueprint(ingredient_bp)
 app.register_blueprint(friends_bp)

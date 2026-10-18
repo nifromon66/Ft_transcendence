@@ -4,15 +4,23 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from extensions import bcrypt, db
-from sqlalchemy import JSON, Boolean, DateTime, Integer, String, and_, or_, select
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Integer,
+    String,
+    and_,
+    or_,
+    select,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from user_xp_management.rewards import get_active_frame
 
 from .association import friend
-from user_xp_management.rewards import get_active_frame
 
 if TYPE_CHECKING:
-    from .user_avatar_frame import UserAvatarFrame
     from .association import UserBadge
     from .comment import Comment
     from .favorite import Favorite
@@ -24,6 +32,11 @@ if TYPE_CHECKING:
 
 class User(db.Model):
     __tablename__ = "users"
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('user', 'moderator', 'admin')", name="valid_user_role"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
@@ -48,6 +61,10 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     role: Mapped[str] = mapped_column(String, nullable=False, default="user")
+
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    token_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     avatar_filename: Mapped[str | None] = mapped_column(String)
 
@@ -106,8 +123,9 @@ class User(db.Model):
         self.is_2fa_enabled = False
         self.recovery_codes = []
 
-        if role != "user":
-            self.role = role
+        if role not in {"user", "moderator", "admin"}:
+            raise ValueError("Rôle invalide")
+        self.role = role
         self.is_active = True
 
     def check_password(self, password: str) -> bool:
@@ -115,7 +133,7 @@ class User(db.Model):
             return False
         return bcrypt.check_password_hash(self.password_hash, password)
 
-    def to_dict(self) -> dict[str, int | str | None]:
+    def to_public_dict(self) -> dict:
         full_avatar_path = (
             f"/api/users/avatars/{self.avatar_filename}"
             if self.avatar_filename
@@ -125,12 +143,35 @@ class User(db.Model):
         return {
             "id": self.id,
             "username": self.username,
-            "email": self.email,
             "avatar_url": full_avatar_path,
             "avatar_frame": get_active_frame(self),
+        }
+
+    def to_private_dict(self) -> dict:
+        from auth_management.permissions import permissions_for
+
+        return {
+            **self.to_public_dict(),
+            "email": self.email,
             "is_2fa_enabled": self.is_2fa_enabled,
             "oauth_provider": self.oauth_provider,
+            "role": self.role,
+            "permissions": sorted(permissions_for(self.role)),
         }
+
+    def to_admin_dict(self) -> dict:
+        return {
+            **self.to_public_dict(),
+            "email": self.email,
+            "role": self.role,
+            "status": "deleted"
+            if self.deleted_at
+            else ("active" if self.is_active else "suspended"),
+        }
+
+    def to_dict(self) -> dict:
+        """Default to public data; private responses must be explicit."""
+        return self.to_public_dict()
 
     def get_friends(self) -> list[User]:
         stmt = (
