@@ -13,6 +13,9 @@ export const useAuthStore = defineStore('auth', {
             user: parsedUser
         }
     },
+    getters: {
+        can: (state) => (permission) => Boolean(state.token && state.user?.permissions?.includes(permission)),
+    },
     actions: {
         updateRewards(data) {
             if (!this.user) return
@@ -33,9 +36,9 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        initializeAuth() {
+        async initializeAuth() {
             if (this.token) {
-                connectSocket(this.token)
+                try { await this.fetchUser() } catch { /* La session invalide est effacée par fetchUser. */ }
             }
         },
 
@@ -61,14 +64,13 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async fetchUser() {
-            if (!this.token) {
-                return
-            }
+            const token = this.token
+            if (!token) return
             try {
-                const userData = await fetchUserProfile(this.token)
-                this.setAuth(this.token, userData)
+                const userData = await fetchUserProfile(token)
+                if (this.token === token) this.setAuth(token, userData)
             } catch (error) {
-                this.clearAuth()
+                if (this.token === token) this.clearAuth()
                 throw error
             }
         }

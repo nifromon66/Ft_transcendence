@@ -2,11 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import { useAuthStore } from '@/stores/authState'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: "/admin/users", name: "admin-users", component: () => import("@/views/AdminUsersView.vue"), meta: { requiresAuth: true, permission: "users.read" } },
+    { path: "/moderation", name: "moderation", component: () => import("@/views/ModerationView.vue"), meta: { requiresAuth: true, permission: "content.moderate" } },
+    { path: "/forbidden", name: "forbidden", component: () => import("@/views/ForbiddenView.vue") },
     {
       path: '/',
       name: 'welcome',
@@ -25,7 +29,8 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/UserProfileView.vue')
+      component: () => import('@/views/UserProfileView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/about',
@@ -65,13 +70,14 @@ const router = createRouter({
       name: 'postRecipe',
       component: () => import('../views/PostRecipeView.vue'),
       props: true,
+      meta: { requiresAuth: true, permission: 'recipes.create' },
     },
     {
       path: '/recipe/:id/edit',
       name: 'recipe-edit',
       component: () => import('../views/EditRecipeView.vue'),
       props: true,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, refreshPermissions: true },
     },
     {
       path: '/search',
@@ -102,9 +108,13 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !localStorage.getItem('token')) {
-    return { name: 'login' }
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+  if (to.meta.requiresAuth && !auth.token) return { name: 'login' }
+  if (to.meta.permission || to.meta.refreshPermissions) {
+    try { await auth.fetchUser() }
+    catch { return { name: 'login' } }
+    if (to.meta.permission && !auth.can(to.meta.permission)) return { name: 'forbidden' }
   }
 })
 

@@ -42,7 +42,7 @@ const loadRecipe = async () => {
     const currentUserId = Number(authStore.user?.id)
     const authorId = Number(loadedRecipe.author.id)
 
-    if (!currentUserId || currentUserId !== authorId) {
+    if (!currentUserId || (currentUserId !== authorId && !authStore.can('recipes.edit_any'))) {
       errorMessage.value =
         "Tu n'es pas autorisé à modifier cette recette."
       return

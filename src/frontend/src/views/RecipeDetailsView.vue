@@ -21,6 +21,9 @@ const isAuthor = computed(() => {
   return Number(authStore.user.id) === Number(recipe.value.author.id)
 })
 
+const canEdit = computed(() => isAuthor.value || authStore.can('recipes.edit_any'))
+const canDelete = computed(() => isAuthor.value || authStore.can('content.moderate'))
+
 const recipe = ref(null)
 const canRate = computed(() => {
   return Boolean(
@@ -138,7 +141,7 @@ const handleDeleteRating = async () => {
 }
 
 const handleDelete = async () => {
-  if (!isAuthor.value || isDeleting.value)
+  if (!canDelete.value || isDeleting.value)
     return
   if (!window.confirm('Supprimer cette recette ?'))
     return
@@ -292,15 +295,15 @@ const formatDate = (date) => {
             <h1 class="text-3xl font-bold text-gray-900 sm:text-4xl">
               {{ recipe.title }}
             </h1>
-            <div v-if="isAuthor" class="flex shrink-0 flex-wrap gap-2">
-              <RouterLink :to="{
+            <div v-if="canEdit || canDelete" class="flex shrink-0 flex-wrap gap-2">
+              <RouterLink v-if="canEdit" :to="{
                 name: 'recipe-edit',
                 params: { id: recipe.id },
               }" class="shrink-0 rounded-md bg-primary px-4 py-2
                     font-semibold text-white hover:bg-primary-dark">
                 Modifier
               </RouterLink>
-              <button type="button" :disabled="isDeleting" @click="handleDelete" class="rounded-md bg-red-600 px-4 py-2
+              <button v-if="canDelete" type="button" :disabled="isDeleting" @click="handleDelete" class="rounded-md bg-red-600 px-4 py-2
                   font-semibold text-white hover:bg-red-700
                   disabled:cursor-not-allowed disabled:opacity-50">
                 {{ isDeleting ? 'Suppression...' : 'Supprimer' }}

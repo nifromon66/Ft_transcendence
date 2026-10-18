@@ -31,6 +31,15 @@ const authStore = useAuthStore()
         Poster une recette
       </RouterLink>
 
+      <RouterLink v-if="authStore.can('users.read')" :to="{ name: 'admin-users' }"
+        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light" @click="emit('close-menu')">
+        Administration
+      </RouterLink>
+      <RouterLink v-if="authStore.can('content.moderate')" :to="{ name: 'moderation' }"
+        class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light" @click="emit('close-menu')">
+        Modération
+      </RouterLink>
+
       <RouterLink :to="{ name: 'about' }" class="rounded-full px-4 py-2 text-gray-800 hover:bg-primary-light"
         @click="emit('close-menu')">
         A propos
