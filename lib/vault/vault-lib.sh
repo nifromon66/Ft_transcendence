@@ -132,12 +132,12 @@ vault_security_configured() {
     else
         log_ok "Vault AppRoles not written. Proceeding with writing AppRoles..."
     fi
-    if vault_approle_ids_exist; then
-        log_ok "Vault AppRoles IDs exist. Skipping creating AppRoles IDs..."
+    if vault_approles_valid; then
+        log_ok "Vault AppRoles IDs valid. Skipping creating AppRoles IDs..."
     else
-        log_ok "Vault AppRoles IDs don't exist. Proceeding with creating AppRoles IDs..."
+        log_ok "Vault AppRoles IDs missing or invalid. Proceeding with creating AppRoles IDs..."
     fi
-    if vault_policy_written && vault_approle_written && vault_approle_ids_exist; then
+    if vault_policy_written && vault_approle_written && vault_approles_valid; then
         log_ok "Vault Security Configured. Skipping Vault Security Configuration..."
         return 0
     fi
