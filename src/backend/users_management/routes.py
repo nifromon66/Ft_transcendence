@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from config import UPLOAD_FOLDER
 from extensions import db, limiter, online_users, socketio
-from models import User
+from models import Badge, User
 from models.association import friend
 from models.user_avatar_frame import UserAvatarFrame
 from user_xp_management.leveling import get_xp_progress
@@ -309,6 +309,17 @@ def get_public_profile(user_id):
     public_data["xp_progress"] = get_xp_progress(target_user.xp)
     public_data["level_rewards"] = get_level_rewards(target_user)
     public_data["is_online"] = target_user.id in online_users
+    owned_badges = {user_badge.badge_id for user_badge in target_user.badges}
+    public_data["badges"] = [
+        {
+            "id": badge.id,
+            "name": badge.name,
+            "description": badge.description,
+            "eligible": badge.id in (1, 2),
+            "owned": badge.id in owned_badges,
+        }
+        for badge in db.session.scalars(select(Badge)).all()
+    ]
 
     if current_user_id == user_id:
         status = "self"

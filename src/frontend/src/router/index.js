@@ -51,12 +51,6 @@ const router = createRouter({
       component: () => import('../views/PrivacyView.vue'),
     },
     {
-      path: '/badges',
-      name: 'badges',
-      component: () => import('@/views/BadgeView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
       path: '/recipe/:id',
       name: 'recipe-details',
       component: () => import('../views/RecipeDetailsView.vue'),
