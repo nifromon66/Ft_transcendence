@@ -218,7 +218,6 @@ app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
 app.register_blueprint(auth_2fa_bp)
 app.register_blueprint(auth_bp)
-app.register_blueprint(ingredient_bp)
 
 import sockets.chat
 import sockets.connection
