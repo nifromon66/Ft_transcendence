@@ -18,7 +18,7 @@ import {
     denyFriendRequest,
     removeFriend
 } from '@/services/friendService'
-import { socket } from '@/services/socketService'
+import { socket, connectSocket } from '@/services/socketService'
 
 const router = useRouter()
 const chatStore = useChatStore()
@@ -83,9 +83,14 @@ const selectAvatarFrame = async (frame) => {
     }
 }
 
+const initialStatusFromSocket = ref(null)
+
 const handleUserStatusChange = (data) => {
-    if (profile.value && data.user_id == props.id) {
-        profile.value.is_online = data.is_online
+    if (data.user_id == props.id) {
+        initialStatusFromSocket.value = data.is_online
+        if (profile.value) {
+            profile.value.is_online = data.is_online
+        }
     }
 }
 
@@ -161,15 +166,33 @@ const requestStatus = () => {
     }
 }
 
+const handleSocketConnect = () => {
+    if (profile.value && (profile.value.friendship_status === 'self' || String(props.id) === String(authStore.user?.id))) {
+        profile.value.is_online = true
+    } else {
+        requestStatus()
+    }
+}
+
+const handleSocketDisconnect = () => {
+    if (profile.value && (profile.value.friendship_status === 'self' || String(props.id) === String(authStore.user?.id))) {
+        profile.value.is_online = false
+    }
+}
+
 onMounted(async () => {
+    if (authStore.token && (!socket || !socket.connected)) {
+        connectSocket(authStore.token)
+    }
+
     if (socket) {
         socket.on('user_status_changed', handleUserStatusChange)
         socket.on('friendship_updated', handleFriendshipUpdated)
         socket.on('user_profile_updated', handleProfileUpdated)
+        socket.on('connect', handleSocketConnect)
+        socket.on('disconnect', handleSocketDisconnect)
         if (socket.connected) {
-            requestStatus()
-        } else {
-            socket.once('connect', requestStatus)
+            handleSocketConnect()
         }
     }
 
@@ -189,8 +212,13 @@ onMounted(async () => {
         profile.value = await fetchPublicProfile(props.id, token)
 
         if (profile.value?.friendship_status === 'self' || String(props.id) === String(authStore.user?.id)) {
-            profile.value.is_online = true
+            profile.value.is_online = Boolean(socket && socket.connected)
             authStore.updateRewards(profile.value)
+        } else {
+            if (initialStatusFromSocket.value !== null) {
+                profile.value.is_online = initialStatusFromSocket.value
+            }
+            requestStatus()
         }
 
         if (profile.value?.avatar_url) {
@@ -215,7 +243,8 @@ onUnmounted(() => {
     }
 
     if (socket) {
-        socket.off('connect', requestStatus)
+        socket.off('connect', handleSocketConnect)
+        socket.off('disconnect', handleSocketDisconnect)
         socket.off('user_status_changed', handleUserStatusChange)
         socket.off('friendship_updated', handleFriendshipUpdated)
         socket.off('user_profile_updated', handleProfileUpdated)

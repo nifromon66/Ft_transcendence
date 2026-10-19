@@ -6,47 +6,57 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from extensions import online_users, socketio, user_for_token
 
 
-@socketio.on("connect")
+@socketio.on('connect')
 def handle_connect(auth=None):
     token = None
-    if auth and "token" in auth:
-        token = auth["token"]
-    elif request.args.get("token"):
-        token = request.args.get("token")
+    if auth and 'token' in auth:
+        token = auth['token']
+    elif request.args.get('token'):
+        token = request.args.get('token')
 
     if not token:
-        print("Socket connection refused: No token provided by the client.", flush=True)
+        print('Socket connection refused: No token provided by the client.', flush=True)
         return False
+
+    if isinstance(token, str) and token.startswith('Bearer '):
+        token = token[7:]
 
     try:
         decoded = decode_token(token)
-        if decoded.get("is_2fa_pending") or user_for_token(decoded) is None:
+        if decoded.get('is_2fa_pending'):
+            print('Socket connection refused: 2FA pending.', flush=True)
             return False
-        uid = int(decoded["sub"])
+        if user_for_token(decoded) is None:
+            print(
+                f"Socket connection refused: user_for_token invalid for {decoded.get('sub')}.",
+                flush=True,
+            )
+            return False
+        uid = int(decoded['sub'])
 
-        room_name = f"user_{uid}"
+        room_name = f'user_{uid}'
         join_room(room_name)
 
         if uid not in online_users:
             online_users[uid] = set()
         online_users[uid].add(request.sid)
-        socketio.emit("user_status_changed", {"user_id": uid, "is_online": True})
+        socketio.emit('user_status_changed', {'user_id': uid, 'is_online': True})
 
         print(
-            f"Socket connected: User {uid} joined {room_name}",
+            f'Socket connected: User {uid} joined {room_name}',
             flush=True,
         )
         return True
 
     except ExpiredSignatureError:
         print(
-            "WebSocket connection refused: The token has expired.",
+            'WebSocket connection refused: The token has expired.',
             flush=True,
         )
         return False
     except InvalidTokenError as e:
         print(
-            f"WebSocket connection refused: Invalid token ({e}).",
+            f'WebSocket connection refused: Invalid token ({e}).',
             flush=True,
         )
         return False
@@ -58,13 +68,13 @@ def handle_connect(auth=None):
         return False
     except ValueError:
         print(
-            "Websocket connection refused: The user ID is not a valid number.",
+            'Websocket connection refused: The user ID is not a valid number.',
             flush=True,
         )
         return False
 
 
-@socketio.on("disconnect")
+@socketio.on('disconnect')
 def handle_disconnect():
     for user_id, sids in list(online_users.items()):
         if request.sid in sids:
@@ -72,33 +82,30 @@ def handle_disconnect():
             if not sids:
                 del online_users[user_id]
                 socketio.emit(
-                    "user_status_changed", {"user_id": user_id, "is_online": False}
+                    'user_status_changed', {'user_id': user_id, 'is_online': False}
                 )
+            print(f'Socket disconnected: User {user_id}', flush=True)
             break
 
 
-@socketio.on("request_initial_status")
+@socketio.on('request_initial_status')
 def handle_initial_status(user_ids):
     if not user_ids:
         return
+    if not isinstance(user_ids, (list, tuple, set)):
+        user_ids = [user_ids]
 
     for uid in user_ids:
         try:
-            uid_int = int(uid)
-            if uid_int in online_users:
-                socketio.emit(
-                    "user_status_changed",
-                    {"user_id": uid_int, "is_online": True},
-                    to=request.sid,
-                )
-            else:
-                pass
+            uid_val = int(uid)
         except (ValueError, TypeError):
-            uid_str = str(uid)
-            if uid_str in online_users:
-                socketio.emit(
-                    "user_status_changed",
-                    {"user_id": uid_str, "is_online": True},
-                    to=request.sid,
-                )
-            continue
+            uid_val = str(uid)
+
+        is_online = bool(online_users.get(uid_val)) or bool(
+            online_users.get(str(uid_val))
+        )
+        socketio.emit(
+            'user_status_changed',
+            {'user_id': uid_val, 'is_online': is_online},
+            to=request.sid,
+        )

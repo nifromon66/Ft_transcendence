@@ -5,35 +5,57 @@ from extensions import db, online_users, socketio
 from models import Message, User
 
 
-@socketio.on("send_message")
+@socketio.on('send_message')
 def handle_new_message(data):
+    if not isinstance(data, dict):
+        socketio.emit(
+            'message_error',
+            {'error': 'Données invalides.'},
+            to=request.sid,
+        )
+        return
+
     sender_id = next(
         (uid for uid, sids in online_users.items() if request.sid in sids), None
     )
 
     if not sender_id:
         socketio.emit(
-            "message_error",
-            {"error": "Non authentifié (ou session expirée)."},
+            'message_error',
+            {'error': 'Non authentifié (ou session expirée).'},
             to=request.sid,
         )
         return
 
-    receiver_id = data.get("receiver_id")
-    content = data.get("content")
-    file_url = data.get("file_url")
-    file_name = data.get("file_name")
-    file_type = data.get("file_type")
-    file_size = data.get("file_size")
+    receiver_id = data.get('receiver_id')
+    content = data.get('content')
+    file_url = data.get('file_url')
+    file_name = data.get('file_name')
+    file_type = data.get('file_type')
+    file_size = data.get('file_size')
 
     if not receiver_id:
-        socketio.emit("message_error", {"Le destinataire est invalide"}, to=request.sid)
+        socketio.emit(
+            'message_error',
+            {'error': 'Le destinataire est invalide.'},
+            to=request.sid,
+        )
+        return
+
+    try:
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        socketio.emit(
+            'message_error',
+            {'error': 'Le destinataire est invalide.'},
+            to=request.sid,
+        )
         return
 
     if not content and not file_url:
         socketio.emit(
-            "message_error",
-            {"error": "Le message doit contenir du texte ou un fichier pdf."},
+            'message_error',
+            {'error': 'Le message doit contenir du texte ou un fichier pdf.'},
             to=request.sid,
         )
         return
@@ -41,7 +63,7 @@ def handle_new_message(data):
     sender = db.session.get(User, sender_id)
     if not sender or not sender.is_active:
         socketio.emit(
-            "message_error", {"error": "Votre compte est inactif."}, to=request.sid
+            'message_error', {'error': 'Votre compte est inactif.'}, to=request.sid
         )
         return
 
@@ -50,8 +72,8 @@ def handle_new_message(data):
 
     if not is_friend:
         socketio.emit(
-            "message_error",
-            {"error": "Cet utilisateur ne fait plus partie de vos amis."},
+            'message_error',
+            {'error': 'Cet utilisateur ne fait plus partie de vos amis.'},
             to=request.sid,
         )
         return
@@ -71,10 +93,10 @@ def handle_new_message(data):
 
         message_data = new_message.to_dict()
 
-        socketio.emit("receive_message", message_data, room=f"user_{receiver_id}")
-        socketio.emit("receive_message", message_data, to=request.sid)
+        socketio.emit('receive_message', message_data, room=f'user_{receiver_id}')
+        socketio.emit('receive_message', message_data, to=request.sid)
 
     except SQLAlchemyError as e:
         db.session.rollback()
-        print(f"Database error: {e!s}")
-        socketio.emit("message_error", {"error": "Erreur serveur."}, to=request.sid)
+        print(f'Database error: {e!s}')
+        socketio.emit('message_error', {'error': 'Erreur serveur.'}, to=request.sid)

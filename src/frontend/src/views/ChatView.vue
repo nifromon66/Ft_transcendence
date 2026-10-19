@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authState';
 import FriendAvatar from '@/components/FriendAvatar.vue';
 import DocumentUpload from '@/components/DocumentUpload.vue';
 import { fetchDocumentBlob } from '@/services/fileService';
+import { socket, connectSocket } from '@/services/socketService';
 
 const chatStore = useChatStore()
 const authStore = useAuthStore()
@@ -25,6 +26,14 @@ const canSend = computed(() => {
 })
 
 onMounted(async () => {
+    chatStore.initializeSocketListeners()
+    if (!socket.connected && authStore.token) {
+        try {
+            connectSocket(authStore.token)
+        } catch {
+            // Handled by socket listeners
+        }
+    }
     await chatStore.fetchFriends()
 })
 

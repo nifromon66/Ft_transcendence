@@ -1418,12 +1418,6 @@ def get_tags():
     return jsonify(
         {
             "success": True,
-            "tags": [
-                {
-                    "id": tag.id,
-                    "name": tag.name,
-                }
-                for tag in tags
-            ],
+            "tags": [tag.to_dict() for tag in tags],
         }
     ), 200

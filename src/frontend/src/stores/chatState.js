@@ -51,13 +51,13 @@ export const useChatStore = defineStore('chat', {
                 return
             }
 
-            if (!socket) {
+            if (!socket || !socket.connected) {
                 this.chatError = "La connexion au serveur n'est pas encore établie."
                 return
             }
 
             const payload = {
-                receiver_id: this.activeContact.id,
+                receiver_id: Number(this.activeContact.id),
                 content: content
             }
 
@@ -76,7 +76,6 @@ export const useChatStore = defineStore('chat', {
             }
 
             socket.emit('send_message', payload)
-
         },
 
         initializeSocketListeners() {
@@ -91,7 +90,10 @@ export const useChatStore = defineStore('chat', {
             socket.off('user_updated')
 
             socket.on('receive_message', (message) => {
-                const isRelevantToActiveChat = this.activeContact && (message.sender_id == this.activeContact.id || message.receiver_id === this.activeContact.id)
+                const isRelevantToActiveChat = this.activeContact && (
+                    Number(message.sender_id) === Number(this.activeContact.id) ||
+                    Number(message.receiver_id) === Number(this.activeContact.id)
+                )
 
                 if (isRelevantToActiveChat) {
                     this.messages.push(message)
@@ -99,7 +101,7 @@ export const useChatStore = defineStore('chat', {
                     const authStore = useAuthStore()
                     const myId = authStore.user?.id
 
-                    if (myId && message.sender_id !== myId) {
+                    if (myId && Number(message.sender_id) !== Number(myId)) {
                         const currentCount = this.unreadCounts[message.sender_id] || 0
                         this.unreadCounts[message.sender_id] = currentCount + 1
                     }
@@ -115,11 +117,11 @@ export const useChatStore = defineStore('chat', {
             })
 
             socket.on('user_status_changed', (data) => {
-                const friend = this.friendsList.find(f => f.id === data.user_id)
+                const friend = this.friendsList.find(f => Number(f.id) === Number(data.user_id))
                 if (friend) {
                     friend.is_online = data.is_online
                 }
-                if (this.activeContact && this.activeContact.id === data.user_id) {
+                if (this.activeContact && Number(this.activeContact.id) === Number(data.user_id)) {
                     this.activeContact.is_online = data.is_online
                 }
             })
@@ -130,14 +132,14 @@ export const useChatStore = defineStore('chat', {
             })
 
             socket.on('user_updated', (data) => {
-                const friend = this.friendsList.find(f => f.id === data.user_id)
+                const friend = this.friendsList.find(f => Number(f.id) === Number(data.user_id))
                 if (friend) {
                     if (data.username) {
                         friend.username = data.username
                     }
                 }
 
-                if (this.activeContact && this.activeContact.id === data.user_id) {
+                if (this.activeContact && Number(this.activeContact.id) === Number(data.user_id)) {
                     if (data.username) {
                         this.activeContact.username = data.username
                     }
