@@ -2,7 +2,10 @@ COMPOSE_ENV_FILES := .envs/.env.compose
 
 export COMPOSE_ENV_FILES
 
-
+UID := $(shell id -u)
+GID := $(shell id -g)
+export UID
+export GID
 
 up:
 	docker compose up -d --build
@@ -32,6 +35,6 @@ clean:
 prune:
 	docker system prune -f --volumes
 
-re: clean prune rebuild
+re: rebuild
 
 .PHONY: up rebuild down test-waf logs restart clean prune re insert-secrets
