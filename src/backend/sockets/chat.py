@@ -1,13 +1,14 @@
-from extensions import db, online_users, socketio
 from flask import request
-from models import Message, User
 from sqlalchemy.exc import SQLAlchemyError
+
+from extensions import db, online_users, socketio
+from models import Message, User
 
 
 @socketio.on("send_message")
 def handle_new_message(data):
     sender_id = next(
-        (uid for uid, sid in online_users.items() if sid == request.sid), None
+        (uid for uid, sids in online_users.items() if request.sid in sids), None
     )
 
     if not sender_id:

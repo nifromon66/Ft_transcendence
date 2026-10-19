@@ -1,21 +1,21 @@
 import os
 
 from admin_management.routes import admin_bp
+from flask import Flask, jsonify
+from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
 from extensions import bcrypt, db, init_oauth, jwt, limiter, socketio
-from flask import Flask, jsonify
-from flask_cors import CORS
 from friends_management.routes import friends_bp
-from gamification_management.routes import gamification_api
+from gamification_management.routes import gamification_bp
 from ingredient_management.routes import ingredient_bp
 from messages_management.routes import messages_bp
 from recipes_management.routes import recipes_bp
 from seeds import seed_database
 from users_management.routes import users_bp
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 from vault import VaultClient
 
 vault = VaultClient()
@@ -43,7 +43,7 @@ limiter.init_app(app)
 def ratelimit_handler(e):
     return jsonify(
         {"success": False, "error": "Trop de tentatives. Veuillez réessayer plus tard."}
-    ), 429
+    ), 200
 
 
 CORS(
@@ -137,15 +137,19 @@ CORS(
             "origins": [frontend_url],
             "methods": ["DELETE", "OPTIONS"],
         },
-        r"/badges": {
+        r"/recipe/\d+": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
-        r"/getbadge": {
+        r"/recipes.*": {
             "origins": [frontend_url],
-            "methods": ["POST", "OPTIONS"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         },
-        r"/recipe/\d+": {
+        r"/ingredients.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        },
+        r"/ingredient-categories.*": {
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
@@ -153,17 +157,45 @@ CORS(
             "origins": [frontend_url],
             "methods": ["GET", "OPTIONS"],
         },
+        r"/gamification/.*": {
+            "origins": [frontend_url],
+            "methods": ["GET", "POST", "OPTIONS"],
+        },
     },
     supports_credentials=True,
     allow_headers=["Authorization", "Content-Type"],
 )
 
-app.json.ensure_ascii = False  # pyright: ignore[reportAttributeAccessIssue]
+app.json.ensure_ascii = False
 app.config["SQLALCHEMY_DATABASE_URI"] = database_secrets["url"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 2592000
+app.config["JWT_COOKIE_SECURE"] = True
+app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+
+
 jwt.init_app(app)
+
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({"success": False, "error": "Session expiree"}), 200
+
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({"success": False, "error": "Token invalide"}), 200
+
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({"success": False, "error": "Authentification requise"}), 200
+
+
 db.init_app(app)
 bcrypt.init_app(app)
 socketio.init_app(app, cors_allowed_origins=[frontend_url])
@@ -177,8 +209,8 @@ with app.app_context():
 
 
 app.register_blueprint(admin_bp)
-app.register_blueprint(gamification_api)
 app.register_blueprint(ingredient_bp)
+app.register_blueprint(gamification_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)
@@ -186,6 +218,7 @@ app.register_blueprint(messages_bp)
 app.register_blueprint(auth_oauth_bp)
 app.register_blueprint(auth_2fa_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(ingredient_bp)
 
 import sockets.chat
 import sockets.connection

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/authState.js'
 import { socket } from '@/services/socketService.js'
 import { fetchFriends } from '@/services/friendService'
-import { fetchConversation, deleteMessage } from '@/services/messageService'
+import { fetchConversation, deleteMessage, uploadDocument } from '@/services/messageService'
 
 export const useChatStore = defineStore('chat', {
     state: () => ({
@@ -46,7 +46,7 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        sendMessage(content, fileData = null) {
+        async sendMessage(content, fileData = null) {
             if (!this.activeContact) {
                 return
             }
@@ -62,7 +62,17 @@ export const useChatStore = defineStore('chat', {
             }
 
             if (fileData) {
-                Object.assign(payload, fileData)
+                const authStore = useAuthStore()
+                try {
+                    const uploadResult = await uploadDocument(fileData, authStore.token)
+                    payload.file_url = `/api/messages/documents/${uploadResult.filename}`
+                    payload.file_name = fileData.name
+                    payload.file_type = fileData.type
+                    payload.file_size = fileData.size
+                } catch (error) {
+                    this.chatError = error.message || "Erreur lors de l'upload du document."
+                    return
+                }
             }
 
             socket.emit('send_message', payload)

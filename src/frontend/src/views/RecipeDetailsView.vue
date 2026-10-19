@@ -4,6 +4,7 @@ import { fetchRecipeById, deleteRecipe, rateRecipe, updateRecipeRating, deleteRe
 import { useRouter } from 'vue-router'
 import StarRating from '@/components/StarRating.vue'
 import { useAuthStore } from '@/stores/authState'
+import { fetchAvatarBlob } from '@/services/userService'
 
 const authStore = useAuthStore()
 const props = defineProps({
@@ -140,25 +141,37 @@ const handleDeleteRating = async () => {
   }
 }
 
-const handleDelete = async () => {
-  if (!canDelete.value || isDeleting.value)
+const isDeleteModalOpen = ref(false)
+
+const openDeleteModal = () => {
+  if (!isAuthor.value || isDeleting.value)
     return
-  if (!window.confirm('Supprimer cette recette ?'))
+  deleteError.value = ''
+  isDeleteModalOpen.value = true
+}
+
+const closeDeleteModal = () => {
+  if (isDeleting.value)
+    return
+  isDeleteModalOpen.value = false
+}
+
+const confirmDeleteRecipe = async () => {
+  if (!isAuthor.value || isDeleting.value)
     return
   isDeleting.value = true
   deleteError.value = ''
 
   try {
     await deleteRecipe(authStore.token, recipe.value.id)
+    isDeleteModalOpen.value = false
+    await router.back()
   } catch (error) {
     deleteError.value =
       error.message || 'Une erreur inattendue est survenue.'
-    return
   } finally {
     isDeleting.value = false
   }
-
-  await router.back()
 }
 
 const loadRecipe = async () => {
@@ -303,10 +316,10 @@ const formatDate = (date) => {
                     font-semibold text-white hover:bg-primary-dark">
                 Modifier
               </RouterLink>
-              <button v-if="canDelete" type="button" :disabled="isDeleting" @click="handleDelete" class="rounded-md bg-red-600 px-4 py-2
+              <button type="button" :disabled="isDeleting" @click="openDeleteModal" class="rounded-md bg-red-600 px-4 py-2
                   font-semibold text-white hover:bg-red-700
                   disabled:cursor-not-allowed disabled:opacity-50">
-                {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+                Supprimer
               </button>
               <p v-if="deleteError" role="alert" class="mt-3 text-red-700">
                 {{ deleteError }}
@@ -372,5 +385,35 @@ const formatDate = (date) => {
         </section>
       </div>
     </article>
+
+    <div v-if="isDeleteModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+      role="dialog" aria-modal="true" aria-labelledby="modal-delete-recipe-title">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 id="modal-delete-recipe-title" class="text-xl font-bold text-red-600 mb-4">
+          Supprimer la recette
+        </h3>
+        <p class="text-gray-700 mb-6 text-sm">
+          Êtes-vous sûr de vouloir supprimer définitivement la recette
+          <span class="font-semibold text-gray-900">« {{ recipe.title }} »</span> ?
+          Cette action est irréversible.
+        </p>
+
+        <p v-if="deleteError" role="alert" class="text-red-600 text-sm mb-4">
+          {{ deleteError }}
+        </p>
+
+        <div class="flex justify-end space-x-3">
+          <button type="button" @click="closeDeleteModal" :disabled="isDeleting"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors disabled:opacity-50">
+            Annuler
+          </button>
+          <button type="button" @click="confirmDeleteRecipe" :disabled="isDeleting"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors disabled:opacity-50">
+            {{ isDeleting ? 'Suppression...' : 'Confirmer la suppression' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>

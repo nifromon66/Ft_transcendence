@@ -7,18 +7,19 @@ from admin_management.services import (
     is_last_admin,
     lock_administrators,
 )
-from config import UPLOAD_FOLDER
-from extensions import db, online_users, socketio
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from sqlalchemy import and_, or_, select
+from sqlalchemy.exc import SQLAlchemyError
+
+from config import UPLOAD_FOLDER
+from extensions import db, limiter, online_users, socketio
 from models import User
 from models.association import friend
 from models.user_avatar_frame import UserAvatarFrame
-from sqlalchemy import and_, or_, select
-from sqlalchemy.exc import SQLAlchemyError
 from user_xp_management.leveling import get_xp_progress
 from user_xp_management.rewards import FRAME_LEVELS, get_active_frame, get_level_rewards
 from utils.file_services import delete_file_physically, handle_file_upload
@@ -118,7 +119,7 @@ def upload_avatar():
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+        return jsonify({"success": False, "error": "Compte inactif ou supprimé"}), 200
 
     max_mb = MAX_AVATAR_SIZE // (1024 * 1024)
 
@@ -126,7 +127,7 @@ def upload_avatar():
         return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
 
     if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+        return jsonify({"success": False, "error": "No file part in the request"}), 200
 
     file = request.files["file"]
     file_data, err_resp, err_code = handle_file_upload(
@@ -325,27 +326,28 @@ def get_public_profile(user_id):
 
 
 @users_bp.route("/avatars/<filename>", methods=["GET"])
+@limiter.exempt
 @jwt_required()
 def get_avatar_file(filename):
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"error": "Accès refusé"}), 403
+        return jsonify({"success": False, "error": "Accès refusé"}), 200
 
     avatar_folder = os.path.join(UPLOAD_FOLDER, "avatars")
     file_path = os.path.join(avatar_folder, filename)
 
     if not os.path.exists(file_path):
-        return jsonify({"success": False, "error": "Fichier introuvable"}), 404
+        return jsonify({"success": False, "error": "Fichier introuvable"}), 200
 
     try:
         mimetype = magic.from_file(file_path, mime=True)
     except (OSError, magic.MagicException):
-        return jsonify({"success": False, "error": "Fichier illisible"}), 422
+        return jsonify({"success": False, "error": "Fichier illisible"}), 200
 
     if mimetype not in ALLOWED_AVATAR_MIMETYPES:
-        return jsonify({"success": False, "error": "Type de fichier non autorisé"}), 415
+        return jsonify({"success": False, "error": "Type de fichier non autorisé"}), 200
 
     return send_from_directory(avatar_folder, filename, mimetype=mimetype)
 
@@ -355,10 +357,10 @@ def get_avatar_file(filename):
 def update_avatar_frame():
     data = request.get_json(silent=True)
     if not isinstance(data, dict) or "frame" not in data:
-        return jsonify({"success": False, "error": "Le cercle est requis."}), 400
+        return jsonify({"success": False, "error": "Le cercle est requis."}), 200
     frame = data["frame"]
     if frame is not None and (not isinstance(frame, str) or frame not in FRAME_LEVELS):
-        return jsonify({"success": False, "error": "Cercle invalide."}), 400
+        return jsonify({"success": False, "error": "Cercle invalide."}), 200
 
     try:
         # Serialize preference changes with other changes to this user's XP.
@@ -366,7 +368,7 @@ def update_avatar_frame():
             select(User).where(User.id == int(get_jwt_identity())).with_for_update()
         )
         if user is None or not user.is_active:
-            return jsonify({"success": False, "error": "Utilisateur introuvable"}), 404
+            return jsonify({"success": False, "error": "Utilisateur introuvable"}), 200
         if (
             frame is not None
             and get_xp_progress(user.xp)["level"] < FRAME_LEVELS[frame]

@@ -1,12 +1,13 @@
 import os
 
-from config import UPLOAD_FOLDER
-from extensions import db
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy.exc import SQLAlchemyError
+
+from config import UPLOAD_FOLDER
+from extensions import db, limiter
 from models import User
 from models.message import Message
-from sqlalchemy.exc import SQLAlchemyError
 from utils.file_services import handle_file_upload
 
 from .constants import (
@@ -21,11 +22,16 @@ messages_bp = Blueprint("messages_management", __name__, url_prefix="/messages")
 @messages_bp.route("/documents", methods=["POST"])
 @jwt_required()
 def upload_document():
+    """
+    Handles the upload of a document (PDF) for a chat message.
+    Verifies the file size, extension, and mimetype.
+    Returns the uploaded file details.
+    """
     user_id = get_jwt_identity()
     user = db.session.get(User, int(user_id))
 
     if user is None or not user.is_active:
-        return jsonify({"error": "Compte inactif ou supprimé"}), 403
+        return jsonify({"success": False, "error": "Compte inactif ou supprimé"}), 200
 
     max_mb = MAX_DOCUMENT_SIZE // (1024 * 1024)
 
@@ -33,7 +39,7 @@ def upload_document():
         return jsonify({"error": f"File too large (Max {max_mb}MB)"}), 413
 
     if "file" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+        return jsonify({"success": False, "error": "No file part in the request"}), 200
 
     file = request.files["file"]
     file_data, err_resp, err_code = handle_file_upload(
@@ -52,6 +58,9 @@ def upload_document():
 @messages_bp.route("/<int:friend_id>", methods=["GET"])
 @jwt_required()
 def get_chat_history(friend_id):
+    """
+    Retrieves the conversation history between the authenticated user and a given friend.
+    """
     current_user_id = int(get_jwt_identity())
 
     if current_user_id == friend_id:
@@ -64,7 +73,7 @@ def get_chat_history(friend_id):
 
     current_user = db.session.get(User, current_user_id)
     if not current_user or not current_user.is_active:
-        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     friends_list = current_user.get_friends()
     is_friend = any(f.id == friend_id for f in friends_list)
@@ -97,12 +106,11 @@ def get_chat_history(friend_id):
 
 
 @messages_bp.route("/documents/<path:filename>", methods=["GET"])
+@limiter.exempt
 def serve_document(filename):
-    import os
-
-    from config import UPLOAD_FOLDER
-    from flask import send_from_directory
-
+    """
+    Serves a specific document file from the uploads directory securely.
+    """
     docs_folder = os.path.join(UPLOAD_FOLDER, "documents")
     return send_from_directory(docs_folder, filename)
 

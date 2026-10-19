@@ -88,7 +88,7 @@ const saveProfileInfo = async () => {
         setTimeout(() => infoSuccessMessage.value = '', 3000)
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             infoErrorMessage.value = err.message
@@ -139,11 +139,11 @@ const submit2FaPassword = async () => {
         try {
             data = await response.json()
         } catch (parseError) {
-            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
-        if (!response.ok) {
-            throw new Error(data.error)
+        if (!response.ok || data.success === false) {
+            throw new Error(data.error || "Mot de passe incorrect.")
         }
 
         qrCodeUrl.value = data.qr_uri
@@ -178,10 +178,10 @@ const confirm2FaCode = async () => {
         try {
             data = await response.json()
         } catch (parseError) {
-            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`)
+            throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`, { cause: parseError })
         }
 
-        if (!response.ok) {
+        if (!response.ok || data.success === false) {
             if (response.status === 401) {
                 throw new Error("Le code est incorrect ou a expiré.")
             }
@@ -208,8 +208,8 @@ const copyRecoveryCodes = async () => {
         await navigator.clipboard.writeText(textToCopy)
         isCopied.value = true
         setTimeout(() => { isCopied.value = false }, 2000)
-    } catch (err) {
-
+    } catch {
+        // Ignore clipboard write failures
     }
 }
 
@@ -235,14 +235,14 @@ const confirmDelete = async () => {
         await deleteAccount(deletePassword.value, token)
 
         closeDeleteModal()
-        authStore.clearAuth()
+        await authStore.logout()
         router.push('/')
 
         alert("Votre compte a été supprimé avec succès.")
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
             closeDeleteModal()
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             deleteError.value = err.message || "Impossible de supprimer le compte."
@@ -291,11 +291,11 @@ const confirmDisable2Fa = async () => {
         let data = {}
         try {
             data = await response.json()
-        } catch (e) {
-
+        } catch {
+            // Ignore response parsing errors on disable 2FA
         }
 
-        if (!response.ok) {
+        if (!response.ok || data.success === false) {
             throw new Error(data.error || "Erreur lors de la désactivation.")
         }
 
@@ -330,7 +330,7 @@ onMounted(async () => {
         }
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
-            authStore.clearAuth()
+            await authStore.logout()
             router.push('/login')
         } else {
             errorMessage.value = err.message || "Impossible de charger le profil."
@@ -358,7 +358,7 @@ const handleDeleteAvatar = async () => {
     try {
         const token = authStore.token
 
-        const data = await deleteAvatar(token)
+        await deleteAvatar(token)
 
         if (avatarImageSrc.value) {
             URL.revokeObjectURL(avatarImageSrc.value)
@@ -453,8 +453,8 @@ const cancelEdit = () => {
                         <div class="group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden
                                 rounded-full border-4 border-primary-light bg-gray-200 text-4xl font-bold text-gray-500 shadow-md transition-all hover:border-primary"
                             @click="isEditingAvatar = !isEditingAvatar" title="Modifier l'avatar">
-                            <img v-if="avatarImageSrc" :src="avatarImageSrc" :alt="`Avatar de ${authStore.user.username}`"
-                                class="h-full w-full object-cover" />
+                            <img v-if="avatarImageSrc" :src="avatarImageSrc"
+                                :alt="`Avatar de ${authStore.user.username}`" class="h-full w-full object-cover" />
                             <span v-else-if="authStore.user.username">
                                 {{ authStore.user.username.charAt(0).toUpperCase() }}
                             </span>
@@ -508,12 +508,12 @@ const cancelEdit = () => {
                             <form @submit.prevent="saveProfileInfo" class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
-                                    <input v-model="editForm.username" type="text" required
+                                    <input id="edit-username" name="username" autocomplete="username" v-model="editForm.username" type="text" required
                                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input v-model="editForm.email" type="email" required
+                                    <input id="edit-email" name="email" autocomplete="email" v-model="editForm.email" type="email" required
                                         class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                 </div>
 
@@ -624,7 +624,7 @@ const cancelEdit = () => {
 
         <div v-if="isDeleteModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <form @submit.prevent="confirmDelete" class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                 <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer mon compte</h3>
 
                 <p class="text-gray-700 mb-4 text-sm">
@@ -637,50 +637,48 @@ const cancelEdit = () => {
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
-                    <input type="password" id="delete-password" v-model="deletePassword" placeholder="Mot de passe"
+                    <input type="password" id="delete-password" name="password" v-model="deletePassword" placeholder="Mot de passe"
                         autocomplete="current-password"
-                        class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500"
-                        @keyup.enter="confirmDelete">
+                        class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500">
                     <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button @click="closeDeleteModal"
+                    <button type="button" @click="closeDeleteModal"
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors">
                         Annuler
                     </button>
-                    <button @click="confirmDelete"
+                    <button type="submit"
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors">
                         ⚠️ Supprimer mon compte
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
         <div v-if="is2FaModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
 
-                <div v-if="twoFaStep === 1">
+                <form v-if="twoFaStep === 1" @submit.prevent="submit2FaPassword">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
-                    <input type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
-                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                        @keyup.enter="submit2FaPassword">
+                    <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
+                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
-                        <button @click="close2FaModal"
+                        <button type="button" @click="close2FaModal"
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
-                        <button @click="submit2FaPassword" :disabled="is2FaLoading"
+                        <button type="submit" :disabled="is2FaLoading"
                             class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition-colors">
                             {{ is2FaLoading ? 'Vérification...' : 'Continuer' }}
                         </button>
                     </div>
-                </div>
+                </form>
 
-                <div v-else-if="twoFaStep === 2">
+                <form v-else-if="twoFaStep === 2" @submit.prevent="confirm2FaCode">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Scanner le QR Code</h3>
                     <p class="text-gray-600 mb-4 text-sm text-center">Utilisez Google Authenticator pour scanner ce
                         QR
@@ -693,20 +691,19 @@ const cancelEdit = () => {
                         </div>
                     </div>
 
-                    <input type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                        @keyup.enter="confirm2FaCode">
+                    <input id="enable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
-                        <button @click="close2FaModal"
+                        <button type="button" @click="close2FaModal"
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Annuler</button>
-                        <button @click="confirm2FaCode" :disabled="is2FaLoading"
+                        <button type="submit" :disabled="is2FaLoading"
                             class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium">
                             {{ is2FaLoading ? 'Validation...' : 'Valider et Activer le 2FA' }}
                         </button>
                     </div>
-                </div>
+                </form>
 
                 <div v-else-if="twoFaStep === 3" class="animate-fade-in">
                     <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">Codes de récupération</h3>
@@ -747,7 +744,7 @@ const cancelEdit = () => {
 
         <div v-if="isDisable2FaModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <form @submit.prevent="confirmDisable2Fa" class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
 
                 <h3 class="text-xl font-bold text-gray-800 mb-4">Désactiver le 2FA</h3>
                 <p class="text-gray-600 mb-4 text-sm">
@@ -755,26 +752,25 @@ const cancelEdit = () => {
                     continuer.
                 </p>
 
-                <input type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
+                <input id="disable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
                     class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 
-                <input type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2"
-                    @keyup.enter="confirmDisable2Fa" />
+                <input id="disable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
 
                 <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
 
                 <div class="flex justify-end space-x-3 mt-4">
-                    <button @click="closeDisable2FaModal"
+                    <button type="button" @click="closeDisable2FaModal"
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">
                         Annuler
                     </button>
-                    <button @click="confirmDisable2Fa" :disabled="isDisable2FaLoading"
+                    <button type="submit" :disabled="isDisable2FaLoading"
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium disabled:opacity-50">
                         {{ isDisable2FaLoading ? 'Désactivation...' : 'Désactiver' }}
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
     </main>

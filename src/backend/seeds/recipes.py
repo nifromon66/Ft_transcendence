@@ -1,9 +1,10 @@
 import shutil
+from pathlib import Path
+
+from config import UPLOAD_FOLDER
 from extensions import db
 from models.recipe import Recipe
 from models.recipe_step import RecipeStep
-from pathlib import Path
-from config import UPLOAD_FOLDER
 
 recipes = [
     Recipe(
@@ -467,9 +468,7 @@ def seed_recipes():
         return
 
     source_folder = (
-        Path(__file__).resolve().parent.parent
-        / "assets"
-        / "seed_recipe_images"
+        Path(__file__).resolve().parent.parent / "assets" / "seed_recipe_images"
     )
 
     db.session.add_all(recipes)
@@ -481,12 +480,7 @@ def seed_recipes():
 
         source = source_folder / recipe.image_filename
 
-        destination_folder = (
-            Path(UPLOAD_FOLDER)
-            / "recipes"
-            / str(recipe.id)
-            / "cover"
-        )
+        destination_folder = Path(UPLOAD_FOLDER) / "recipes" / str(recipe.id) / "cover"
 
         destination_folder.mkdir(parents=True, exist_ok=True)
 

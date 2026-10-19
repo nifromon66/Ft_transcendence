@@ -15,7 +15,14 @@ RUN apt-get update \
 
 COPY src/backend/requirements.txt .
 
-RUN pip install -r requirements.txt
+ARG BACKEND_MAC_ARM="false"
+
+RUN if [ "$BACKEND_MAC_ARM" = "true" ]; then \
+        export RUSTFLAGS="-C target-cpu=generic" \
+        && pip install --no-cache-dir --no-binary=cryptography,cffi -r requirements.txt; \
+    else \
+        pip install --no-cache-dir -r requirements.txt; \
+    fi
 
 COPY src/backend .
 

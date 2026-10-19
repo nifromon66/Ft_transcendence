@@ -1,9 +1,10 @@
-from extensions import db, online_users, socketio
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy import and_, case, delete, insert, or_, select, update
+
+from extensions import db, online_users, socketio
 from models import User
 from models.association import friend
-from sqlalchemy import and_, case, delete, insert, or_, select, update
 
 friends_bp = Blueprint("friends", __name__)
 
@@ -23,7 +24,7 @@ def send_friend_request(target_user_id):
 
     target_user = db.session.get(User, target_user_id)
     if not target_user or not target_user.is_active:
-        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     existing_relation = (
         db.session.execute(
@@ -93,7 +94,7 @@ def accept_friend_request(sender_id):
     if not sender or not sender.is_active:
         return jsonify(
             {"success": False, "error": "Cet utilisateur n'existe plus."}
-        ), 404
+        ), 200
 
     stmt = select(friend).where(
         and_(
@@ -257,7 +258,7 @@ def get_friends():
 
     current_user = db.session.get(User, current_user_id)
     if not current_user:
-        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 404
+        return jsonify({"success": False, "error": "Utilisateur introuvable."}), 200
 
     friends_list = current_user.get_friends()
 

@@ -16,6 +16,8 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from extensions import bcrypt, db
 from user_xp_management.rewards import get_active_frame
 
 from .association import friend

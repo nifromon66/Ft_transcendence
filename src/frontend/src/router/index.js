@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import { useAuthStore } from '@/stores/authState'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
+import { useAuthStore } from '@/stores/authState.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -109,19 +110,50 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.token) return { name: 'login' }
   if (to.meta.permission || to.meta.refreshPermissions) {
     try { await auth.fetchUser() }
     catch { return { name: 'login' } }
     if (to.meta.permission && !auth.can(to.meta.permission)) return { name: 'forbidden' }
   }
+  const authStore = useAuthStore()
+  if (!authStore.isInitialized) {
+    if (!authStore.token) {
+      try {
+        await authStore.silentRefresh()
+      } catch {
+      }
+    }
+    authStore.isInitialized = true
+  }
+
+  const isAuthenticated = !!authStore.token
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return { name: 'login' }
+  }
+
+  const guestOnlyRoutes = ['login', 'register']
+  if (guestOnlyRoutes.includes(to.name) && isAuthenticated) {
+    return { name: 'welcome' }
+  }
 })
 
-router.onError((error) => {
+const isChunkLoadFailed = (error) => {
+  return error.name === 'ChunkLoadError' || (error.name === 'TypeError' && error.message.includes('dynamically imported module'))
+}
+
+
+router.onError((error, to) => {
   if (!navigator.onLine) {
     return
   }
+
+  if (isChunkLoadFailed(error)) {
+    window.location.href = to.fullPath
+    return
+  }
+
   throw error
 })
 

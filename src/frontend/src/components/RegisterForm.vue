@@ -1,16 +1,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authState'
 import ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
 import ProgressBar from './ProgressBar.vue'
 import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import { registerUser } from '@/services/authService'
-import { loginUser } from '@/services/authService'
 import { uploadAvatar } from '@/services/userService'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const username = ref('')
 const email = ref('')
@@ -35,11 +36,10 @@ const processFile = async (rawFile) => {
 
     errorMessage.value = ''
     avatarFile.value = optimizedFile
-  } catch (err) {
+  } catch {
     errorMessage.value = "Erreur lors du redimensionnement automatique de cette image."
     avatarFile.value = null
   }
-
 }
 
 const clearFile = () => {
@@ -51,27 +51,24 @@ async function register() {
   errorMessage.value = ''
 
   try {
-    await registerUser({
+    const registerToken = await registerUser({
       username: username.value,
       email: email.value,
       password: password.value
     })
 
     if (avatarFile.value) {
-      const token = await loginUser({
-        email: email.value,
-        password: password.value
-      })
-
       isUploading.value = true
       uploadProgress.value = 0
 
-      await uploadAvatar(token, avatarFile.value, (progress) => {
+      await uploadAvatar(registerToken, avatarFile.value, (progress) => {
         uploadProgress.value = progress
       })
     }
 
-    router.push('/login')
+    authStore.setAuth(registerToken, null)
+    await authStore.fetchUser()
+    router.push({ name: 'welcome' })
   } catch (error) {
     errorMessage.value = error.message || "Une erreur inattendue est survenue."
   } finally {
@@ -86,15 +83,15 @@ async function register() {
       <h2 class="mb-6 text-center text-2xl font-bold text-black">Inscription</h2>
       <form @submit.prevent="register" class="flex flex-col gap-0.5">
         <div>
-          <input v-model="username" id="username" placeholder="Nom d'utilisateur" autocomplete="username"
+          <input v-model="username" id="username" name="username" placeholder="Nom d'utilisateur" autocomplete="username"
             class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
-          <input v-model="email" id="email" type="email" placeholder="Email" autocomplete="email"
+          <input v-model="email" id="email" name="email" type="email" placeholder="Email" autocomplete="email"
             class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div>
-          <input v-model="password" id="password" type="password" placeholder="Mot de passe"
+          <input v-model="password" id="password" name="password" type="password" placeholder="Mot de passe" autocomplete="new-password"
             class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div style="margin: 15px 0;">

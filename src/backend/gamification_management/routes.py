@@ -1,23 +1,12 @@
-# TODO:
-# +xp
-# Requirements for obtaining the badges
-
-# routers : maybe later move functions routers in the folder backend/routers
-
-from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from extensions import db
 from models import Badge, User, UserBadge
 
-gamification_api = Blueprint("gamification_api", __name__)
-
-"""
-Award a badge to a user
-
-Returns:
-	True  -> user successfully awarded a badge
-	False -> user has already have it
-"""
+gamification_bp = Blueprint(
+    "gamification_management", __name__, url_prefix="/gamification"
+)
 
 
 def award_badge(
@@ -27,7 +16,13 @@ def award_badge(
     badge_id: int | None = None,
     badge: Badge | None = None,
 ) -> bool:
+    """
+    Award a badge to a user
 
+    Returns:
+            True  -> user successfully awarded a badge
+            False -> user has already have it
+    """
     if user is None:
         user = db.session.get(User, user_id)
         if user is None:
@@ -56,26 +51,31 @@ def award_badge(
     return True
 
 
-@gamification_api.route("/getbadge", methods=["POST"])
+@gamification_bp.route("/award", methods=["POST"])
 @jwt_required()
 def getbadge():
+    """
+    Attempts to award a specific badge to the authenticated user.
+    Validates eligibility before awarding.
+    """
     user_id = get_jwt_identity()
 
     data = request.get_json()
     if not data or "badge_id" not in data:
-        return jsonify({"error": "badge_id is required"}), 400
+        return jsonify({"success": False, "error": "badge_id is required"}), 200
     badge_id = data["badge_id"]
     badge = db.session.get(Badge, badge_id)
     if badge is None:
-        return jsonify({"error": "Badge not found"}), 404
+        return jsonify({"success": False, "error": "Badge not found"}), 200
 
     eligible = check_badge_eligibility(
         user_id=user_id,
         badge=badge,
     )
-    # todo
     if not eligible:
-        return jsonify({"error": "User is not eligible for this badge"}), 403
+        return jsonify(
+            {"success": False, "error": "User is not eligible for this badge"}
+        ), 403
 
     awarded = award_badge(
         user_id=user_id,
@@ -83,12 +83,13 @@ def getbadge():
     )
 
     if not awarded:
-        return jsonify({"error": "Badge already owned"}), 409
+        return jsonify({"success": False, "error": "Badge already owned"}), 200
 
     db.session.commit()
 
     return jsonify(
         {
+            "success": True,
             "message": "Badge awarded",
             "badge": {
                 "id": badge.id,
@@ -98,9 +99,13 @@ def getbadge():
     ), 201
 
 
-@gamification_api.route("/badges", methods=["GET"])
+@gamification_bp.route("/badges", methods=["GET"])
 @jwt_required()
 def display_badges():
+    """
+    Retrieves all available badges, indicating which ones the authenticated user owns
+    and which ones they are eligible for.
+    """
     user_id = get_jwt_identity()
 
     badges = db.session.scalars(db.select(Badge)).all()
@@ -142,7 +147,9 @@ def check_badge_eligibility(
     badge_id: int | None = None,
     badge: Badge | None = None,
 ) -> bool:
-
+    """
+    Checks if a user has met the requirements to earn a specific badge.
+    """
     if user is None:
         user = db.session.get(User, user_id)
         if user is None:

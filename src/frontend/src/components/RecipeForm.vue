@@ -195,7 +195,7 @@ onMounted(async () => {
           <label for="recipe-title" class="mb-1 block font-medium">
             Titre
           </label>
-          <input id="recipe-title" v-model.trim="recipe.title" type="text" required maxlength="150"
+          <input id="recipe-title" name="title" v-model.trim="recipe.title" type="text" required maxlength="150"
             placeholder="Ex. Soupe de légumes" class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
         </div>
@@ -204,7 +204,7 @@ onMounted(async () => {
           <label for="recipe-category" class="mb-1 block font-medium">
             Catégorie
           </label>
-          <select id="recipe-category" v-model="recipe.categoryId" required :disabled="isLoadingOptions" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
+          <select id="recipe-category" name="category" v-model="recipe.categoryId" required :disabled="isLoadingOptions" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-wait
                     disabled:bg-gray-100">
             <option disabled value="">
@@ -220,7 +220,7 @@ onMounted(async () => {
           <label for="recipe-description" class="mb-1 block font-medium">
             Description
           </label>
-          <textarea id="recipe-description" v-model.trim="recipe.description" rows="2" maxlength="100"
+          <textarea id="recipe-description" name="description" v-model.trim="recipe.description" rows="2" maxlength="100"
             @keydown.enter.prevent placeholder="Présente brièvement ta recette..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <p class="mt-1 text-right text-sm text-gray-500">
@@ -277,7 +277,7 @@ onMounted(async () => {
           <label for="recipe-cooking-time" class="mb-1 block font-medium">
             Temps de préparation (minutes)
           </label>
-          <input id="recipe-cooking-time" v-model.number="recipe.cookingTime" type="number" min="0" step="1"
+          <input id="recipe-cooking-time" name="cookingTime" v-model.number="recipe.cookingTime" type="number" min="0" step="1"
             placeholder="Ex. 30" class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
         </div>
@@ -286,7 +286,7 @@ onMounted(async () => {
           <label for="recipe-difficulty" class="mb-1 block font-medium">
             Difficulté
           </label>
-          <select id="recipe-difficulty" v-model="recipe.difficulty" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
+          <select id="recipe-difficulty" name="difficulty" v-model="recipe.difficulty" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200">
             <option value="">Choisir une difficulté</option>
             <option value="facile">Facile</option>
@@ -305,7 +305,7 @@ onMounted(async () => {
               Étape {{ index + 1 }}
             </label>
 
-            <textarea :id="`recipe-step-${step.id}`" v-model.trim="step.description" rows="3" required
+            <textarea :id="`recipe-step-${step.id}`" :name="`recipe-step-${step.id}`" v-model.trim="step.description" rows="3" required
               placeholder="Décris cette étape de la préparation..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2
                       focus:border-blue-500 focus:outline-none focus:ring-2
                       focus:ring-blue-200" />
@@ -370,7 +370,7 @@ onMounted(async () => {
       <fieldset :disabled="isCreatingIngredient || isSubmitting" class="space-y-3">
         <div v-for="(ingredient, index) in recipe.ingredients" :key="ingredient.id"
           class="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-          <select v-model="ingredient.categoryId" required :disabled="isLoadingOptions"
+          <select :id="`ingredient-cat-${index}`" :name="`ingredient-cat-${index}`" v-model="ingredient.categoryId" required :disabled="isLoadingOptions"
             :aria-label="`Catégorie de l'ingrédient ${index + 1}`"
             class="rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
             @change="ingredient.ingredientId = ''; ingredient.creationError = ''">
@@ -380,7 +380,7 @@ onMounted(async () => {
             </option>
           </select>
 
-          <select v-if="ingredient.categoryId" v-model="ingredient.ingredientId" required
+          <select :id="`ingredient-item-${index}`" :name="`ingredient-item-${index}`" v-if="ingredient.categoryId" v-model="ingredient.ingredientId" required
             :aria-label="`Ingrédient ${index + 1}`" class="rounded-md border border-gray-300 bg-white px-3 py-2
                     focus:border-blue-500 focus:outline-none focus:ring-2
                     focus:ring-blue-200">
@@ -394,7 +394,7 @@ onMounted(async () => {
             </option>
             <option value="new">Ajouter un nouvel ingrédient</option>
           </select>
-          <input v-model.trim="ingredient.quantity" type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`"
+          <input :id="`ingredient-qty-${index}`" :name="`ingredient-qty-${index}`" v-model.trim="ingredient.quantity" type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`"
             placeholder="Ex. 3 ou 250 g" class="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <button v-if="recipe.ingredients.length > 1" type="button"
@@ -406,7 +406,7 @@ onMounted(async () => {
               Nom du nouvel ingrédient
             </label>
             <div class="flex gap-2">
-              <input :id="`new-ingredient-${ingredient.id}`" v-model.trim="ingredient.newName" type="text"
+              <input :id="`new-ingredient-${ingredient.id}`" :name="`new-ingredient-${ingredient.id}`" v-model.trim="ingredient.newName" type="text"
                 maxlength="100" placeholder="Ex. Topinambour"
                 class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2"
                 @keydown.enter.prevent="saveNewIngredient(ingredient)" />

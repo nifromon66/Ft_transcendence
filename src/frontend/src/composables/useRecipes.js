@@ -18,7 +18,7 @@ export function useRecipes() {
       const data = await getRecipes(filters)
       recipes.value = data.recipes
       total.value = data.total
-    } catch (err) {
+    } catch {
       error.value = 'Impossible de charger les recettes.'
     } finally {
       loading.value = false

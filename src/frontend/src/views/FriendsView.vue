@@ -26,6 +26,31 @@ const {
 } = useFriends()
 
 const searchQuery = ref('')
+const friendToDelete = ref(null)
+const isDeletingFriend = ref(false)
+
+const openDeleteFriendModal = (user) => {
+    friendToDelete.value = user
+}
+
+const closeDeleteFriendModal = () => {
+    if (!isDeletingFriend.value) {
+        friendToDelete.value = null
+    }
+}
+
+const confirmDeleteFriend = async () => {
+    if (!friendToDelete.value || isDeletingFriend.value) return
+    isDeletingFriend.value = true
+    try {
+        await deleteFriend(friendToDelete.value.id)
+        friendToDelete.value = null
+    } catch {
+        // errorMessage is handled in useFriends
+    } finally {
+        isDeletingFriend.value = false
+    }
+}
 
 const handleSearch = async () => {
     if (searchQuery.value.trim() != '') {
@@ -105,8 +130,8 @@ onUnmounted(() => {
         <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Rechercher un utilisateur</h2>
 
-            <div class="flex gap-2 mb-6">
-                <input v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
+            <div class="flex flex-col sm:flex-row gap-2 mb-6">
+                <input id="search-friend" name="search-friend" v-model="searchQuery" type="text" placeholder="Entrez un pseudo..."
                     class="flex-1 px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
                     @keyup.enter="handleSearch" />
                 <button @click="handleSearch" :disabled="isLoading"
@@ -117,16 +142,16 @@ onUnmounted(() => {
 
             <ul v-if="searchResults.length > 0" class="space-y-3">
                 <li v-for="user in searchResults" :key="user.id"
-                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
 
                     <RouterLink :to="{ name: 'public-profile', params: { id: user.id } }"
-                        class="flex items-center gap-3 group cursor-pointer">
-                        <FriendAvatar :user="user" class="transition-transform group-hover:scale-105" />
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                        class="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                        <FriendAvatar :user="user" class="transition-transform group-hover:scale-105 shrink-0" />
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors truncate" :title="user.username">
                                 {{ user.username }}
                             </span>
-                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white shrink-0"
                                 :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
                                 :title="user.is_online ? 'En ligne' : 'Hors ligne'">
                             </span>
@@ -135,19 +160,16 @@ onUnmounted(() => {
 
                     <div class="flex gap-2">
                         <button v-if="user.friendship_status === 'none'" @click="addFriend(user.id)"
-                            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">Ajouter
-                            en ami</button>
+                            class="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition">Ajouter</button>
                         <button v-if="user.friendship_status === 'pending_sent'" @click="cancelRequest(user.id)"
-                            class="px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">Annuler
+                            class="shrink-0 px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">Annuler
                             la demande d'ami</button>
                         <button v-if="user.friendship_status === 'pending_received'" @click="acceptRequest(user.id)"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">Accepter
-                            la demande d'ami
+                            class="shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">Accepter
                         </button>
                         <button v-if="user.friendship_status === 'accepted'"
-                            @click="deleteFriend(user.id, user.username)"
-                            class="px-4 py-2 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
-                            l'ami
+                            @click="openDeleteFriendModal(user)"
+                            class="shrink-0 px-4 py-2 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
                         </button>
                     </div>
                 </li>
@@ -163,16 +185,16 @@ onUnmounted(() => {
             </h2>
             <ul class="space-y-3">
                 <li v-for="req in receivedRequestsList" :key="req.id"
-                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
 
                     <RouterLink :to="{ name: 'public-profile', params: { id: req.id } }"
-                        class="flex items-center gap-3 group cursor-pointer">
-                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105" />
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                        class="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105 shrink-0" />
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors truncate" :title="req.username">
                                 {{ req.username }}
                             </span>
-                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white shrink-0"
                                 :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
                                 :title="req.is_online ? 'En ligne' : 'Hors ligne'">
                             </span>
@@ -181,11 +203,11 @@ onUnmounted(() => {
 
                     <div class="flex gap-2">
                         <button @click="acceptRequest(req.id)"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">
-                            Accepter la demande d'ami</button>
+                            class="shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">
+                            Accepter</button>
                         <button @click="denyRequest(req.id)"
-                            class="px-4 py-2 bg-white text-red-600 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">
-                            Refuser la demande d'ami</button>
+                            class="shrink-0 px-4 py-2 bg-white text-red-600 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">
+                            Refuser</button>
                     </div>
                 </li>
             </ul>
@@ -199,16 +221,16 @@ onUnmounted(() => {
             </h2>
             <ul class="space-y-3">
                 <li v-for="req in sentRequestsList" :key="req.id"
-                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
 
                     <RouterLink :to="{ name: 'public-profile', params: { id: req.id } }"
-                        class="flex items-center gap-3 group cursor-pointer">
-                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105" />
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                        class="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                        <FriendAvatar :user="req" class="transition-transform group-hover:scale-105 shrink-0" />
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors truncate" :title="req.username">
                                 {{ req.username }}
                             </span>
-                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white shrink-0"
                                 :class="req.is_online ? 'bg-green-500' : 'bg-gray-300'"
                                 :title="req.is_online ? 'En ligne' : 'Hors ligne'">
                             </span>
@@ -216,13 +238,13 @@ onUnmounted(() => {
                     </RouterLink>
 
                     <button @click="cancelRequest(req.id)"
-                        class="px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">
-                        Annuler la demande d'ami</button>
+                        class="shrink-0 px-4 py-2 bg-white text-gray-600 border border-gray-300 text-sm font-medium rounded-md hover:bg-gray-100 transition">
+                        Annuler</button>
                 </li>
             </ul>
         </section>
 
-        <div class="grid md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Mes amis</h2>
                 <p v-if="friendsList.length === 0" class="text-gray-500 italic text-sm">
@@ -230,25 +252,24 @@ onUnmounted(() => {
                 </p>
                 <ul v-else class="space-y-3">
                     <li v-for="friend in friendsList" :key="friend.id"
-                        class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
 
                         <RouterLink :to="{ name: 'public-profile', params: { id: friend.id } }"
-                            class="flex items-center gap-3 group cursor-pointer">
-                            <FriendAvatar :user="friend" class="transition-transform group-hover:scale-105" />
-                            <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
-                                    {{ friend.username }}
-                                </span>
-                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                        class="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                            <FriendAvatar :user="friend" class="transition-transform group-hover:scale-105 shrink-0" />
+                            <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors truncate" :title="friend.username">
+                                {{ friend.username }}
+                            </span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white shrink-0"
                                     :class="friend.is_online ? 'bg-green-500' : 'bg-gray-300'"
                                     :title="friend.is_online ? 'En ligne' : 'Hors ligne'">
                                 </span>
                             </div>
                         </RouterLink>
 
-                        <button @click="deleteFriend(friend.id, friend.username)"
-                            class="px-3 py-1.5 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer
-                            cet ami</button>
+                        <button @click="openDeleteFriendModal(friend)"
+                            class="shrink-0 px-3 py-1.5 bg-white text-red-500 border border-red-200 text-sm font-medium rounded-md hover:bg-red-50 transition">Supprimer</button>
                     </li>
                 </ul>
             </section>
@@ -259,16 +280,16 @@ onUnmounted(() => {
                     le moment</p>
                 <ul v-else class="space-y-3">
                     <li v-for="user in discoverList" :key="user.id"
-                        class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
 
                         <RouterLink :to="{ name: 'public-profile', params: { id: user.id } }"
-                            class="flex items-center gap-3 group cursor-pointer">
-                            <FriendAvatar :user="user" class="transition-transform group-hover:scale-105" />
-                            <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
-                                    {{ user.username }}
-                                </span>
-                                <span class="h-2.5 w-2.5 rounded-full inline-block border border-white"
+                        class="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                            <FriendAvatar :user="user" class="transition-transform group-hover:scale-105 shrink-0" />
+                            <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors truncate" :title="user.username">
+                                {{ user.username }}
+                            </span>
+                            <span class="h-2.5 w-2.5 rounded-full inline-block border border-white shrink-0"
                                     :class="user.is_online ? 'bg-green-500' : 'bg-gray-300'"
                                     :title="user.is_online ? 'En ligne' : 'Hors ligne'">
                                 </span>
@@ -276,11 +297,35 @@ onUnmounted(() => {
                         </RouterLink>
 
                         <button @click="addFriend(user.id)"
-                            class="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium rounded-md hover:bg-blue-100 transition">
-                            Ajouter cet ami</button>
+                            class="shrink-0 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-medium rounded-md hover:bg-blue-100 transition">
+                            Ajouter</button>
                     </li>
                 </ul>
             </section>
+        </div>
+
+        <!-- Modal confirmation suppression ami -->
+        <div v-if="friendToDelete"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+            role="dialog" aria-modal="true" aria-labelledby="modal-delete-friend-title">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <h3 id="modal-delete-friend-title" class="text-xl font-bold text-gray-800 mb-4">
+                    Retirer de vos amis
+                </h3>
+                <p class="text-gray-600 mb-6 text-sm">
+                    Êtes-vous sûr de vouloir retirer <span class="font-semibold text-gray-900">{{ friendToDelete.username }}</span> de vos amis ?
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeDeleteFriendModal" :disabled="isDeletingFriend"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors disabled:opacity-50">
+                        Annuler
+                    </button>
+                    <button type="button" @click="confirmDeleteFriend" :disabled="isDeletingFriend"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors disabled:opacity-50">
+                        {{ isDeletingFriend ? 'Suppression...' : 'Confirmer' }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>

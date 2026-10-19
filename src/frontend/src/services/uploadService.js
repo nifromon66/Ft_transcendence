@@ -18,7 +18,8 @@ export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgr
         formData.append('file', file)
 
         xhr.open('POST', `${baseUrl}${endpoint}`)
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        const tokenString = typeof token === 'object' && token !== null ? (token.token || token.access_token || '') : (token || '')
+        xhr.setRequestHeader('Authorization', `Bearer ${tokenString}`)
         xhr.setRequestHeader('Accept', 'application/json')
 
         xhr.upload.onprogress = (event) => {
@@ -36,11 +37,11 @@ export function uploadFileToServer(token, file, endpoint, fileTypeLabel, onProgr
                 return reject(new Error("Votre session a expiré. Veuillez vous reconnecter."))
             }
 
-            let responseData = {}
+            let responseData
             try {
                 responseData = JSON.parse(xhr.responseText)
             } catch (error) {
-                return reject(new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard."))
+                return reject(new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error }))
             }
 
             if (xhr.status >= 200 && xhr.status < 300) {

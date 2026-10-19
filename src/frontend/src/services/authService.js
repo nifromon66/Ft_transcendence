@@ -9,6 +9,7 @@ export async function registerUser(userData) {
     try {
         response = await fetch(`${baseUrl}/api/auth/register`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -16,7 +17,7 @@ export async function registerUser(userData) {
             body: JSON.stringify(userData)
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status >= 500) {
@@ -27,7 +28,7 @@ export async function registerUser(userData) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -48,6 +49,7 @@ export async function loginUser(credentials) {
     try {
         response = await fetch(`${baseUrl}/api/auth/login`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -55,7 +57,7 @@ export async function loginUser(credentials) {
             body: JSON.stringify(credentials)
         })
     } catch (error) {
-        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
     }
 
     if (response.status >= 500) {
@@ -66,7 +68,7 @@ export async function loginUser(credentials) {
     try {
         data = await response.json()
     } catch (error) {
-        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.")
+        throw new Error("Erreur de communication avec le serveur. Veuillez réessayer plus tard.", { cause: error })
     }
 
     if (!response.ok || data.success === false) {
@@ -80,5 +82,48 @@ export async function loginUser(credentials) {
     return {
         token: data.access_token,
         user: data.user
+    }
+}
+
+export async function refreshAccessToken() {
+    if (!navigator.onLine) {
+        throw new Error("Hors ligne")
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    const response = await fetch(`${baseUrl}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+
+    if (!response.ok) {
+        throw new Error("Session expirée")
+    }
+
+    const data = await response.json()
+    if (data.success === false) {
+        throw new Error(data.error || "Session expirée")
+    }
+
+    return data.access_token
+}
+
+export async function logoutUser() {
+    if (!navigator.onLine) return;
+
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    try {
+        await fetch(`${baseUrl}/api/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+    } catch {
+        // Ignore network errors during logout
     }
 }

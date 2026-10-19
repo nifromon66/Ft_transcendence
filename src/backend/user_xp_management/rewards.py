@@ -1,4 +1,5 @@
 """Avatar rewards are available according to the user's current level."""
+
 from .leveling import get_xp_progress
 
 AVATAR_REWARDS = (

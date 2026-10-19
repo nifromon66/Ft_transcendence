@@ -11,13 +11,28 @@ export default defineConfig([
     files: ['**/*.{vue,js,mjs,jsx}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/dev-dist/**']),
 
   {
     languageOptions: {
       globals: {
         ...globals.browser,
+        ...globals.node,
       },
+    },
+    rules: {
+      'vue/multi-word-component-names': [
+        'error',
+        {
+          ignores: ['Burger'],
+        },
+      ],
+      'no-empty': [
+        'error',
+        {
+          allowEmptyCatch: true,
+        },
+      ],
     },
   },
 
