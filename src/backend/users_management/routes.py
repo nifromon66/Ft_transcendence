@@ -12,6 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from config import UPLOAD_FOLDER
 from extensions import db, limiter, online_users, socketio
+from gamification_management.routes import check_badge_eligibility
 from models import Badge, User
 from models.association import friend
 from models.user_avatar_frame import UserAvatarFrame
@@ -315,7 +316,8 @@ def get_public_profile(user_id):
             "id": badge.id,
             "name": badge.name,
             "description": badge.description,
-            "eligible": badge.id in (1, 2),
+            "logo_filename": badge.logo_filename,
+            "eligible": check_badge_eligibility(user=target_user, badge=badge),
             "owned": badge.id in owned_badges,
         }
         for badge in db.session.scalars(select(Badge)).all()

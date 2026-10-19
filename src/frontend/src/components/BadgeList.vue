@@ -1,4 +1,16 @@
 <script setup>
+const badgeLogos = import.meta.glob('../assets/badges/*', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+})
+
+const logoFor = (filename) => {
+  if (!filename) return undefined
+  const entry = Object.entries(badgeLogos).find(([path]) => path.endsWith(`/${filename}`))
+  return entry?.[1]
+}
+
 defineProps({
   badges: {
     type: Array,
@@ -18,7 +30,11 @@ defineEmits(['claim-badge'])
     <article v-for="badge in badges" :key="badge.id"
       class="flex flex-col justify-between rounded-xl border border-gray-200 bg-gray-50 p-5">
       <div>
-        <h3 class="text-lg font-semibold text-gray-800">{{ badge.name }}</h3>
+        <div class="flex items-center gap-3">
+          <img v-if="logoFor(badge.logo_filename)" :src="logoFor(badge.logo_filename)" :alt="`${badge.name} logo`"
+            class="h-12 w-12 shrink-0 object-contain" />
+          <h3 class="text-lg font-semibold text-gray-800">{{ badge.name }}</h3>
+        </div>
         <p class="mt-2 text-sm text-gray-600">{{ badge.description }}</p>
       </div>
       <button :disabled="!canClaim || !badge.eligible || badge.owned" @click="$emit('claim-badge', badge.id)"
