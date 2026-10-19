@@ -1,6 +1,5 @@
 import os
 
-from admin_management.routes import admin_bp
 from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix

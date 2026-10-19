@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Text
@@ -71,4 +71,4 @@ class Comment(db.Model):
         elif parent is not None:
             self.parent = parent
 
-        self.created_at = datetime.now(timezone.utc)
+        self.created_at = datetime.now(UTC)

@@ -1,12 +1,6 @@
 import os
 
 import magic
-from admin_management.services import (
-    anonymize,
-    cleanup_account,
-    is_last_admin,
-    lock_administrators,
-)
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
@@ -238,15 +232,21 @@ def delete_my_account():
     if not user.is_active or user.deleted_at:
         return jsonify(success=False, error="Compte désactivé."), 401
     if is_last_admin(user, administrators):
-        return jsonify(success=False, error="Le dernier administrateur actif doit être conservé."), 409
+        return jsonify(
+            success=False, error="Le dernier administrateur actif doit être conservé."
+        ), 409
     try:
         avatar = anonymize(user)
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()
-        return jsonify(success=False, error="Erreur lors de la suppression du compte."), 500
+        return jsonify(
+            success=False, error="Erreur lors de la suppression du compte."
+        ), 500
     cleanup_account(user.id, avatar)
-    return jsonify(success=True, message="Votre compte a été supprimé avec succès."), 200
+    return jsonify(
+        success=True, message="Votre compte a été supprimé avec succès."
+    ), 200
 
 
 @users_bp.route("/me", methods=["GET"])
@@ -274,7 +274,9 @@ def me():
 @users_bp.route("", methods=["GET"])
 @jwt_required()
 def get_users():
-    users = db.session.execute(select(User).where(User.is_active.is_(True))).scalars().all()
+    users = (
+        db.session.execute(select(User).where(User.is_active.is_(True))).scalars().all()
+    )
     return jsonify(
         {
             "success": True,

@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime, timezone
 
-from extensions import db, socketio
 from flask import g
+from sqlalchemy import select
+
+from extensions import db, socketio
 from models import User
 from models.admin_audit import AdminAudit
-from sqlalchemy import select
 
 
 def audit(action, target_type, target_id, **details):
@@ -66,6 +67,7 @@ def disconnect_account(user_id):
 
 def cleanup_account(user_id, avatar=None):
     from flask import current_app
+
     from utils.file_services import delete_file_physically
 
     disconnect_account(user_id)
