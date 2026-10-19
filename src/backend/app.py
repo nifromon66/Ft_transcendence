@@ -5,6 +5,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from admin_management.routes import admin_bp
 from auth_management.auth_2fa import auth_2fa_bp
 from auth_management.auth_oauth import auth_oauth_bp
 from auth_management.routes import auth_bp
@@ -209,8 +210,8 @@ with app.app_context():
 
 
 app.register_blueprint(admin_bp)
-app.register_blueprint(ingredient_bp)
 app.register_blueprint(gamification_bp)
+app.register_blueprint(ingredient_bp)
 app.register_blueprint(friends_bp)
 app.register_blueprint(recipes_bp)
 app.register_blueprint(users_bp)

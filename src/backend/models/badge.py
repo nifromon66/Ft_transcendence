@@ -21,14 +21,24 @@ class Badge(db.Model):
 
     description: Mapped[str | None] = mapped_column(Text)
 
+    logo_filename: Mapped[str | None] = mapped_column(String(255))
+
     users: Mapped[list[UserBadge]] = relationship(
         back_populates="badge", cascade="all, delete-orphan"
     )
 
-    def __init__(self, *, id: int | None, name: str, description: str | None = None):
+    def __init__(
+        self,
+        *,
+        id: int | None,
+        name: str,
+        description: str | None = None,
+        logo_filename: str | None = None,
+    ):
         self.id = id
         self.name = name
         self.description = description
+        self.logo_filename = logo_filename
 
 
 class BadgeType(IntEnum):

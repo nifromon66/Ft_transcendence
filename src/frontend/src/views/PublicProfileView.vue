@@ -5,9 +5,11 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import XpBar from '@/components/XpBar.vue'
 import AvatarFrame from '@/components/AvatarFrame.vue'
 import LevelRewards from '@/components/LevelRewards.vue'
+import BadgeList from '@/components/BadgeList.vue'
 import { useAuthStore } from '@/stores/authState'
 import { fetchPublicProfile, updateAvatarFrame } from '@/services/userService'
 import { fetchAvatarBlob } from '@/services/userService'
+import { claimBadgeApi } from '@/services/badgeService'
 
 import {
     sendFriendRequest,
@@ -37,6 +39,23 @@ const profile = ref(null)
 const avatarImageSrc = ref(null)
 const isRewardSaving = ref(false)
 const rewardError = ref('')
+const isClaimingBadge = ref(false)
+const badgeError = ref('')
+
+const claimBadge = async (badgeId) => {
+    if (profile.value?.friendship_status !== 'self' || isClaimingBadge.value) return
+
+    isClaimingBadge.value = true
+    badgeError.value = ''
+    try {
+        await claimBadgeApi(badgeId)
+        profile.value = await fetchPublicProfile(props.id, authStore.token)
+    } catch (error) {
+        badgeError.value = error.message || 'Impossible de réclamer ce badge.'
+    } finally {
+        isClaimingBadge.value = false
+    }
+}
 
 const selectAvatarFrame = async (frame) => {
     if (isRewardSaving.value || profile.value?.friendship_status !== 'self') return
@@ -306,6 +325,17 @@ onUnmounted(() => {
         <LevelRewards v-if="profile && !isLoading && !errorMessage" :rewards="profile.level_rewards || []"
             :selected="profile.avatar_frame" :editable="profile.friendship_status === 'self'" :saving="isRewardSaving"
             :error="rewardError" @select="selectAvatarFrame" />
+
+        <section v-if="profile && !isLoading && !errorMessage"
+            class="mx-auto mt-6 max-w-2xl rounded-xl bg-white p-8 shadow-lg">
+            <h2 class="mb-5 border-b border-gray-200 pb-4 text-2xl font-bold text-gray-800">Badges</h2>
+            <p v-if="badgeError" class="mb-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+                {{ badgeError }}
+            </p>
+            <p v-if="isClaimingBadge" class="mb-4 text-sm text-gray-500">Réclamation du badge...</p>
+            <BadgeList :badges="profile.badges || []" :can-claim="profile.friendship_status === 'self'"
+                @claim-badge="claimBadge" />
+        </section>
 
 
 

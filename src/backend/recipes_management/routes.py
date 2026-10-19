@@ -1,10 +1,6 @@
 import os
 
 import magic
-from admin_management.services import audit
-from auth_management.decorators import can, permission_required
-from config import UPLOAD_FOLDER
-from extensions import db, limiter
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
@@ -13,7 +9,11 @@ from flask_jwt_extended import (
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import safe_join
- 
+
+from admin_management.services import audit
+from auth_management.decorators import can, permission_required
+from config import UPLOAD_FOLDER
+from extensions import db, limiter
 from models import (
     Category,
     Ingredient,
@@ -861,7 +861,7 @@ def get_recipes():
     if sort_order.upper() == "DESC":
         column = column.desc().nulls_last() if sort_by == "rating" else column.desc()
     else:
-        column = column.asc().nulls_last() if sort_by == "rating" else column.asc()
+        column = column.asc().nulls_first() if sort_by == "rating" else column.asc()
 
     query = query.order_by(column)
 
