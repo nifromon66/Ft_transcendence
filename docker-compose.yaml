@@ -25,7 +25,7 @@ services:
     expose:
       - "${AIMODEL_EXPOSE_PORT}"
     healthcheck:
-      test: ["CMD-SHELL", "ollama show \"$$RECIPE_AI_MODEL\" >/dev/null 2>&1 && ollama ps | grep -q \"$$RECIPE_AI_MODEL\""]
+      test: [ "CMD-SHELL", "ollama show \"$$RECIPE_AI_MODEL\" >/dev/null 2>&1 && ollama ps | grep -q \"$$RECIPE_AI_MODEL\"" ]
       interval: ${AIMODEL_HEALTHCHECK_INTERVAL}
       timeout: ${AIMODEL_HEALTHCHECK_TIMEOUT}
       retries: ${AIMODEL_HEALTHCHECK_RETRIES}
@@ -51,16 +51,11 @@ services:
       - ${VAULT_TMPFS_TMP_PATH}
       - ${VAULT_TMPFS_RUN_PATH}
     volumes:
-      - ${VAULT_VOLUME_INIT_IN}:${VAULT_VOLUME_INIT_OUT}
-      #- ${VAULT_VOLUME_DATA_IN}:${VAULT_VOLUME_DATA_OUT}
-      - vault_data:${VAULT_VOLUME_DATA_OUT}
-      - ${VAULT_VOLUME_LOGS_IN}:${VAULT_VOLUME_LOGS_OUT}
-      - ${VAULT_VOLUME_CERTS_IN}:${VAULT_VOLUME_CERTS_OUT}
-      #- ${VAULT_VOLUME_APPROLES_IN}:${VAULT_VOLUME_APPROLES_OUT}
-      - vault_approles:${VAULT_VOLUME_APPROLES_OUT}
       - vault_init:/vault/init
-      - vault_tls:/vault/tls
+      - vault_data:${VAULT_VOLUME_DATA_OUT}
       - vault_logs:/vault/logs
+      - vault_tls:/vault/tls
+      - vault_approles:${VAULT_VOLUME_APPROLES_OUT}
     expose:
       - "${VAULT_EXPOSE_API_PORT}"
     healthcheck:
@@ -195,25 +190,17 @@ services:
 volumes:
   ollama_data:
   db_data:
-    name: db_data
   vault_approles:
-    name: vault_approles
   vault_data:
-    name: vault_data
   vault_init:
-    name: vault_init
   vault_tls:
-    name: vault_tls
   vault_logs:
-    name: vault_logs
   waf_ssl:
-    name: waf_ssl
   waf_logs:
-    name: waf_logs
 
-##########################################
-# Networks                               #
-##########################################
+    ##########################################
+    # Networks                               #
+    ##########################################
 networks:
   vault-network:
     name: ${VAULT_NETWORK}
