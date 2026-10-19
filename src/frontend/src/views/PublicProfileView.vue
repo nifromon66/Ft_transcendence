@@ -155,7 +155,24 @@ const goToChatWithFriend = async () => {
     }
 }
 
+const requestStatus = () => {
+    if (socket && props.id) {
+        socket.emit('request_initial_status', [props.id])
+    }
+}
+
 onMounted(async () => {
+    if (socket) {
+        socket.on('user_status_changed', handleUserStatusChange)
+        socket.on('friendship_updated', handleFriendshipUpdated)
+        socket.on('user_profile_updated', handleProfileUpdated)
+        if (socket.connected) {
+            requestStatus()
+        } else {
+            socket.once('connect', requestStatus)
+        }
+    }
+
     try {
         const token = authStore.token
 
@@ -171,7 +188,8 @@ onMounted(async () => {
 
         profile.value = await fetchPublicProfile(props.id, token)
 
-        if (profile.value?.friendship_status === 'self') {
+        if (profile.value?.friendship_status === 'self' || String(props.id) === String(authStore.user?.id)) {
+            profile.value.is_online = true
             authStore.updateRewards(profile.value)
         }
 
@@ -189,12 +207,6 @@ onMounted(async () => {
     } finally {
         isLoading.value = false
     }
-
-    if (socket) {
-        socket.on('user_status_changed', handleUserStatusChange)
-        socket.on('friendship_updated', handleFriendshipUpdated)
-        socket.on('user_profile_updated', handleProfileUpdated)
-    }
 })
 
 onUnmounted(() => {
@@ -203,6 +215,7 @@ onUnmounted(() => {
     }
 
     if (socket) {
+        socket.off('connect', requestStatus)
         socket.off('user_status_changed', handleUserStatusChange)
         socket.off('friendship_updated', handleFriendshipUpdated)
         socket.off('user_profile_updated', handleProfileUpdated)

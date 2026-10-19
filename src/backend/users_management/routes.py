@@ -318,6 +318,7 @@ def get_public_profile(user_id):
 
     if current_user_id == user_id:
         status = "self"
+        public_data["is_online"] = True
     else:
         rel_stmt = select(friend).where(
             or_(

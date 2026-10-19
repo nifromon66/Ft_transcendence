@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import { useChatStore } from './stores/chatState.js'
 import { useAuthStore } from './stores/authState.js'
+import { connectSocket, disconnectSocket } from './services/socketService.js'
 
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
@@ -34,6 +35,7 @@ onMounted(async () => {
   authStore.initializeAuth()
 
   if (authStore.token) {
+    connectSocket(authStore.token)
     chatStore.initializeSocketListeners()
 
     setInterval(async () => {
@@ -50,7 +52,10 @@ onMounted(async () => {
 
 watch(() => authStore.token, (newToken) => {
   if (newToken) {
+    connectSocket(newToken)
     chatStore.initializeSocketListeners()
+  } else {
+    disconnectSocket()
   }
 })
 
