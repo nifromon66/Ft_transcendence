@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import { useAuthStore } from '@/stores/authState'
 import OAuthSuccessView from '@/views/OAuthSuccessView.vue'
 import { useAuthStore } from '@/stores/authState.js'
 
@@ -105,7 +104,6 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
-
   if (!authStore.isInitialized) {
     if (!authStore.token) {
       try {
@@ -120,6 +118,17 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { name: 'login' }
+  }
+
+  if (to.meta.permission || to.meta.refreshPermissions) {
+    try {
+      await authStore.fetchUser()
+    } catch {
+      return { name: 'login' }
+    }
+    if (to.meta.permission && !authStore.can(to.meta.permission)) {
+      return { name: 'forbidden' }
+    }
   }
 
   const guestOnlyRoutes = ['login', 'register']
