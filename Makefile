@@ -35,6 +35,13 @@ clean:
 prune:
 	docker system prune -f --volumes
 
-re: rebuild
+fclean:
+	-docker compose down -v --rmi all --remove-orphans 2>/dev/null || true
+	@if [ -n "$$(docker ps -q)" ]; then docker stop $$(docker ps -q) 2>/dev/null || true; fi
+	-docker system prune -a --volumes -f
+	@if [ -n "$$(docker volume ls -q)" ]; then docker volume rm -f $$(docker volume ls -q) 2>/dev/null || true; fi
+	@rm -rf src/backend/uploads 2>/dev/null || docker run --rm -v $(PWD)/src/backend:/app alpine rm -rf /app/uploads 2>/dev/null || true
 
-.PHONY: up rebuild down test-waf logs restart clean prune re insert-secrets
+re: fclean rebuild
+
+.PHONY: up rebuild down test-waf logs restart clean prune fclean re insert-secrets
