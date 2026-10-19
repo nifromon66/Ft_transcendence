@@ -1,10 +1,10 @@
-from auth_management.decorators import permission_required
-from extensions import db
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from auth_management.decorators import permission_required
+from extensions import db
 from models import Ingredient, IngredientCategory, RecipeIngredient
 
 from .analysis import check_ingredient_analysis

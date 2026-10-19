@@ -39,6 +39,7 @@ export const useAuthStore = defineStore('auth', {
 
         async initializeAuth() {
             if (this.token) {
+                connectSocket(this.token)
                 try { await this.fetchUser() } catch { /* La session invalide est effacée par fetchUser. */ }
             }
         },

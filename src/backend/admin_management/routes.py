@@ -1,10 +1,11 @@
+from flask import Blueprint, g, jsonify, request
+from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
 from auth_management.decorators import can, permission_required
 from auth_management.permissions import ROLES
 from extensions import db
-from flask import Blueprint, g, jsonify, request
 from models import Comment, Recipe, User
-from sqlalchemy import func, or_, select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .services import (
     anonymize,

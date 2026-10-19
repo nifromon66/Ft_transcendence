@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from extensions import db
-from models import Badge, User, UserBadge
+from models import Badge, Recipe, User, UserBadge
+from models.badge import BadgeType
 
 gamification_bp = Blueprint(
     "gamification_management", __name__, url_prefix="/gamification"
@@ -94,6 +95,7 @@ def getbadge():
             "badge": {
                 "id": badge.id,
                 "name": badge.name,
+                "logo_filename": badge.logo_filename,
             },
         }
     ), 201
@@ -132,13 +134,13 @@ def display_badges():
                 "id": badge.id,
                 "name": badge.name,
                 "description": badge.description,
+                "logo_filename": badge.logo_filename,
                 "eligible": eligible,
                 "owned": existing is not None,
             }
         )
 
     return jsonify(result), 200
-
 
 def check_badge_eligibility(
     *,
@@ -160,7 +162,13 @@ def check_badge_eligibility(
         if badge is None:
             raise ValueError("check_badge_eligibility: Badge not found")
 
-    user_id = user.id
-    badge_id = badge.id
+    recipe_count = db.session.scalar(
+        db.select(db.func.count(Recipe.id)).where(Recipe.user_id == user.id)
+    )
 
-    return bool(badge_id == 1 or badge_id == 2)
+    requirements = {
+        BadgeType.NEW_BEE: True,
+        BadgeType.FIRST_RECIPE: recipe_count >= 1,
+        BadgeType.RECIPE_MASTER: recipe_count >= 10,
+    }
+    return requirements.get(badge.id, False)
