@@ -849,7 +849,7 @@ def get_recipes():
     if sort_order.upper() == "DESC":
         column = column.desc().nulls_last() if sort_by == "rating" else column.desc()
     else:
-        column = column.asc().nulls_last() if sort_by == "rating" else column.asc()
+        column = column.asc().nulls_first() if sort_by == "rating" else column.asc()
 
     query = query.order_by(column)
 
