@@ -79,6 +79,6 @@ chmod 755 \
 
 chmod 644 \
     ${VAULT_APPROLE_BACKEND_ID_DIR}/* \
-    ${VAULT_APPROLE_BACKEND_ID_DIR}/*
+    ${VAULT_APPROLE_ADMIN_ID_DIR}/*
 
 log_ok "Generated AppRoles IDs."

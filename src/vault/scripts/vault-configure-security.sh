@@ -56,7 +56,7 @@ then
     log_ok "Vault admin role written."
 fi
 
-if ! vault_approle_ids_exist
+if ! vault_approles_valid
 then
     ${VAULT_SH_APPROLE_GENERATE_PATH}
 fi

@@ -84,6 +84,24 @@ vault_approle_ids_exist()
     [ -f "$VAULT_APPROLE_BACKEND_SECRET_ID_PATH" ]
 }
 
+vault_approle_valid() {
+    ROLE_ID_FILE="$1"
+    SECRET_ID_FILE="$2"
+
+    [ -s "$ROLE_ID_FILE" ] || return 1
+    [ -s "$SECRET_ID_FILE" ] || return 1
+
+    ROLE_ID="$(cat "$ROLE_ID_FILE")"
+    SECRET_ID="$(cat "$SECRET_ID_FILE")"
+
+    vault write         -tls-skip-verify         auth/approle/login         role_id="$ROLE_ID"         secret_id="$SECRET_ID" >/dev/null 2>&1
+    return $?
+}
+
+vault_approles_valid() {
+    vault_approle_valid "$VAULT_APPROLE_ADMIN_ROLE_ID_PATH" "$VAULT_APPROLE_ADMIN_SECRET_ID_PATH" &&     vault_approle_valid "$VAULT_APPROLE_BACKEND_ROLE_ID_PATH" "$VAULT_APPROLE_BACKEND_SECRET_ID_PATH"
+}
+
 vault_system_configured() {
     if vault_secret_enabled; then
         log_ok "Vault secrets enabled. Skipping secrets enabling..."
