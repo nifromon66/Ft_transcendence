@@ -634,7 +634,7 @@ const cancelEdit = () => {
                 </p>
 
                 <div v-if="!authStore.user?.oauth_provider" class="mb-6">
-                    <input type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
+                    <input id="delete-account-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
@@ -666,7 +666,7 @@ const cancelEdit = () => {
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
-                    <input type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
+                    <input id="enable-2fa-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
                     <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
                         class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
@@ -755,7 +755,7 @@ const cancelEdit = () => {
                     continuer.
                 </p>
 
-                <input type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly />
+                <input id="disable-2fa-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly />
                 <input id="disable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
                     class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 

@@ -42,8 +42,8 @@ onMounted(() => run(() => load()))
     <h1 class="text-3xl font-bold">Modération</h1>
     <p v-if="error" role="alert" class="text-red-700">{{ error }}</p>
     <template v-if="auth.can('content.moderate')">
-      <label>Contenus
-        <select v-model="kind" :disabled="busy" class="ml-3 rounded border bg-white text-black p-2" @change="run(() => load())">
+      <label for="moderation-kind">Contenus
+        <select id="moderation-kind" name="kind" v-model="kind" :disabled="busy" class="ml-3 rounded border bg-white text-black p-2" @change="run(() => load())">
           <option value="recipes">Recettes</option><option value="comments">Commentaires</option>
         </select>
       </label>

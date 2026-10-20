@@ -119,7 +119,7 @@ async function register() {
 
         <div class="mb-4 flex flex-col gap-2 text-sm text-gray-800">
           <label for="accept-terms" class="flex items-start gap-2 cursor-pointer">
-            <input id="accept-terms" v-model="acceptTerms" type="checkbox" required
+            <input id="accept-terms" name="accept-terms" v-model="acceptTerms" type="checkbox" required
               class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
             <span>
               J'ai lu et j'accepte les
@@ -131,7 +131,7 @@ async function register() {
           </label>
 
           <label for="accept-privacy" class="flex items-start gap-2 cursor-pointer">
-            <input id="accept-privacy" v-model="acceptPrivacy" type="checkbox" required
+            <input id="accept-privacy" name="accept-privacy" v-model="acceptPrivacy" type="checkbox" required
               class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
             <span>
               J'ai pris connaissance de la

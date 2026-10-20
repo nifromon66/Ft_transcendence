@@ -104,7 +104,7 @@ function cancelOAuth() {
             <form @submit.prevent="completeOAuth" class="flex flex-col gap-3">
                 <div class="mb-2 flex flex-col gap-2 text-sm text-gray-800">
                     <label for="oauth-accept-terms" class="flex items-start gap-2 cursor-pointer">
-                        <input id="oauth-accept-terms" v-model="acceptTerms" type="checkbox" required
+                        <input id="oauth-accept-terms" name="oauth-accept-terms" v-model="acceptTerms" type="checkbox" required
                             class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                         <span>
                             J'ai lu et j'accepte les
@@ -116,7 +116,7 @@ function cancelOAuth() {
                     </label>
 
                     <label for="oauth-accept-privacy" class="flex items-start gap-2 cursor-pointer">
-                        <input id="oauth-accept-privacy" v-model="acceptPrivacy" type="checkbox" required
+                        <input id="oauth-accept-privacy" name="oauth-accept-privacy" v-model="acceptPrivacy" type="checkbox" required
                             class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                         <span>
                             J'ai pris connaissance de la
