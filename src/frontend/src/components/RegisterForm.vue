@@ -107,7 +107,7 @@ async function register() {
             autocomplete="new-password" class="w-full rounded border p-2 bg-white font-semibold text-black" required />
         </div>
         <div style="margin: 15px 0;">
-          <label for="avatar">Photo de profil (optionnel)</label>
+          <label for="avatar" class="text-black font-medium">Photo de profil (optionnel)</label>
 
           <ImageDropZone v-if="!avatarFile" @file-selected="processFile" :disabled="isUploading" />
 
