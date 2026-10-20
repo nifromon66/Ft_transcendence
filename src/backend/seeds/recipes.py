@@ -209,7 +209,7 @@ recipes = [
             RecipeStep(
                 step_number=4,
                 description="Assaisonner de sel, poivre et une pincée de piment d'Espelette.",
-                image_filename="guacamole-maison-3.jpg",
+                image_filename="",
             ),
         ],
     ),
@@ -353,7 +353,7 @@ recipes = [
             RecipeStep(
                 step_number=5,
                 description="Répartir dans des ramequins et réserver au frais pendant au moins 4 heures.",
-                image_filename="mousse-au-chocolat.webp",
+                image_filename="",
             ),
         ],
     ),
