@@ -83,8 +83,6 @@ class RecipeIngredient(db.Model):
             self.recipe = recipe
         elif recipe_id is not None:
             self.recipe_id = recipe_id
-        else:
-            raise ValueError("Init RecipeIngredient: Db value must be provided")
 
         if ingredient is not None:
             self.ingredient = ingredient

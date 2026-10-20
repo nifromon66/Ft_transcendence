@@ -88,6 +88,8 @@ class Recipe(db.Model):
         difficulty: str | None = None,
         image_filename: str | None = None,
         steps: list[RecipeStep] | None = None,
+        ingredients: list[RecipeIngredient] | None = None,
+        tags: list[Tag] | None = None,
     ):
 
         if user is not None:
@@ -113,6 +115,8 @@ class Recipe(db.Model):
         self.updated_at = None
 
         self.steps = steps or []
+        self.ingredients = ingredients or []
+        self.tags = tags or []
 
     def update(
         self,
