@@ -823,7 +823,11 @@ def get_recipes():
             or_(
                 Recipe.title.ilike(search_pattern),
                 Recipe.description.ilike(search_pattern),
-                Recipe.ingredients.any(Ingredient.name.ilike(search_pattern)),
+                Recipe.ingredients.any(
+                    RecipeIngredient.ingredient.has(
+                        Ingredient.name.ilike(search_pattern)
+                    )
+                ),
                 Recipe.tags.any(Tag.name.ilike(search_pattern)),
             )
         )
