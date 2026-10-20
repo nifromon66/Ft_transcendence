@@ -13,7 +13,7 @@ recipes = [
         title="Carbonara classique",
         description="Un plat de pâtes italien traditionnel préparé avec des œufs, du parmesan et de la pancetta.",
         cooking_time=25,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="carbonara-e1521461363147-1024x670.jpg",
         steps=[
             RecipeStep(
@@ -49,7 +49,7 @@ recipes = [
         title="Bruschetta à la tomate",
         description="Une entrée italienne simple préparée avec des tomates fraîches, de l'ail, du basilic et du pain grillé.",
         cooking_time=15,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="Bruschetta-a-la-tomate.jpg",
         steps=[
             RecipeStep(
@@ -80,7 +80,7 @@ recipes = [
         title="Crêpes faciles",
         description="De délicieuses crêpes moelleuses, parfaites pour le petit-déjeuner.",
         cooking_time=20,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="crepes.jpeg",
         steps=[
             RecipeStep(
@@ -116,7 +116,7 @@ recipes = [
         title="Poulet au curry vert",
         description="Un curry thaïlandais parfumé au lait de coco, piment vert et légumes frais.",
         cooking_time=35,
-        difficulty="Moyen",
+        difficulty="moyen",
         image_filename="poulet-au-curry-vert.jpg",
         steps=[
             RecipeStep(
@@ -152,7 +152,7 @@ recipes = [
         title="Tarte Tatin classique",
         description="Une tarte aux pommes caramélisées renversée, symbole de la pâtisserie française.",
         cooking_time=50,
-        difficulty="Moyen",
+        difficulty="moyen",
         image_filename="tarte-tatin-1200.jpg",
         steps=[
             RecipeStep(
@@ -188,7 +188,7 @@ recipes = [
         title="Guacamole maison",
         description="Une sauce mexicaine fraîche à base d'avocats, de citron vert et de coriandre.",
         cooking_time=10,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="guacamole-maison-3.jpg",
         steps=[
             RecipeStep(
@@ -219,7 +219,7 @@ recipes = [
         title="Risotto aux champignons",
         description="Un plat de riz crémeux réconfortant parfumé au parmesan et champignons de paris.",
         cooking_time=40,
-        difficulty="Moyen",
+        difficulty="moyen",
         image_filename="risotto-champignons-960x540.png",
         steps=[
             RecipeStep(
@@ -255,7 +255,7 @@ recipes = [
         title="Salade Niçoise",
         description="Une salade estivale méditerranéenne complète au thon, œufs durs et olives.",
         cooking_time=20,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="i34581-salade-nicoise-rapide.jpeg",
         steps=[
             RecipeStep(
@@ -291,7 +291,7 @@ recipes = [
         title="Shakshuka",
         description="Un plat du Moyen-Orient composé d'œufs pochés dans une sauce tomate pimentée.",
         cooking_time=30,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="shakshuka.webp",
         steps=[
             RecipeStep(
@@ -327,7 +327,7 @@ recipes = [
         title="Mousse au chocolat",
         description="Un dessert classique gourmand, aérien et riche en chocolat noir.",
         cooking_time=15,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="mousse-au-chocolat.webp",
         steps=[
             RecipeStep(
@@ -363,7 +363,7 @@ recipes = [
         title="Soupe à l'oignon gratinée",
         description="Un grand classique français réconfortant surmonté de pain grillé et fromage fondu.",
         cooking_time=60,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="soupe-oignon-gratinee-delicieuse-et-reconfortante.webp",
         steps=[
             RecipeStep(
@@ -399,7 +399,7 @@ recipes = [
         title="Tacos au bœuf",
         description="Des tortillas garnies de viande hachée épicée, de fromage et de condiments frais.",
         cooking_time=20,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="tacos-au-boeuf-effiloche.jpeg",
         steps=[
             RecipeStep(
@@ -430,7 +430,7 @@ recipes = [
         title="Salmon Teriyaki",
         description="Pavé de saumon poêlé et nappé d'une sauce teriyaki sucrée-salée maison.",
         cooking_time=15,
-        difficulty="Facile",
+        difficulty="facile",
         image_filename="salmon-teriyaki-11.webp",
         steps=[
             RecipeStep(
