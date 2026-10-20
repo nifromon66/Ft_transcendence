@@ -5,20 +5,20 @@ from models.badge import BadgeType
 BADGES = [
     {
         "id": BadgeType.NEW_BEE,
-        "name": "New Bee",
-        "description": "Now you have your account",
+        "name": "Bienvenue",
+        "description": "Créez votre compte",
         "logo_filename": "gift-svgrepo-com.svg",
     },
     {
         "id": BadgeType.FIRST_RECIPE,
-        "name": "First Recipe",
-        "description": "Create your first recipe",
+        "name": "Débutant",
+        "description": "Créez votre première recette",
         "logo_filename": "hamburger-svgrepo-com.svg",
     },
     {
         "id": BadgeType.RECIPE_MASTER,
-        "name": "Recipe Master",
-        "description": "Create 10 recipes",
+        "name": "Chef",
+        "description": "Créez 10 recettes",
         "logo_filename": "the-medal-svgrepo-com.svg",
     },
 ]
