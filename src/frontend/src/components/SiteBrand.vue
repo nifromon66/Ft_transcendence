@@ -11,6 +11,6 @@ const emit = defineEmits(['select'])
     @click="emit('select')">
     <img :src="siteLogo" alt="" class="h-8 w-8" />
 
-    <span>Nom du Site</span>
+    <span>Kumio</span>
   </RouterLink>
 </template>

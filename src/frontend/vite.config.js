@@ -31,9 +31,9 @@ export default defineConfig({
         'maskable-icon-512x512.png'
       ],
       manifest: {
-        name: 'Mon application',
-        short_name: 'Mon app',
-        description: 'Description de mon application',
+        name: 'Kumio',
+        short_name: 'Kumio',
+        description: 'Kumio: Recettes de cuisine',
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: 'standalone',
