@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/authState'
 import ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
@@ -16,6 +16,8 @@ const authStore = useAuthStore()
 const username = ref('')
 const email = ref('')
 const password = ref('')
+const acceptTerms = ref(false)
+const acceptPrivacy = ref(false)
 const errorMessage = ref('')
 const avatarFile = ref(null)
 
@@ -50,11 +52,18 @@ const clearFile = () => {
 async function register() {
   errorMessage.value = ''
 
+  if (!acceptTerms.value || !acceptPrivacy.value) {
+    errorMessage.value = "Veuillez accepter les CGU et la politique de confidentialité."
+    return
+  }
+
   try {
     const registerToken = await registerUser({
       username: username.value,
       email: email.value,
-      password: password.value
+      password: password.value,
+      accept_terms: acceptTerms.value,
+      accept_privacy: acceptPrivacy.value
     })
 
     if (avatarFile.value) {
@@ -104,14 +113,50 @@ async function register() {
 
           <ProgressBar v-if="isUploading" :progress="uploadProgress" />
         </div>
-        <button type="submit" :disabled="isUploading"
-          class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700">
-          S'inscrire
+
+        <div class="mb-4 flex flex-col gap-2 text-sm text-gray-800">
+          <label for="accept-terms" class="flex items-start gap-2 cursor-pointer">
+            <input
+              id="accept-terms"
+              v-model="acceptTerms"
+              type="checkbox"
+              required
+              class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span>
+              J'ai lu et j'accepte les
+              <RouterLink :to="{ name: 'terms' }" class="text-blue-600 underline hover:text-blue-800">
+                Conditions générales d'utilisation
+              </RouterLink>
+            </span>
+          </label>
+
+          <label for="accept-privacy" class="flex items-start gap-2 cursor-pointer">
+            <input
+              id="accept-privacy"
+              v-model="acceptPrivacy"
+              type="checkbox"
+              required
+              class="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span>
+              J'ai pris connaissance de la
+              <RouterLink :to="{ name: 'privacy' }" class="text-blue-600 underline hover:text-blue-800">
+                Politique de confidentialité
+              </RouterLink>
+            </span>
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          :disabled="isUploading || !acceptTerms || !acceptPrivacy"
+          class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ isUploading ? 'Inscription en cours...' : "S'inscrire" }}
         </button>
       </form>
-      <p v-if="errorMessage" class="mt-4 h-6 text-center text-red-600">
-        {{ errorMessage }}
-      </p>
+      <p v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">{{ errorMessage }}</p>
     </div>
   </div>
 </template>

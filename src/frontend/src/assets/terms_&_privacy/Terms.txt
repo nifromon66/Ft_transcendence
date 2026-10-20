@@ -1,14 +1,104 @@
-1914 translation by H. Rackham
-"On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
+Dernière mise à jour : Octobre 2026
 
-Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+Bienvenue sur notre plateforme communautaire de partage de recettes de cuisine, réalisée dans le cadre du projet pédagogique ft_transcendence de l'école 42.
 
-1914 translation by H. Rackham
-"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
+En accédant à ce site et en utilisant nos services, vous acceptez sans réserve les présentes Conditions Générales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser la plateforme.
 
-Section 1.10.33 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
 
-The standard Lorem Ipsum passage, used since 1966
-"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+1. OBJET DU SERVICE
+
+La plateforme a pour vocation de permettre aux utilisateurs de :
+- Consulter, rechercher et découvrir des recettes de cuisine publiées par la communauté.
+- Créer, modifier et partager leurs propres recettes (titre, description, temps de préparation, ingrédients, étapes détaillées, tags et photographies).
+- Ajouter de nouveaux ingrédients au catalogue commun après validation automatisée de leur orthographe et de leur catégorie.
+- Interagir avec d'autres membres via un système d'amis, de profils publics et de messagerie instantanée.
+- Débloquer des récompenses honorifiques (points d'expérience, niveaux, badges et cadres d'avatar) liées à leur activité sur le site.
+
+Ce service est fourni à titre purement gratuit, éducatif et non commercial.
+
+
+2. INSCRIPTION, COMPTE UTILISATEUR ET SÉCURITÉ
+
+2.1. Création de compte
+La consultation de certaines pages est libre, mais l'accès aux fonctionnalités interactives (publication de recettes, ajout d'ingrédients, gestion d'amis, messagerie, profil) nécessite la création d'un compte utilisateur, soit via le formulaire d'inscription standard (nom d'utilisateur, adresse e-mail et mot de passe), soit via l'authentification tierce OAuth 2.0 (Intranet 42).
+
+2.2. Exactitude des informations
+Vous vous engagez à fournir des informations exactes et à choisir un nom d'utilisateur respectueux, qui n'usurpe pas l'identité d'un tiers et ne contrevient pas à l'ordre public.
+
+2.3. Sécurité des accès et Double Authentification (2FA)
+Vous êtes entièrement responsable de la confidentialité de vos identifiants de connexion. Afin de renforcer la protection de votre compte, la plateforme met à votre disposition une option d'authentification à deux facteurs (2FA par code temporel TOTP) ainsi que des codes de secours. Toute action effectuée depuis votre compte est réputée avoir été effectuée par vous.
+
+
+3. PUBLICATION DE CONTENUS ET RÈGLES DE BONNE CONDUITE
+
+3.1. Responsabilité des contenus publiés
+En publiant une recette, un ingrédient, une photographie, un avatar ou en envoyant un message privé (texte ou document joint), vous demeurez seul responsable des contenus que vous diffusez.
+
+3.2. Contenus strictement interdits
+Il est formellement interdit de publier, téléverser ou partager des contenus :
+- À caractère illicite, diffamatoire, injurieux, haineux, raciste, discriminatoire ou harcelant.
+- À caractère pornographique, violent ou portant atteinte à la dignité humaine.
+- Violant les droits d'auteur, le droit à l'image ou la propriété intellectuelle de tiers.
+- Contenant des virus, scripts malveillants, tentatives d'injection de commandes ou de prompts (prompt injection), ou fichiers corrompus destinés à compromettre la sécurité de la plateforme.
+- Présentant des conseils dangereux pour la santé ou encourageant la consommation de substances toxiques ou non comestibles.
+
+
+4. MESSAGERIE INSTANTANÉE ET INTERACTIONS SOCIALES
+
+La plateforme propose un système d'ajout d'amis et de messagerie privée en temps réel.
+- Les échanges entre utilisateurs doivent rester courtois et respectueux.
+- L'envoi de messages non sollicités en masse (spam) ou le harcèlement d'autres membres est strictement prohibé.
+- Les documents partagés dans la messagerie doivent respecter les formats et limites de taille autorisés par le service et ne contenir aucun élément malveillant.
+
+
+5. SYSTÈME DE GAMIFICATION (XP, NIVEAUX ET BADGES)
+
+Les points d'expérience (XP), niveaux, badges et cadres d'avatar sont attribués automatiquement selon votre participation (création de recettes, interactions communautaires).
+- Ces éléments ont une valeur purement symbolique et virtuelle au sein de la plateforme et ne peuvent faire l'objet d'aucun échange financier.
+- Toute tentative de manipulation artificielle ou d'exploitation de faille pour accumuler de l'expérience entraînera la réinitialisation du compte ou sa suspension.
+
+
+6. VÉRIFICATION ET ANALYSE AUTOMATISÉE PAR INTELLIGENCE ARTIFICIELLE
+
+La plateforme intègre un système automatisé de contrôle et de validation reposant sur un modèle d'intelligence artificielle local, chargé d'analyser les contenus avant leur enregistrement en base de données :
+- Analyse des recettes : Lors de la création ou de la modification d'une recette, l'IA vérifie uniquement que le contenu soumis correspond bien à une recette culinaire, contrôle l'orthographe et s'assure de l'absence d'incohérence manifeste entre le titre, la description, les ingrédients et les étapes de préparation.
+- Analyse des ingrédients : Lors de l'ajout d'un nouvel ingrédient, l'IA vérifie qu'il s'agit d'un produit réel et comestible utilisable en cuisine, que son orthographe est correcte et que la catégorie sélectionnée (Légumes, Fruits, Herbes et épices, Viandes, Poissons, Œufs et produits laitiers, Céréales et féculents, Épicerie, Autres) est la plus appropriée.
+- Rôle de filtre et correction : L'intelligence artificielle ne rédige pas et ne modifie pas les contenus à la place de l'utilisateur. En cas d'erreur ou d'incohérence détectée, l'enregistrement est refusé et un court motif explicatif est affiché afin de permettre à l'utilisateur de corriger sa saisie.
+- Indisponibilité et limites : Si le service d'analyse est temporairement indisponible ou si le texte soumis dépasse la taille maximale autorisée, la publication est bloquée par mesure de sécurité jusqu'au rétablissement du service ou raccourcissement du texte. Cette vérification automatisée ne remplace pas la vigilance humaine : chaque utilisateur reste seul juge de la sécurité alimentaire, de la cuisson et de la présence éventuelle d'allergènes avant toute préparation ou consommation.
+
+
+7. MODÉRATION, SANCTIONS ET RÉSILIATION
+
+7.1. Rôle de la modération
+Outre le contrôle automatisé à la soumission, les modérateurs et administrateurs de la plateforme veillent au respect des présentes CGU. Ils se réservent le droit de modifier ou de supprimer, sans préavis ni indemnité, toute recette, image ou contenu jugé inapproprié ou contraire aux règles.
+
+7.2. Suspension et bannissement
+En cas de manquement grave ou répété aux présentes CGU, l'équipe d'administration peut suspendre temporairement ou désactiver définitivement le compte de l'utilisateur concerné.
+
+7.3. Suppression du compte par l'utilisateur
+Vous pouvez à tout moment demander la suppression de votre compte depuis les paramètres de votre profil. Les modalités de traitement de vos données lors de la clôture du compte sont détaillées dans notre Politique de confidentialité.
+
+
+8. PROPRIÉTÉ INTELLECTUELLE
+
+8.1. Contenus de la plateforme
+L'architecture du site, son code source, son design et ses éléments graphiques réalisés par l'équipe du projet sont protégés. Toute reproduction non autorisée en dehors du cadre pédagogique de l'école 42 est interdite.
+
+8.2. Licence sur les contenus utilisateurs
+En publiant une recette ou une photographie sur la plateforme, vous conservez vos droits sur votre création, mais vous accordez à la plateforme une licence gratuite et non exclusive permettant d'afficher, de reproduire et de partager ce contenu auprès des autres utilisateurs du service.
+
+
+9. DISPONIBILITÉ DU SERVICE ET LIMITATION DE RESPONSABILITÉ
+
+- La plateforme étant hébergée et maintenue dans un cadre académique, elle est fournie « en l'état », sans garantie de disponibilité permanente. Des interruptions pour maintenance, mise à jour ou évaluation peuvent survenir à tout moment.
+- L'équipe du projet ne saurait être tenue responsable des dommages directs ou indirects résultant de l'utilisation du site, d'une perte de données, ni de la réalisation des recettes publiées par les membres (allergies alimentaires, intoxications, erreurs de dosage ou accidents domestiques).
+
+
+10. DONNÉES PERSONNELLES ET CONFIDENTIALITÉ
+
+La collecte et le traitement de vos données personnelles (adresse e-mail, pseudonyme, avatar, historique de messages et de recettes) sont régis par notre Politique de confidentialité, accessible à tout moment depuis le pied de page du site (/privacy).
+
+
+11. MODIFICATION DES CGU ET DROIT APPLICABLE
+
+Les présentes Conditions Générales d'Utilisation peuvent être mises à jour à tout moment afin de s'adapter aux évolutions fonctionnelles ou techniques de la plateforme. Les présentes conditions sont régies par le droit français.

@@ -103,13 +103,10 @@ async function confirm2FaLogin() {
     try {
       data = await response.json()
     } catch (e) {
-      throw new Error("Erreur serveur.", { cause: e })
+      throw new Error("Erreur de communication avec le serveur.", { cause: e })
     }
 
     if (!response.ok || data.success === false) {
-      if (response.status === 401) {
-        throw new Error("Le code est incorrect ou a expiré.")
-      }
       throw new Error(data.error || "Code invalide.")
     }
 
@@ -159,8 +156,8 @@ const loginWith42 = () => {
           <input v-model="email" type="email" id="email" name="email" autocomplete="email" placeholder="Email" required
             class="w-full rounded border p-2 bg-white font-semibold text-black" />
 
-          <input v-model="password" type="password" id="password" name="password" autocomplete="current-password" placeholder="Mot de passe" required
-            class="w-full rounded border p-2 bg-white font-semibold text-black" />
+          <input v-model="password" type="password" id="password" name="password" autocomplete="current-password"
+            placeholder="Mot de passe" required class="w-full rounded border p-2 bg-white font-semibold text-black" />
 
           <button type="submit" :disabled="isLoading"
             class="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700 disabled:opacity-50 mt-2">
@@ -196,12 +193,14 @@ const loginWith42 = () => {
 
         <form @submit.prevent="confirm2FaLogin" class="flex flex-col gap-2">
           <div v-if="!isRecoveryMode">
-            <input id="login-2fa-code" name="twofa-code" autocomplete="one-time-code" v-model="twoFaCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
+            <input id="login-2fa-code" name="twofa-code" autocomplete="one-time-code" v-model="twoFaCode" type="text"
+              inputmode="numeric" maxlength="6" placeholder="000000"
               class="w-full rounded border p-3 text-center font-mono text-2xl tracking-widest bg-white font-semibold text-black focus:border-blue-500 focus:outline-none" />
           </div>
 
           <div v-else class="animate-fade-in">
-            <input id="login-recovery-code" name="recovery-code" autocomplete="off" v-model="recoveryCode" type="text" maxlength="9" placeholder="XXXX-XXXX"
+            <input id="login-recovery-code" name="recovery-code" autocomplete="off" v-model="recoveryCode" type="text"
+              maxlength="9" placeholder="XXXX-XXXX"
               class="w-full rounded border p-3 text-center font-mono text-2xl tracking-widest bg-white font-semibold text-black focus:border-blue-500 focus:outline-none" />
           </div>
 

@@ -77,6 +77,10 @@ CORS(
             "origins": [frontend_url],
             "methods": ["POST", "OPTIONS"],
         },
+        r"/auth/oauth/complete": {
+            "origins": [frontend_url],
+            "methods": ["POST", "OPTIONS"],
+        },
         r"/users": {
             "origins": [frontend_url],
             "methods": ["GET", "POST", "OPTIONS"],

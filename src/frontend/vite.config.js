@@ -37,6 +37,7 @@ export default defineConfig({
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: 'standalone',
+        handle_links: 'not-preferred',
         icons: [
           {
             "src": "pwa-64x64.png",
