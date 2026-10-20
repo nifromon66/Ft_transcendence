@@ -461,6 +461,11 @@ export async function fetchRecipeById(id, token = null) {
     throw new Error("Impossible de contacter le serveur. Vérifiez votre connexion internet.", { cause: error })
   }
 
+  if (response.status === 401 && token) {
+    useAuthStore().clearAuth()
+    return fetchRecipeById(id, null)
+  }
+
   if (response.status === 404) {
     throw new Error("Recette introuvable.")
   }

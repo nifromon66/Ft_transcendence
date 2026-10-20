@@ -4,6 +4,7 @@ const apiUrl = import.meta.env.VITE_API_URL || ''
 
 export const socket = io(apiUrl, {
     path: '/socket.io/',
+    transports: ['websocket'],
     autoConnect: false,
     reconnection: true,
     reconnectionDelay: 1000,
@@ -13,14 +14,6 @@ export const socket = io(apiUrl, {
         const token = localStorage.getItem('token')
         cb({ token })
     }
-})
-
-socket.on('connect_error', () => {
-    setTimeout(() => {
-        if (!socket.connected && !socket.active && localStorage.getItem('token')) {
-            socket.connect()
-        }
-    }, 2000)
 })
 
 if (typeof window !== 'undefined') {
@@ -53,7 +46,15 @@ export const connectSocket = (token) => {
 }
 
 export const disconnectSocket = () => {
-    if (socket.connected || socket.active) {
+    if (socket.connected) {
         socket.disconnect()
+    } else if (socket.active) {
+        const closeWhenReady = () => {
+            socket.off('connect', closeWhenReady)
+            socket.off('connect_error', closeWhenReady)
+            socket.disconnect()
+        }
+        socket.on('connect', closeWhenReady)
+        socket.on('connect_error', closeWhenReady)
     }
 }

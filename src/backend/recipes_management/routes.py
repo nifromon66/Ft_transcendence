@@ -6,7 +6,10 @@ from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
+    verify_jwt_in_request,
 )
+from flask_jwt_extended.exceptions import JWTExtendedException
+from jwt.exceptions import PyJWTError
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import safe_join
@@ -941,7 +944,6 @@ def get_latest_recipes():
 
 
 @recipes_bp.route("/<int:recipe_id>", methods=["GET"])
-@jwt_required(optional=True)
 def get_recipe(recipe_id: int):
     recipe = db.session.get(Recipe, recipe_id)
 
@@ -954,7 +956,11 @@ def get_recipe(recipe_id: int):
         ), 200
 
     my_rating = None
-    identity = get_jwt_identity()
+    try:
+        verify_jwt_in_request(optional=True)
+        identity = get_jwt_identity()
+    except (JWTExtendedException, PyJWTError):
+        identity = None
 
     if identity is not None:
         user_id = int(identity)
