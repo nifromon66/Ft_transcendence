@@ -180,6 +180,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = jwt_secrets["secret_key"]
 
 app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(jwt_secrets.get("expiration", 3600))
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 2592000
 app.config["JWT_COOKIE_SECURE"] = True
 app.config["JWT_COOKIE_SAMESITE"] = "Lax"

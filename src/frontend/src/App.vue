@@ -37,17 +37,17 @@ onMounted(async () => {
   if (authStore.token) {
     connectSocket(authStore.token)
     chatStore.initializeSocketListeners()
-
-    setInterval(async () => {
-      if (authStore.token) {
-        try {
-          await authStore.silentRefresh()
-        } catch {
-          window.location.href = '/login'
-        }
-      }
-    }, 10 * 60 * 1000)
   }
+
+  setInterval(async () => {
+    if (authStore.token) {
+      try {
+        await authStore.silentRefresh()
+      } catch {
+        window.location.href = '/login'
+      }
+    }
+  }, 10 * 60 * 1000)
 })
 
 watch(() => authStore.token, (newToken) => {

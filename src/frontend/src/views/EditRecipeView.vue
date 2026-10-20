@@ -101,6 +101,12 @@ const submitRecipe = async (
   isSubmitting.value = true
 
   try {
+    try {
+      await authStore.silentRefresh()
+    } catch {
+      // Keep current token if silent refresh fails
+    }
+
     const updatedRecipe = await updateRecipe(
       authStore.token,
       props.id,
