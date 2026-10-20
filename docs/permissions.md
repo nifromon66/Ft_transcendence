@@ -1,63 +1,62 @@
-# Permissions et administration
+# Permissions and administration
 
-Le schéma est créé avec `db.create_all()` et les seeds après recréation de la base (`make re`). Aucune migration n’est nécessaire pour cette installation. Le compte de test seedé conserve le rôle `user`.
+The schema is created using `db.create_all()` and seeds after recreating the database (`make re`). No migration is required for this installation. The seeded test account keeps the `user` role.
 
-## Premier administrateur
+## First administrator
 
-Renseignez ces variables dans `.envs/.env.backend` avant `make re` :
+Set these variables in `.envs/.env.backend` before running `make re`:
 
 ```dotenv
 ADMIN_USERNAME=admin
 ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=choisissez-votre-mot-de-passe
+ADMIN_PASSWORD=choose-your-password
 ```
 
-Le seed crée ce compte avec le rôle `admin`, après le compte de test. Les trois variables sont facultatives mais doivent être renseignées ensemble ; l’email doit être différent de celui du compte de test. Un exemple figure dans `.envs/.env.backend.example`.
+The seed creates this account with the `admin` role after the test account. All three variables are optional, but must be provided together; the email must differ from the test account's email. An example is available in `.envs/.env.backend.example`.
 
-Un compte existant avec cet email n’est pas modifié : le seed ne réinitialise ni son mot de passe, ni son rôle, ni sa suspension à chaque redémarrage. Après une recréation de la base, le compte est créé à nouveau avec les valeurs de l’environnement.
+An existing account with this email is left unchanged: the seed does not reset its password, role, or suspension status on each restart. After the database is recreated, the account is created again using the environment values.
 
-Connectez-vous avec ce compte : les liens **Administration** et **Modération** apparaissent dans le menu.
+Sign in with this account: the **Administration** and **Moderation** links appear in the menu.
 
-## Rôles fixes
+## Fixed roles
 
 | Permission | user | moderator | admin |
 | --- | --- | --- | --- |
-| Publier des recettes | Oui | Oui | Oui |
-| Gérer ses propres recettes et son profil | Oui | Oui | Oui |
-| Modifier les recettes des autres (texte et images) | Non | Non | Oui |
-| Retirer les recettes et commentaires des autres | Non | Oui | Oui |
-| Modifier/supprimer les ingrédients partagés | Non | Oui | Oui |
-| Gérer les utilisateurs et attribuer les rôles | Non | Non | Oui |
+| Publish recipes | Yes | Yes | Yes |
+| Manage own recipes and profile | Yes | Yes | Yes |
+| Edit other users' recipes (text and images) | No | No | Yes |
+| Remove other users' recipes and comments | No | Yes | Yes |
+| Edit/delete shared ingredients | No | Yes | Yes |
+| Manage users and assign roles | No | No | Yes |
 
-Un visiteur non connecté n’a pas de rôle stocké en base. Les membres peuvent toujours créer un ingrédient depuis le formulaire de recette. Le rôle moderator permet de retirer du contenu ; seul admin peut aussi modifier le texte et les images des recettes des autres auteurs. Un commentaire retiré est remplacé par un texte de modération pour préserver les réponses.
+A visitor who is not signed in has no role stored in the database. Members can still create ingredients from the recipe form. The `moderator` role allows content removal; only `admin` can also edit the text and images of other authors' recipes. A removed comment is replaced with a moderation message to preserve replies.
 
-Les rôles et permissions sont définis dans `src/backend/auth_management/permissions.py`. Les rôles personnalisés ne font pas partie de cette implémentation.
+Roles and permissions are defined in `src/backend/auth_management/permissions.py`. Custom roles are outside the scope of this implementation.
 
 ## API
 
-Le proxy public ajoute `/api` aux routes Flask ci-dessous.
+The public proxy prefixes the Flask routes below with `/api`.
 
-| Route Flask | Fonction |
+| Flask route | Purpose |
 | --- | --- |
-| `GET /admin/users` | Liste paginée (`q`, `role`, `status`, `page`, `per_page`) |
-| `POST /admin/users` | Création avec `username`, `email`, `password`, `role` facultatif |
-| `GET /admin/users/<id>` | Informations administratives du compte |
-| `PATCH /admin/users/<id>` | Modification de `username`, `email` ou `is_active` |
-| `PATCH /admin/users/<id>/role` | Attribution d’un rôle via `role` |
-| `DELETE /admin/users/<id>` | Suppression avec anonymisation |
-| `GET /admin/moderation` | Contenus paginés (`kind=recipes` ou `kind=comments`) |
-| `DELETE /admin/comments/<id>` | Retrait du contenu d’un commentaire |
-| `DELETE /recipes/<id>` | Suppression par le propriétaire ou la modération |
+| `GET /admin/users` | Paginated list (`q`, `role`, `status`, `page`, `per_page`) |
+| `POST /admin/users` | Create an account with `username`, `email`, `password`, and optional `role` |
+| `GET /admin/users/<id>` | Administrative account information |
+| `PATCH /admin/users/<id>` | Update `username`, `email`, or `is_active` |
+| `PATCH /admin/users/<id>/role` | Assign a role using `role` |
+| `DELETE /admin/users/<id>` | Delete with anonymization |
+| `GET /admin/moderation` | Paginated content (`kind=recipes` or `kind=comments`) |
+| `DELETE /admin/comments/<id>` | Remove a comment's content |
+| `DELETE /recipes/<id>` | Delete by the owner or moderation staff |
 
-Comme pour l’inscription, la création administrative demande un mot de passe non vide, sans longueur minimale. La limite technique de bcrypt est de 72 octets UTF-8.
+As with registration, administrative account creation requires a non-empty password, with no minimum length. The technical bcrypt limit is 72 UTF-8 bytes.
 
-## Contrôles
+## Enforcement
 
-- Flask vérifie en base le compte actif et ses permissions sur chaque requête protégée ; Vue adapte la navigation et les boutons.
-- Les JWT temporaires de 2FA restent limités à la validation de connexion et sont refusés sur Socket.IO.
-- Une rétrogradation prend effet avec les JWT déjà délivrés.
-- Une suspension révoque les anciens JWT via `token_version` et ferme toutes les connexions Socket.IO du compte. La réactivation nécessite une nouvelle connexion.
-- Une suppression anonymise l’identité et efface le mot de passe, les identifiants OAuth et les secrets 2FA. Les contenus associés restent présents sous le nom « Utilisateur supprimé ».
-- Le dernier administrateur actif ne peut être suspendu, supprimé ou rétrogradé, y compris depuis la suppression personnelle. Des verrous PostgreSQL sérialisent ces changements.
-- Les profils publics n’exposent ni email, ni configuration d’authentification, ni permissions. `/users/me` et les réponses de connexion utilisent une représentation privée.
-- Les actions administratives et les retraits de contenu sont journalisés dans la table `admin_audits`, dans la même transaction que la modification.
+- Flask checks the active account and its permissions in the database on every protected request; Vue adjusts navigation and buttons accordingly.
+- Temporary 2FA JWTs remain restricted to login verification and are rejected on Socket.IO.
+- A role downgrade takes effect even for JWTs that have already been issued.
+- Suspending an account revokes previous JWTs through `token_version` and closes all of the account's Socket.IO connections. Reactivation requires signing in again.
+- Deletion anonymizes the identity and clears the password, OAuth credentials, and 2FA secrets. Associated content remains under the name “Deleted user”.
+- The last active administrator cannot be suspended, deleted, or downgraded, including through self-deletion. PostgreSQL locks serialize these changes.
+- Public profiles expose neither email addresses, authentication configuration, nor permissions. `/users/me` and login responses use a private representation.
