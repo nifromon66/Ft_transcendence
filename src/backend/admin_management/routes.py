@@ -9,7 +9,6 @@ from models import Comment, Recipe, User
 
 from .services import (
     anonymize,
-    audit,
     cleanup_account,
     disconnect_account,
     is_last_admin,
@@ -161,8 +160,6 @@ def create_user():
     user = User(**data)
     db.session.add(user)
     try:
-        db.session.flush()
-        audit("users.create", "user", user.id, role=user.role)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
@@ -207,12 +204,10 @@ def update_user(user_id):
     if duplicate_identity(data, user.id):
         return invalid("Email ou pseudo déjà utilisé.", 409)
     suspend = data.get("is_active") is False and user.is_active
-    before = {key: getattr(user, key) for key in data}
     for key, value in data.items():
         setattr(user, key, value)
     if suspend:
         user.token_version += 1
-    audit("users.update", "user", user.id, before=before, after=data)
     try:
         db.session.commit()
     except IntegrityError:
@@ -238,9 +233,7 @@ def change_role(user_id):
         return error
     if data["role"] != "admin" and is_last_admin(user, administrators):
         return invalid("Le dernier administrateur actif doit être conservé.", 409)
-    before = user.role
     user.role = data["role"]
-    audit("roles.assign", "user", user.id, before=before, after=user.role)
     db.session.commit()
     return jsonify(success=True, user=user.to_admin_dict())
 
@@ -254,7 +247,6 @@ def delete_user(user_id):
     if is_last_admin(user, administrators):
         return invalid("Le dernier administrateur actif doit être conservé.", 409)
     avatar = anonymize(user)
-    audit("users.delete", "user", user.id)
     db.session.commit()
     cleanup_account(user.id, avatar)
     return jsonify(success=True)
@@ -297,6 +289,5 @@ def remove_comment(comment_id):
         return invalid("Commentaire introuvable.", 404)
     comment.content = "[Commentaire retiré par la modération]"
     comment.is_removed = True
-    audit("comments.remove", "comment", comment.id)
     db.session.commit()
     return jsonify(success=True)

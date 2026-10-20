@@ -27,8 +27,8 @@ class Tag(db.Model):
     def __init__(self, name: str):
         self.name = name.capitalize()
 
-    def to_dict(self) -> dict:
+    def to_dict(self):
         return {
-            'id': self.id,
-            'name': self.name,
+            "id": self.id,
+            "name": self.name,
         }
