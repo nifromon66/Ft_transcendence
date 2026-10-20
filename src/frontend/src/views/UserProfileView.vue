@@ -225,7 +225,7 @@ const closeDeleteModal = () => {
 }
 
 const confirmDelete = async () => {
-    if (!deletePassword.value) {
+    if (!authStore.user?.oauth_provider && !deletePassword.value) {
         deleteError.value = "Veuillez renseigner votre mot de passe."
         return
     }
@@ -509,12 +509,12 @@ const cancelEdit = () => {
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
                                     <input id="edit-username" name="username" autocomplete="username" v-model="editForm.username" type="text" required
-                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <input id="edit-email" name="email" autocomplete="email" v-model="editForm.email" type="email" required
-                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
 
                                 <div class="flex space-x-3 pt-2">
@@ -633,7 +633,7 @@ const cancelEdit = () => {
                     contributions seront conservées, mais anonymisées.
                 </p>
 
-                <div class="mb-6">
+                <div v-if="!authStore.user?.oauth_provider" class="mb-6">
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
@@ -642,6 +642,7 @@ const cancelEdit = () => {
                         class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500">
                     <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
                 </div>
+                <p v-else-if="deleteError" class="text-red-500 text-xs mb-4">{{ deleteError }}</p>
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" @click="closeDeleteModal"
@@ -665,7 +666,7 @@ const cancelEdit = () => {
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
                     <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
-                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
+                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
@@ -692,7 +693,7 @@ const cancelEdit = () => {
                     </div>
 
                     <input id="enable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
+                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
@@ -753,10 +754,10 @@ const cancelEdit = () => {
                 </p>
 
                 <input id="disable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
-                    class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
+                    class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 
                 <input id="disable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
 
                 <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
 
