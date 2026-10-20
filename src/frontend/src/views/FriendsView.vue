@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useFriends } from '@/composables/useFriends'
+import { useAuthStore } from '@/stores/authState'
 import FriendAvatar from '@/components/FriendAvatar.vue'
-import { socket } from '@/services/socketService'
+import { socket, connectSocket } from '@/services/socketService'
+
+const authStore = useAuthStore()
 
 const {
     friendsList,
@@ -52,9 +55,25 @@ const confirmDeleteFriend = async () => {
     }
 }
 
+const requestAllStatuses = () => {
+    if (!socket || !socket.connected) return
+    const ids = [
+        ...friendsList.value.map(u => u.id),
+        ...discoverList.value.map(u => u.id),
+        ...sentRequestsList.value.map(u => u.id),
+        ...receivedRequestsList.value.map(u => u.id),
+        ...searchResults.value.map(u => u.id)
+    ].filter(Boolean)
+
+    if (ids.length > 0) {
+        socket.emit('request_initial_status', ids)
+    }
+}
+
 const handleSearch = async () => {
-    if (searchQuery.value.trim() != '') {
+    if (searchQuery.value.trim() !== '') {
         await performSearch(searchQuery.value)
+        requestAllStatuses()
     }
 }
 
@@ -73,6 +92,7 @@ const handleFriendshipUpdated = async () => {
     if (searchQuery.value.trim() !== '') {
         await performSearch(searchQuery.value)
     }
+    requestAllStatuses()
 }
 
 const handleProfileUpdated = (data) => {
@@ -93,7 +113,25 @@ const handleProfileUpdated = (data) => {
     updateNameInList(searchResults)
 }
 
+const onWindowFocus = () => {
+    requestAllStatuses()
+}
+
 onMounted(async () => {
+    if (authStore.token && (!socket || !socket.connected)) {
+        connectSocket(authStore.token)
+    }
+
+    if (socket) {
+        socket.on('user_status_changed', handleStatusChange)
+        socket.on('friendship_updated', handleFriendshipUpdated)
+        socket.on('user_profile_updated', handleProfileUpdated)
+        socket.on('connect', requestAllStatuses)
+    }
+
+    window.addEventListener('focus', onWindowFocus)
+    document.addEventListener('visibilitychange', onWindowFocus)
+
     await Promise.all([
         loadFriends(),
         loadReceivedRequests(),
@@ -101,18 +139,17 @@ onMounted(async () => {
         loadDiscoverUsers()
     ])
 
-    if (socket) {
-        socket.on('user_status_changed', handleStatusChange)
-        socket.on('friendship_updated', handleFriendshipUpdated)
-        socket.on('user_profile_updated', handleProfileUpdated)
-    }
+    requestAllStatuses()
 })
 
 onUnmounted(() => {
+    window.removeEventListener('focus', onWindowFocus)
+    document.removeEventListener('visibilitychange', onWindowFocus)
     if (socket) {
         socket.off('user_status_changed', handleStatusChange)
         socket.off('friendship_updated', handleFriendshipUpdated)
         socket.off('user_profile_updated', handleProfileUpdated)
+        socket.off('connect', requestAllStatuses)
     }
 })
 </script>

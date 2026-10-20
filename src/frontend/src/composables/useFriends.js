@@ -265,30 +265,20 @@ export function useFriends() {
     }
 
     const updateUserStatus = (userId, isOnline) => {
-        const friend = friendsList.value.find(f => f.id === userId)
-        if (friend) {
-            friend.is_online = isOnline
+        const idNum = Number(userId)
+        const updateInList = (listRef) => {
+            if (!listRef.value) return
+            const item = listRef.value.find(u => Number(u.id) === idNum)
+            if (item) {
+                item.is_online = isOnline
+            }
         }
 
-        const searchUser = searchResults.value.find(u => u.id === userId)
-        if (searchUser) {
-            searchUser.is_online = isOnline
-        }
-
-        const discoverUser = discoverList.value.find(u => u.id === userId)
-        if (discoverUser) {
-            discoverUser.is_online = isOnline
-        }
-
-        const sentUser = sentRequestsList.value.find(u => u.id === userId)
-        if (sentUser) {
-            sentUser.is_online = isOnline
-        }
-
-        const receivedUser = receivedRequestsList.value.find(u => u.id === userId)
-        if (receivedUser) {
-            receivedUser.is_online = isOnline
-        }
+        updateInList(friendsList)
+        updateInList(searchResults)
+        updateInList(discoverList)
+        updateInList(sentRequestsList)
+        updateInList(receivedRequestsList)
     }
 
     return {
