@@ -32,9 +32,9 @@ def validate_recipe_fields(data):
 
         description = description.strip() or None
 
-        if description is not None and len(description) > 100:
+        if description is not None and len(description) > 150:
             raise RecipeValidationError(
-                "La description ne peut pas dépasser 100 caractères"
+                "La description ne peut pas dépasser 150 caractères"
             )
 
     cooking_time = data.get("cooking_time")
