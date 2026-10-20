@@ -1,0 +1,86 @@
+Dernière mise à jour : 20 octobre 2026
+
+Cette politique décrit le traitement des données personnelles sur notre plateforme de partage de recettes, réalisée par des étudiants de l’école 42 dans le cadre du projet ft_transcendence.
+
+Version à compléter avant publication : les mentions entre crochets doivent être renseignées par l’équipe responsable du site.
+
+1. Responsable du traitement
+
+Le responsable du traitement détermine pourquoi et comment vos données sont utilisées.
+Identité et coordonnées : [À compléter : responsable du traitement et adresse].
+Contact pour les données personnelles : [À compléter : adresse email dédiée].
+
+2. Données collectées
+
+Lors d’une inscription classique, nous demandons un pseudonyme, une adresse email et un mot de passe. Ces informations sont nécessaires à la création du compte. Le mot de passe est enregistré sous forme de hachage, et non en clair.
+
+Si vous choisissez la connexion via l’intra 42, nous recevons de 42 votre identifiant, votre login et votre adresse email afin de créer votre compte ou de vous connecter. Nous ne recevons pas votre mot de passe 42.
+
+Selon votre utilisation, nous traitons également :
+- votre avatar, vos préférences de cadre d’avatar et la date de création du compte ;
+- vos recettes, ingrédients proposés, photos, notes et favoris ;
+- vos demandes d’amitié et relations entre membres ;
+- vos messages, documents partagés et informations associées, comme le nom, le type, la taille du fichier et la date d’envoi ;
+- vos points d’expérience, niveaux, badges et récompenses ;
+- votre statut de connexion, le rôle de votre compte et les éventuelles mesures de suspension ;
+- si vous activez la double authentification, le secret nécessaire à la vérification des codes et les informations de récupération ;
+- des données techniques de connexion et de sécurité, notamment l’adresse IP et les informations relatives aux requêtes et erreurs enregistrées par les serveurs et le dispositif de protection du site.
+
+L’avatar, la publication de contenu, les échanges et la double authentification sont facultatifs. Les informations demandées pour utiliser une fonctionnalité sont nécessaires à son fonctionnement.
+
+3. Pourquoi nous utilisons vos données
+
+La gestion du compte, l’authentification, la publication de recettes, les favoris, les notes, les relations d’amitié, la messagerie et les récompenses permettent de fournir les fonctionnalités du service.
+
+La protection des comptes, la limitation des tentatives de connexion, la modération et l’analyse des incidents servent à assurer la sécurité du site et à prévenir les abus.
+
+Bases légales : [À valider et compléter par le responsable : exécution du contrat pour les fonctionnalités du service ; intérêt légitime à sécuriser et modérer le service pour les traitements correspondants, après évaluation des droits des utilisateurs]. Le caractère facultatif d’une fonctionnalité ne signifie pas à lui seul que son traitement repose sur le consentement.
+
+4. Vérification automatique des contenus
+
+Les textes des recettes (titre, description, ingrédients, quantités et étapes), ainsi que les ingrédients proposés et leur catégorie, sont analysés par un service d’intelligence artificielle pour vérifier leur cohérence culinaire. Un refus peut empêcher leur enregistrement et vous inviter à les corriger.
+
+Dans la configuration du projet, cette analyse utilise un service Ollama hébergé avec l’application. Les informations de votre compte et vos messages ne font pas partie des données envoyées par cette fonctionnalité. Évitez d’inclure des données personnelles dans les textes de vos recettes.
+
+5. Qui peut accéder aux données
+
+Les recettes publiées sont consultables sur le site. Votre pseudonyme, votre avatar, votre présence en ligne et vos éléments de progression peuvent être visibles par les autres membres selon les pages consultées. Votre adresse email ne fait pas partie des informations du profil public.
+
+Les messages sont destinés à votre correspondant. Les documents joints sont accessibles par leur lien : ne les utilisez pas pour transmettre des informations confidentielles ou sensibles.
+
+Les administrateurs et modérateurs disposent d’accès correspondant à leurs fonctions. Les personnes chargées de l’exploitation et les prestataires d’hébergement peuvent avoir accès aux données nécessaires à leurs missions. La messagerie ne doit pas être considérée comme chiffrée de bout en bout.
+
+Hébergeur, prestataires et lieux de traitement : [À compléter].
+Transferts éventuels hors de l’Espace économique européen et garanties applicables : [À vérifier et compléter, notamment selon l’hébergement et les services utilisés]. La connexion via 42 implique également un traitement par 42 selon sa propre politique de confidentialité.
+
+6. Conservation et suppression
+
+Les données du compte et les contenus sont stockés pour permettre le fonctionnement du service. Les durées doivent être fixées pour chaque usage ; la version actuelle ne prévoit pas de purge automatique générale des comptes inactifs et des contenus.
+
+Durées ou critères précis : [À compléter pour les comptes actifs et inactifs, les contenus, les messages et documents, les données de progression, les journaux techniques et les éventuelles sauvegardes].
+
+La suppression du compte désactive l’accès, remplace le pseudonyme par « Utilisateur supprimé », remplace l’adresse email et efface les informations d’authentification. Le retrait de l’avatar est également prévu. Elle ne supprime pas automatiquement les recettes, notes, favoris, relations, messages et documents associés. Des données personnelles présentes dans ces contenus peuvent donc subsister : cette opération ne garantit pas leur anonymisation complète.
+
+Vous pouvez supprimer vos propres messages depuis la messagerie. Pour demander un effacement complémentaire, utilisez le contact indiqué dans cette politique. Pour un compte créé exclusivement via 42, contactez l’équipe : la suppression autonome demande actuellement un mot de passe local.
+
+7. Cookies et stockage sur votre appareil
+
+Le site utilise des cookies pour l’authentification et la connexion via 42. Le jeton de renouvellement de connexion a une durée de validité de 30 jours ; cela ne signifie pas que tous les cookies sont conservés pendant 30 jours.
+
+Le navigateur conserve aussi un jeton d’accès et des informations de profil dans son stockage local pour gérer votre connexion. Ces informations sont retirées lors de la déconnexion ou du nettoyage de la session par l’application. Vous pouvez également les effacer depuis les paramètres du navigateur.
+
+L’application installable conserve des ressources du site dans un cache pour son fonctionnement. Vous pouvez supprimer ce cache depuis les paramètres du navigateur. Bloquer ou effacer les cookies et données du site peut interrompre votre connexion ou certaines fonctionnalités.
+
+Aucun outil publicitaire ou de mesure d’audience tiers n’est intégré dans la version du projet décrite ici.
+
+8. Vos droits
+
+Dans les conditions prévues par le RGPD, vous pouvez demander l’accès à vos données, leur rectification, leur effacement, la limitation de leur traitement et leur portabilité. Vous pouvez vous opposer aux traitements fondés sur l’intérêt légitime. Lorsqu’un traitement repose sur le consentement, vous pouvez le retirer à tout moment.
+
+Vous pouvez modifier certaines informations depuis votre profil. Pour toute autre demande, écrivez au contact indiqué à la section 1 en précisant votre demande et le compte concerné. Une vérification d’identité proportionnée peut être nécessaire. Une réponse doit en principe être apportée dans un délai d’un mois ; une prolongation motivée est possible dans les cas prévus par le RGPD.
+
+Vous pouvez également déposer une réclamation auprès de la CNIL : https://www.cnil.fr/fr/adresser-une-plainte
+
+9. Évolution de cette politique
+
+Cette politique doit être actualisée lorsque les données collectées, leurs usages ou les prestataires changent. La date de mise à jour figure en tête de page.

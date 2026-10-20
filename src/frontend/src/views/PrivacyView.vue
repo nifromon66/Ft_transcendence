@@ -1,5 +1,5 @@
 <script setup>
-import privacyText from '../assets/temp_assets/Privacy.txt?raw'
+import privacyText from '../assets/terms_&_privacy/Privacy.txt?raw'
 </script>
 
 <template>

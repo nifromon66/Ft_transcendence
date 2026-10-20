@@ -1,5 +1,5 @@
 <script setup>
-import termsText from '../assets/temp_assets/Terms.txt?raw'
+import termsText from '../assets/terms_&_privacy/Terms.txt?raw'
 </script>
 
 <template>
