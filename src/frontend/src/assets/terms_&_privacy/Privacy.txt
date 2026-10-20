@@ -14,7 +14,7 @@ Nous ne collectons que les informations nécessaires au bon fonctionnement de vo
 
 - Lors de votre inscription : votre nom d'utilisateur, votre adresse e-mail, votre mot de passe (qui est chiffré de manière irréversible) et, si vous le souhaitez, une photo de profil.
 - Si vous vous connectez avec votre compte 42 : votre identifiant 42, votre nom d'utilisateur et votre adresse e-mail associés à votre profil 42.
-- Vos publications et activités sur le site : les recettes que vous publiez (titre, ingrédients, étapes, photos), vos commentaires, vos notes, votre liste d'amis ainsi que votre niveau et vos points d'expérience sur la plateforme.
+- Vos publications et activités sur le site : les recettes que vous publiez (titre, ingrédients, étapes, photos), vos notes, votre liste d'amis ainsi que votre niveau et vos points d'expérience sur la plateforme.
 - Vos messages privés : les messages que vous échangez avec vos amis via le chat intégré.
 - Données de navigation et de sécurité : certaines données techniques de connexion (comme l'adresse IP) sont utilisées uniquement pour assurer la sécurité du site et empêcher les connexions malveillantes.
 
