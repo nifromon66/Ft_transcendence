@@ -1,14 +1,66 @@
-The standard Lorem Ipsum passage, used since 1966
-"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+POLITIQUE DE CONFIDENTIALITÉ
+Dernière mise à jour : 20 octobre 2026
 
-Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+1. INTRODUCTION
 
-1914 translation by H. Rackham
-"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
+La présente Politique de Confidentialité vous explique quelles informations nous collectons lorsque vous utilisez notre plateforme de partage de recettes culinaires, pourquoi nous les utilisons et comment nous les protégeons.
 
-Section 1.10.33 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
+Ce site est un projet étudiant à but purement pédagogique et non commercial, réalisé dans le cadre du cursus de l'École 42.
 
-1914 translation by H. Rackham
-"On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
+
+2. QUELLES INFORMATIONS COLLECTONS-NOUS ?
+
+Nous ne collectons que les informations nécessaires au bon fonctionnement de votre compte et du site :
+
+- Lors de votre inscription : votre nom d'utilisateur, votre adresse e-mail, votre mot de passe (qui est chiffré de manière irréversible) et, si vous le souhaitez, une photo de profil.
+- Si vous vous connectez avec votre compte 42 : votre identifiant 42, votre nom d'utilisateur et votre adresse e-mail associés à votre profil 42.
+- Vos publications et activités sur le site : les recettes que vous publiez (titre, ingrédients, étapes, photos), vos commentaires, vos notes, votre liste d'amis ainsi que votre niveau et vos points d'expérience sur la plateforme.
+- Vos messages privés : les messages que vous échangez avec vos amis via le chat intégré.
+- Données de navigation et de sécurité : certaines données techniques de connexion (comme l'adresse IP) sont utilisées uniquement pour assurer la sécurité du site et empêcher les connexions malveillantes.
+
+
+3. POURQUOI UTILISONS-NOUS VOS DONNÉES ?
+
+Vos informations sont utilisées uniquement pour :
+- Créer et gérer votre compte utilisateur.
+- Vous permettre de publier, modifier et consulter des recettes, d'interagir avec la communauté, d'ajouter des amis et de discuter avec eux.
+- Vérifier automatiquement la cohérence et l'orthographe des recettes et ingrédients soumis avant leur publication.
+- Assurer la modération des contenus et la sécurité de la plateforme.
+
+
+4. ANALYSE AUTOMATIQUE DES RECETTES (INTELLIGENCE ARTIFICIELLE)
+
+Lorsque vous ajoutez ou modifiez une recette ou un ingrédient, le texte soumis est vérifié par un outil d'intelligence artificielle hébergé directement sur notre propre serveur.
+- Cet outil sert uniquement à vérifier que la recette est cohérente et à corriger les éventuelles fautes d'orthographe.
+- Vos textes et vos données personnelles ne sont jamais envoyés à des services extérieurs et ne servent jamais à entraîner des modèles externes.
+
+
+5. QUI PEUT VOIR VOS INFORMATIONS ?
+
+Aucune de vos données n'est vendue, louée ou partagée à des fins commerciales ou publicitaires.
+
+Sur la plateforme :
+- Ce qui est visible par les autres utilisateurs : votre nom d'utilisateur, votre photo de profil, votre niveau, votre statut de connexion (en ligne ou hors ligne), ainsi que les recettes, notes et commentaires que vous publiez.
+- Ce qui reste privé : votre adresse e-mail, votre mot de passe et vos conversations privées (visibles uniquement par vous et l'ami avec qui vous discutez).
+- L'équipe de modération et d'administration peut intervenir sur les comptes ou les contenus signalés afin de faire respecter les règles de la communauté.
+
+
+6. COOKIES ET CONNEXION
+
+Nous n'utilisons aucun cookie publicitaire ni aucun outil de suivi commercial.
+Nous utilisons uniquement des cookies techniques indispensables pour vous permettre de rester connecté à votre compte et d'utiliser l'application normalement.
+
+
+7. PROTECTION ET DURÉE DE CONSERVATION DE VOS DONNÉES
+
+Nous mettons en place des mesures de sécurité adaptées (connexions sécurisées, mots de passe chiffrés et possibilité d'activer la double authentification sur votre profil) afin de protéger votre compte.
+
+Vos données sont conservées tant que votre compte est actif, et au plus tard jusqu'à la fin de ce projet pédagogique.
+
+
+8. VOS DROITS
+
+Vous gardez le contrôle sur vos informations personnelles. À tout moment, vous pouvez :
+- Consulter et modifier les informations de votre profil (nom d'utilisateur, photo de profil, mot de passe, double authentification) directement depuis votre espace personnel.
+- Modifier ou supprimer les recettes et commentaires que vous avez publiés.
+- Demander la suppression ou la désactivation de votre compte en contactant l'équipe d'administration de la plateforme.
