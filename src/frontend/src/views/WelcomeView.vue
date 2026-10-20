@@ -19,32 +19,6 @@ const mostLikedRecipesError = ref('')
 
 onMounted(async () => {
   try {
-    const result = await getRecipes({ per_page: 4, sort_by: 'random' })
-    recipes.value = result.recipes
-  } catch (error) {
-    recipesError.value = error.message || 'Une erreur inattendue est survenue.'
-  } finally {
-    isLoadingRecipes.value = false
-  }
-})
-
-onMounted(async () => {
-  try {
-    const result = await getRecipes({
-      per_page: 4,
-      sort_by: 'rating',
-      sort_order: 'DESC',
-    })
-    mostLikedRecipes.value = result.recipes
-  } catch (error) {
-    mostLikedRecipesError.value = error.message || 'Une erreur inattendue est survenue.'
-  } finally {
-    isLoadingMostLikedRecipes.value = false
-  }
-})
-
-onMounted(async () => {
-  try {
     latestRecipes.value = await fetchLatestRecipes()
   } catch (error) {
     latestRecipesError.value =
@@ -52,6 +26,33 @@ onMounted(async () => {
   } finally {
     isLoadingLatestRecipes.value = false
   }
+
+  await Promise.all([
+    (async () => {
+      try {
+        const result = await getRecipes({ per_page: 4, sort_by: 'random' })
+        recipes.value = result.recipes
+      } catch (error) {
+        recipesError.value = error.message || 'Une erreur inattendue est survenue.'
+      } finally {
+        isLoadingRecipes.value = false
+      }
+    })(),
+    (async () => {
+      try {
+        const result = await getRecipes({
+          per_page: 4,
+          sort_by: 'rating',
+          sort_order: 'DESC',
+        })
+        mostLikedRecipes.value = result.recipes
+      } catch (error) {
+        mostLikedRecipesError.value = error.message || 'Une erreur inattendue est survenue.'
+      } finally {
+        isLoadingMostLikedRecipes.value = false
+      }
+    })(),
+  ])
 })
 
 </script>

@@ -26,6 +26,11 @@ const saveNewIngredient = async (ingredient) => {
   ingredient.creationError = ''
   isCreatingIngredient.value = true
   try {
+    try {
+      await authStore.silentRefresh()
+    } catch {
+      // Ignore silent refresh failure; createIngredient will handle auth errors
+    }
     const data = await createIngredient(authStore.token, {
       name,
       category_id: Number(ingredient.categoryId),
@@ -146,13 +151,12 @@ const submitForm = () => {
 
 onMounted(async () => {
   try {
+    const loadedCategories = await fetchCategories()
     const [
-      loadedCategories,
       loadedIngredients,
       loadedIngredientCategories,
       loadedTags,
     ] = await Promise.all([
-      fetchCategories(),
       fetchIngredients(),
       fetchIngredientCategories(),
       fetchTags(),
@@ -409,7 +413,7 @@ onMounted(async () => {
             <div class="flex gap-2">
               <input :id="`new-ingredient-${ingredient.id}`" :name="`new-ingredient-${ingredient.id}`"
                 v-model.trim="ingredient.newName" type="text" maxlength="100" placeholder="Ex. Topinambour"
-                class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2"
+                class="min-w-0 flex-1 rounded-md border border-gray-300 bg-white text-black px-3 py-2"
                 @keydown.enter.prevent="saveNewIngredient(ingredient)" />
               <button type="button" class="rounded-md bg-primary px-3 py-2 text-white disabled:opacity-50"
                 @click="saveNewIngredient(ingredient)">

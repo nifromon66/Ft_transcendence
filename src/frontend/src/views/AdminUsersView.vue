@@ -101,12 +101,12 @@ onMounted(() => run(() => load()))
     <p v-if="!auth.can('users.read')">L’accès à cette page nécessite des droits d’administration.</p>
     <template v-else>
       <form class="flex flex-wrap gap-3" @submit.prevent="run(() => load())">
-        <input v-model="filters.q" aria-label="Rechercher un pseudo ou email" placeholder="Pseudo ou email" class="rounded border bg-white p-2" />
-        <select v-model="filters.role" aria-label="Filtrer par rôle" class="rounded border bg-white p-2">
+        <input v-model="filters.q" aria-label="Rechercher un pseudo ou email" placeholder="Pseudo ou email" class="rounded border bg-white text-black p-2" />
+        <select v-model="filters.role" aria-label="Filtrer par rôle" class="rounded border bg-white text-black p-2">
           <option value="">Tous les rôles</option>
           <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
         </select>
-        <select v-model="filters.status" aria-label="Filtrer par statut" class="rounded border bg-white p-2">
+        <select v-model="filters.status" aria-label="Filtrer par statut" class="rounded border bg-white text-black p-2">
           <option value="">Tous les statuts</option>
           <option value="active">Actifs</option><option value="suspended">Suspendus</option><option value="deleted">Supprimés</option>
         </select>
@@ -116,11 +116,11 @@ onMounted(() => run(() => load()))
 
       <form v-if="creating || editing" class="space-y-3 rounded-xl bg-white p-5 shadow" @submit.prevent="save">
         <h2 class="text-xl font-semibold">{{ creating ? 'Créer un compte' : 'Modifier le compte' }}</h2>
-        <label class="block">Pseudo <input v-model.trim="form.username" required maxlength="254" class="rounded border p-2" /></label>
-        <label class="block">Email <input v-model.trim="form.email" type="email" required maxlength="254" class="rounded border p-2" /></label>
+        <label class="block">Pseudo <input v-model.trim="form.username" required maxlength="254" class="rounded border bg-white text-black p-2" /></label>
+        <label class="block">Email <input v-model.trim="form.email" type="email" required maxlength="254" class="rounded border bg-white text-black p-2" /></label>
         <template v-if="creating">
-          <label class="block">Mot de passe <input v-model="form.password" type="password" autocomplete="new-password" required maxlength="72" class="rounded border p-2" /></label>
-          <label v-if="auth.can('roles.assign')" class="block">Rôle <select v-model="form.role" class="rounded border p-2"><option v-for="role in roles" :key="role">{{ role }}</option></select></label>
+          <label class="block">Mot de passe <input v-model="form.password" type="password" autocomplete="new-password" required maxlength="72" class="rounded border bg-white text-black p-2" /></label>
+          <label v-if="auth.can('roles.assign')" class="block">Rôle <select v-model="form.role" class="rounded border bg-white text-black p-2"><option v-for="role in roles" :key="role">{{ role }}</option></select></label>
         </template>
         <button :disabled="busy" class="enabled:hover:bg-gray-100 transition-colors mr-3 rounded bg-primary-light px-4 py-2">Enregistrer</button>
         <button class="rounded px-3 py-2 enabled:hover:bg-gray-100 transition-colors" type="button" :disabled="busy" @click="closeForm">Annuler</button>
@@ -134,7 +134,7 @@ onMounted(() => run(() => load()))
             <tr v-for="user in users" :key="user.id" class="border-t">
               <td class="p-2">{{ user.username }}</td><td class="p-2">{{ user.email }}</td>
               <td class="p-2">
-                <select v-if="auth.can('roles.assign') && user.status !== 'deleted'" :value="user.role" :aria-label="`Rôle de ${user.username}`" :disabled="busy" class="rounded border p-2" @change="changeRole(user, $event)">
+                <select v-if="auth.can('roles.assign') && user.status !== 'deleted'" :value="user.role" :aria-label="`Rôle de ${user.username}`" :disabled="busy" class="rounded border bg-white text-black p-2" @change="changeRole(user, $event)">
                   <option v-for="role in roles" :key="role">{{ role }}</option>
                 </select><span v-else>{{ user.role }}</span>
               </td>
