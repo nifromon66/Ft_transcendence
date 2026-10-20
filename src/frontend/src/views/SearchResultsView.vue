@@ -46,6 +46,32 @@ watch(
   { immediate: true },
 )
 
+const currentSortLabel = computed(() => {
+  const sortBy = route.query.sort_by
+  const sortOrder = route.query.sort_order
+
+  if (!sortBy || !sortOrder) {
+    return 'Défaut'
+  }
+
+  const sortLabels = {
+    updated_at: {
+      desc: 'Les plus récentes',
+      asc: 'Les moins récentes',
+    },
+    cooking_time: {
+      desc: 'Durée : la plus longue',
+      asc: 'Durée : la moins longue',
+    },
+    rating: {
+      desc: 'Meilleures notes',
+      asc: 'Notes les plus basses',
+    },
+  }
+
+  return sortLabels[sortBy]?.[sortOrder] || 'Défaut'
+})
+
 const isSortMenuOpen = ref(false)
 
 function applySort(sortBy, sortOrder = 'asc') {
@@ -69,7 +95,10 @@ function applySort(sortBy, sortOrder = 'asc') {
         <button type="button"
           class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
           :aria-expanded="isSortMenuOpen" aria-haspopup="true" @click="isSortMenuOpen = !isSortMenuOpen">
-          Trier par
+          Trier par : 
+          <span class="font-semibold text-gray-900">
+            {{ currentSortLabel }}
+          </span>
         </button>
 
         <div v-if="isSortMenuOpen"
