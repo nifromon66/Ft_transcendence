@@ -225,7 +225,7 @@ const closeDeleteModal = () => {
 }
 
 const confirmDelete = async () => {
-    if (!deletePassword.value) {
+    if (!authStore.user?.oauth_provider && !deletePassword.value) {
         deleteError.value = "Veuillez renseigner votre mot de passe."
         return
     }
@@ -633,7 +633,7 @@ const cancelEdit = () => {
                     contributions seront conservées, mais anonymisées.
                 </p>
 
-                <div class="mb-6">
+                <div v-if="!authStore.user?.oauth_provider" class="mb-6">
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
@@ -642,6 +642,7 @@ const cancelEdit = () => {
                         class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500">
                     <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
                 </div>
+                <p v-else-if="deleteError" class="text-red-500 text-xs mb-4">{{ deleteError }}</p>
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" @click="closeDeleteModal"
