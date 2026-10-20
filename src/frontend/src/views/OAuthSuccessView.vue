@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute, RouterLink } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authState'
+import termsText from '@/assets/temp_assets/Terms.txt?raw'
+import privacyText from '@/assets/temp_assets/Privacy.txt?raw'
 
 const router = useRouter()
 const route = useRoute()
@@ -11,6 +13,7 @@ const isPendingConsent = ref(false)
 const pendingToken = ref('')
 const acceptTerms = ref(false)
 const acceptPrivacy = ref(false)
+const activeLegalModal = ref(null)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
@@ -110,9 +113,13 @@ function cancelOAuth() {
                         />
                         <span>
                             J'ai lu et j'accepte les
-                            <RouterLink :to="{ name: 'terms' }" class="text-blue-600 underline hover:text-blue-800">
+                            <button
+                                type="button"
+                                @click.prevent="activeLegalModal = 'terms'"
+                                class="text-left text-blue-600 underline hover:text-blue-800 cursor-pointer"
+                            >
                                 Conditions générales d'utilisation
-                            </RouterLink>
+                            </button>
                         </span>
                     </label>
 
@@ -126,9 +133,13 @@ function cancelOAuth() {
                         />
                         <span>
                             J'ai pris connaissance de la
-                            <RouterLink :to="{ name: 'privacy' }" class="text-blue-600 underline hover:text-blue-800">
+                            <button
+                                type="button"
+                                @click.prevent="activeLegalModal = 'privacy'"
+                                class="text-left text-blue-600 underline hover:text-blue-800 cursor-pointer"
+                            >
                                 Politique de confidentialité
-                            </RouterLink>
+                            </button>
                         </span>
                     </label>
                 </div>
@@ -154,6 +165,30 @@ function cancelOAuth() {
             <p v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">
                 {{ errorMessage }}
             </p>
+        </div>
+
+        <div
+            v-if="activeLegalModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            @click.self="activeLegalModal = null"
+        >
+            <div class="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg bg-white p-6 shadow-xl">
+                <div class="mb-4 flex items-center justify-between border-b pb-3">
+                    <h3 class="text-xl font-bold text-black">
+                        {{ activeLegalModal === 'terms' ? "Conditions générales d'utilisation" : 'Politique de confidentialité' }}
+                    </h3>
+                    <button
+                        type="button"
+                        @click="activeLegalModal = null"
+                        class="rounded px-3 py-1 text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-black cursor-pointer"
+                    >
+                        Fermer
+                    </button>
+                </div>
+                <div class="overflow-y-auto whitespace-pre-line pr-2 text-sm leading-relaxed text-gray-800">
+                    {{ activeLegalModal === 'terms' ? termsText : privacyText }}
+                </div>
+            </div>
         </div>
     </div>
 </template>
