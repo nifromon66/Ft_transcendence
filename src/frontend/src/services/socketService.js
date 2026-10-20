@@ -15,15 +15,6 @@ export const socket = io(apiUrl, {
     }
 })
 
-socket.on('disconnect', (reason) => {
-    if (reason === 'io server disconnect') {
-        const token = localStorage.getItem('token')
-        if (token) {
-            socket.connect()
-        }
-    }
-})
-
 socket.on('connect_error', () => {
     setTimeout(() => {
         if (!socket.connected && !socket.active && localStorage.getItem('token')) {
