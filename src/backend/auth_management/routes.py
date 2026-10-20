@@ -34,6 +34,14 @@ def register():
             }
         ), 400
 
+    if data.get("accept_terms") is not True or data.get("accept_privacy") is not True:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Veuillez accepter les CGU et la politique de confidentialité.",
+            }
+        ), 200
+
     existing_user = db.session.execute(
         select(User).where(or_(User.email == email, User.username == username))
     ).scalar_one_or_none()
