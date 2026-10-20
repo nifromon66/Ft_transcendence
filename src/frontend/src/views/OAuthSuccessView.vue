@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/authState'
 
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const isPendingConsent = ref(false)
@@ -26,12 +26,16 @@ onMounted(async () => {
         } catch {
             router.push({ name: 'login' })
         }
-    } else if (pending) {
+        return
+    }
+
+    if (pending) {
         pendingToken.value = String(pending)
         isPendingConsent.value = true
-    } else {
-        router.push({ name: 'login' })
+        return
     }
+
+    router.push({ name: 'login' })
 })
 
 async function completeOAuth() {
@@ -106,7 +110,7 @@ function cancelOAuth() {
                         />
                         <span>
                             J'ai lu et j'accepte les
-                            <RouterLink :to="{ name: 'terms' }" target="_blank" class="text-blue-600 underline hover:text-blue-800">
+                            <RouterLink :to="{ name: 'terms' }" class="text-blue-600 underline hover:text-blue-800">
                                 Conditions générales d'utilisation
                             </RouterLink>
                         </span>
@@ -122,7 +126,7 @@ function cancelOAuth() {
                         />
                         <span>
                             J'ai pris connaissance de la
-                            <RouterLink :to="{ name: 'privacy' }" target="_blank" class="text-blue-600 underline hover:text-blue-800">
+                            <RouterLink :to="{ name: 'privacy' }" class="text-blue-600 underline hover:text-blue-800">
                                 Politique de confidentialité
                             </RouterLink>
                         </span>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/authState'
 import ImageDropZone from './ImageDropZone.vue'
 import ImagePreview from './ImagePreview.vue'
@@ -9,8 +9,6 @@ import { validateAvatar } from '@/utils/fileValidators'
 import { optimizeImage } from '@/utils/imageProcessor'
 import { registerUser } from '@/services/authService'
 import { uploadAvatar } from '@/services/userService'
-import termsText from '@/assets/temp_assets/Terms.txt?raw'
-import privacyText from '@/assets/temp_assets/Privacy.txt?raw'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -20,7 +18,6 @@ const email = ref('')
 const password = ref('')
 const acceptTerms = ref(false)
 const acceptPrivacy = ref(false)
-const activeLegalModal = ref(null)
 const errorMessage = ref('')
 const avatarFile = ref(null)
 
@@ -128,13 +125,9 @@ async function register() {
             />
             <span>
               J'ai lu et j'accepte les
-              <button
-                type="button"
-                @click.prevent="activeLegalModal = 'terms'"
-                class="text-left text-blue-600 underline hover:text-blue-800 cursor-pointer"
-              >
+              <RouterLink :to="{ name: 'terms' }" class="text-blue-600 underline hover:text-blue-800">
                 Conditions générales d'utilisation
-              </button>
+              </RouterLink>
             </span>
           </label>
 
@@ -148,13 +141,9 @@ async function register() {
             />
             <span>
               J'ai pris connaissance de la
-              <button
-                type="button"
-                @click.prevent="activeLegalModal = 'privacy'"
-                class="text-left text-blue-600 underline hover:text-blue-800 cursor-pointer"
-              >
+              <RouterLink :to="{ name: 'privacy' }" class="text-blue-600 underline hover:text-blue-800">
                 Politique de confidentialité
-              </button>
+              </RouterLink>
             </span>
           </label>
         </div>
@@ -168,30 +157,6 @@ async function register() {
         </button>
       </form>
       <p v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">{{ errorMessage }}</p>
-    </div>
-
-    <div
-      v-if="activeLegalModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      @click.self="activeLegalModal = null"
-    >
-      <div class="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg bg-white p-6 shadow-xl">
-        <div class="mb-4 flex items-center justify-between border-b pb-3">
-          <h3 class="text-xl font-bold text-black">
-            {{ activeLegalModal === 'terms' ? "Conditions générales d'utilisation" : 'Politique de confidentialité' }}
-          </h3>
-          <button
-            type="button"
-            @click="activeLegalModal = null"
-            class="rounded px-3 py-1 text-sm font-semibold text-gray-600 hover:bg-gray-100 hover:text-black cursor-pointer"
-          >
-            Fermer
-          </button>
-        </div>
-        <div class="overflow-y-auto whitespace-pre-line pr-2 text-sm leading-relaxed text-gray-800">
-          {{ activeLegalModal === 'terms' ? termsText : privacyText }}
-        </div>
-      </div>
     </div>
   </div>
 </template>

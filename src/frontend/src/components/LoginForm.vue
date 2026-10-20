@@ -103,13 +103,10 @@ async function confirm2FaLogin() {
     try {
       data = await response.json()
     } catch (e) {
-      throw new Error("Erreur serveur.", { cause: e })
+      throw new Error("Erreur de communication avec le serveur.", { cause: e })
     }
 
     if (!response.ok || data.success === false) {
-      if (response.status === 401) {
-        throw new Error("Le code est incorrect ou a expiré.")
-      }
       throw new Error(data.error || "Code invalide.")
     }
 
