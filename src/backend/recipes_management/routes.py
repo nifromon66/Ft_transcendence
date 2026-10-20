@@ -1,4 +1,5 @@
 import os
+import unicodedata
 
 import magic
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
@@ -47,6 +48,27 @@ from .validators import (
 )
 
 recipes_bp = Blueprint("recipes_management", __name__, url_prefix="/recipes")
+
+# PostgreSQL LIKE/ILIKE does not ignore accents by default. Normalize both
+# sides with translate() so "crepes" also matches "Crêpes" without requiring
+# the optional unaccent extension.
+_ACCENTED_CHARS = (
+    "ÀÁÂÃÄÅàáâãäåÈÉÊËèéêëÌÍÎÏìíîïÒÓÔÕÖØòóôõöøÙÚÛÜùúûü"
+    "ÝŸýÿÇçÑñŠšŽžÆæŒœ"
+)
+_PLAIN_CHARS = (
+    "AAAAAAaaaaaaEEEEeeeeIIIIiiiiOOOOOOooooooUUUUuuuu"
+    "YYyyCcNnSsZzAaOe"
+)
+
+
+def _searchable_text(column):
+    return func.translate(func.lower(column), _ACCENTED_CHARS, _PLAIN_CHARS)
+
+
+def _normalize_search_text(value):
+    decomposed = unicodedata.normalize("NFD", value.casefold())
+    return "".join(char for char in decomposed if not unicodedata.combining(char))
 
 
 @recipes_bp.route("", methods=["POST"])
@@ -817,18 +839,20 @@ def get_recipes():
     query = db.select(Recipe)
 
     if search:
-        search_pattern = f"%{search}%"
+        search_pattern = f"%{_normalize_search_text(search)}%"
 
         query = query.where(
             or_(
-                Recipe.title.ilike(search_pattern),
-                Recipe.description.ilike(search_pattern),
+                _searchable_text(Recipe.title).like(search_pattern),
+                _searchable_text(Recipe.description).like(search_pattern),
                 Recipe.ingredients.any(
                     RecipeIngredient.ingredient.has(
-                        Ingredient.name.ilike(search_pattern)
+                        _searchable_text(Ingredient.name).like(search_pattern)
                     )
                 ),
-                Recipe.tags.any(Tag.name.ilike(search_pattern)),
+                Recipe.tags.any(
+                    _searchable_text(Tag.name).like(search_pattern)
+                ),
             )
         )
 
