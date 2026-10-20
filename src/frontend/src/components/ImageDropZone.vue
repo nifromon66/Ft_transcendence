@@ -31,7 +31,7 @@ const handleDrop = (event) => {
 }
 
 const handleFileSelect = (event) => {
-    const target = /** @type {HTMLInputElement} */ (event.target)
+    const target = event.target
     const files = target.files
     if (files && files.length > 0) {
         emit('file-selected', files[0])

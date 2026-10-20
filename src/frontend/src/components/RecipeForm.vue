@@ -47,7 +47,7 @@ const saveNewIngredient = async (ingredient) => {
 
 const props = defineProps({
   initialRecipe: {
-    type: /** @type {import('vue').PropType<InitialRecipe | null>} */ (Object),
+    type: Object,
     default: null,
   },
   isSubmitting: {
@@ -204,7 +204,8 @@ onMounted(async () => {
           <label for="recipe-category" class="mb-1 block font-medium">
             Catégorie
           </label>
-          <select id="recipe-category" name="category" v-model="recipe.categoryId" required :disabled="isLoadingOptions" class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
+          <select id="recipe-category" name="category" v-model="recipe.categoryId" required :disabled="isLoadingOptions"
+            class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-wait
                     disabled:bg-gray-100">
             <option disabled value="">
@@ -220,8 +221,8 @@ onMounted(async () => {
           <label for="recipe-description" class="mb-1 block font-medium">
             Description
           </label>
-          <textarea id="recipe-description" name="description" v-model.trim="recipe.description" rows="2" maxlength="100"
-            @keydown.enter.prevent placeholder="Présente brièvement ta recette..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+          <textarea id="recipe-description" name="description" v-model.trim="recipe.description" rows="2"
+            maxlength="100" @keydown.enter.prevent placeholder="Présente brièvement ta recette..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <p class="mt-1 text-right text-sm text-gray-500">
             {{ recipe.description.length }}/100 caractères
@@ -277,8 +278,8 @@ onMounted(async () => {
           <label for="recipe-cooking-time" class="mb-1 block font-medium">
             Temps de préparation (minutes)
           </label>
-          <input id="recipe-cooking-time" name="cookingTime" v-model.number="recipe.cookingTime" type="number" min="0" step="1"
-            placeholder="Ex. 30" class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+          <input id="recipe-cooking-time" name="cookingTime" v-model.number="recipe.cookingTime" type="number" min="0"
+            step="1" placeholder="Ex. 30" class="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
         </div>
 
@@ -305,8 +306,8 @@ onMounted(async () => {
               Étape {{ index + 1 }}
             </label>
 
-            <textarea :id="`recipe-step-${step.id}`" :name="`recipe-step-${step.id}`" v-model.trim="step.description" rows="3" required
-              placeholder="Décris cette étape de la préparation..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2
+            <textarea :id="`recipe-step-${step.id}`" :name="`recipe-step-${step.id}`" v-model.trim="step.description"
+              rows="3" required placeholder="Décris cette étape de la préparation..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2
                       focus:border-blue-500 focus:outline-none focus:ring-2
                       focus:ring-blue-200" />
             <div class="mt-3">
@@ -370,8 +371,8 @@ onMounted(async () => {
       <fieldset :disabled="isCreatingIngredient || isSubmitting" class="space-y-3">
         <div v-for="(ingredient, index) in recipe.ingredients" :key="ingredient.id"
           class="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-          <select :id="`ingredient-cat-${index}`" :name="`ingredient-cat-${index}`" v-model="ingredient.categoryId" required :disabled="isLoadingOptions"
-            :aria-label="`Catégorie de l'ingrédient ${index + 1}`"
+          <select :id="`ingredient-cat-${index}`" :name="`ingredient-cat-${index}`" v-model="ingredient.categoryId"
+            required :disabled="isLoadingOptions" :aria-label="`Catégorie de l'ingrédient ${index + 1}`"
             class="rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
             @change="ingredient.ingredientId = ''; ingredient.creationError = ''">
             <option disabled value="">Choisir une catégorie</option>
@@ -380,8 +381,8 @@ onMounted(async () => {
             </option>
           </select>
 
-          <select :id="`ingredient-item-${index}`" :name="`ingredient-item-${index}`" v-if="ingredient.categoryId" v-model="ingredient.ingredientId" required
-            :aria-label="`Ingrédient ${index + 1}`" class="rounded-md border border-gray-300 bg-white px-3 py-2
+          <select :id="`ingredient-item-${index}`" :name="`ingredient-item-${index}`" v-if="ingredient.categoryId"
+            v-model="ingredient.ingredientId" required :aria-label="`Ingrédient ${index + 1}`" class="rounded-md border border-gray-300 bg-white px-3 py-2
                     focus:border-blue-500 focus:outline-none focus:ring-2
                     focus:ring-blue-200">
             <option disabled value="">
@@ -394,8 +395,8 @@ onMounted(async () => {
             </option>
             <option value="new">Ajouter un nouvel ingrédient</option>
           </select>
-          <input :id="`ingredient-qty-${index}`" :name="`ingredient-qty-${index}`" v-model.trim="ingredient.quantity" type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`"
-            placeholder="Ex. 3 ou 250 g" class="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+          <input :id="`ingredient-qty-${index}`" :name="`ingredient-qty-${index}`" v-model.trim="ingredient.quantity"
+            type="text" :aria-label="`Quantité de l'ingrédient ${index + 1}`" placeholder="Ex. 3 ou 250 g" class="rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <button v-if="recipe.ingredients.length > 1" type="button"
             class="rounded-md px-3 py-2 text-red-600 hover:bg-red-50" @click="removeIngredient(index)">
@@ -406,8 +407,8 @@ onMounted(async () => {
               Nom du nouvel ingrédient
             </label>
             <div class="flex gap-2">
-              <input :id="`new-ingredient-${ingredient.id}`" :name="`new-ingredient-${ingredient.id}`" v-model.trim="ingredient.newName" type="text"
-                maxlength="100" placeholder="Ex. Topinambour"
+              <input :id="`new-ingredient-${ingredient.id}`" :name="`new-ingredient-${ingredient.id}`"
+                v-model.trim="ingredient.newName" type="text" maxlength="100" placeholder="Ex. Topinambour"
                 class="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2"
                 @keydown.enter.prevent="saveNewIngredient(ingredient)" />
               <button type="button" class="rounded-md bg-primary px-3 py-2 text-white disabled:opacity-50"
