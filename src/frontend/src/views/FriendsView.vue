@@ -82,8 +82,8 @@ const handleStatusChange = (data) => {
 }
 
 const handleFriendshipUpdated = async () => {
+    await loadFriends()
     await Promise.all([
-        loadFriends(),
         loadReceivedRequests(),
         loadSentRequests(),
         loadDiscoverUsers()
@@ -132,8 +132,8 @@ onMounted(async () => {
     window.addEventListener('focus', onWindowFocus)
     document.addEventListener('visibilitychange', onWindowFocus)
 
+    await loadFriends()
     await Promise.all([
-        loadFriends(),
         loadReceivedRequests(),
         loadSentRequests(),
         loadDiscoverUsers()
