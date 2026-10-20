@@ -10,6 +10,7 @@ const items = ref([])
 const pagination = ref({ page: 1, per_page: 20, total: 0 })
 const busy = ref(false)
 const error = ref('')
+const itemToRemove = ref(null)
 
 async function load(page = 1) {
   const data = await adminRequest(`/moderation?kind=${kind.value}&page=${page}`)
@@ -23,8 +24,13 @@ async function run(action) {
   try { await action() } catch (err) { error.value = err.message }
   finally { busy.value = false }
 }
-async function remove(item) {
-  if (!window.confirm(kind.value === 'recipes' ? 'Supprimer définitivement cette recette ?' : 'Retirer le contenu de ce commentaire ?')) return
+function remove(item) {
+  itemToRemove.value = item
+}
+async function confirmRemove() {
+  const item = itemToRemove.value
+  itemToRemove.value = null
+  if (!item) return
   await run(async () => {
     if (kind.value === 'recipes') {
       await adminRequest(`/${item.id}`, { method: 'DELETE', prefix: '/recipes' })
@@ -65,6 +71,19 @@ onMounted(() => run(() => load()))
         <span>Page {{ pagination.page }}</span>
         <button class="rounded px-3 py-2 enabled:hover:bg-gray-100 transition-colors" :disabled="busy || pagination.page * pagination.per_page >= pagination.total" @click="run(() => load(pagination.page + 1))">Suivant</button>
       </nav>
+
+      <div v-if="itemToRemove" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-gray-900">
+          <h3 class="text-xl font-bold text-red-600 mb-4">{{ kind === 'recipes' ? 'Supprimer la recette' : 'Retirer le commentaire' }}</h3>
+          <p class="text-gray-700 mb-6 text-sm">
+            {{ kind === 'recipes' ? 'Supprimer définitivement cette recette ?' : 'Retirer le contenu de ce commentaire ?' }}
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors" @click="itemToRemove = null">Annuler</button>
+            <button type="button" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors" @click="confirmRemove">Confirmer</button>
+          </div>
+        </div>
+      </div>
     </template>
     <p v-else>L’accès à cette page nécessite des droits de modération.</p>
   </main>

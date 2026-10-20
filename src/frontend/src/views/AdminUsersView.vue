@@ -14,6 +14,7 @@ const message = ref('')
 const editing = ref(null)
 const creating = ref(false)
 const form = reactive({ username: '', email: '', password: '', role: 'user' })
+const confirmDialog = ref(null)
 
 async function load(page = 1) {
   const params = new URLSearchParams({ ...filters, page: String(page) })
@@ -59,35 +60,48 @@ async function save() {
   })
 }
 
-async function changeRole(user, event) {
+function changeRole(user, event) {
   const role = event.target.value
   event.target.value = user.role
-  if (role === user.role || !window.confirm(`Attribuer le rôle « ${role} » à ${user.username} ?`)) return
-  await run(async () => {
-    await adminRequest(`/users/${user.id}/role`, { method: 'PATCH', body: { role } })
-    if (user.id === auth.user?.id) await auth.fetchUser()
-    if (auth.can('users.read')) await load(pagination.value.page)
-    message.value = 'Rôle modifié.'
-  })
+  if (role === user.role) return
+  confirmDialog.value = {
+    text: `Attribuer le rôle « ${role} » à ${user.username} ?`,
+    execute: () => run(async () => {
+      await adminRequest(`/users/${user.id}/role`, { method: 'PATCH', body: { role } })
+      if (user.id === auth.user?.id) await auth.fetchUser()
+      if (auth.can('users.read')) await load(pagination.value.page)
+      message.value = 'Rôle modifié.'
+    })
+  }
 }
 
-async function changeStatus(user) {
+function changeStatus(user) {
   const isActive = user.status !== 'active'
-  if (!window.confirm(`${isActive ? 'Réactiver' : 'Suspendre'} le compte de ${user.username} ?`)) return
-  await run(async () => {
-    await adminRequest(`/users/${user.id}`, { method: 'PATCH', body: { is_active: isActive } })
-    if (user.id === auth.user?.id) auth.clearAuth()
-    else await load(pagination.value.page)
-  })
+  confirmDialog.value = {
+    text: `${isActive ? 'Réactiver' : 'Suspendre'} le compte de ${user.username} ?`,
+    execute: () => run(async () => {
+      await adminRequest(`/users/${user.id}`, { method: 'PATCH', body: { is_active: isActive } })
+      if (user.id === auth.user?.id) auth.clearAuth()
+      else await load(pagination.value.page)
+    })
+  }
 }
 
-async function remove(user) {
-  if (!window.confirm(`Supprimer et anonymiser définitivement le compte de ${user.username} ?`)) return
-  await run(async () => {
-    await adminRequest(`/users/${user.id}`, { method: 'DELETE' })
-    if (user.id === auth.user?.id) auth.clearAuth()
-    else await load(pagination.value.page)
-  })
+function remove(user) {
+  confirmDialog.value = {
+    text: `Supprimer et anonymiser définitivement le compte de ${user.username} ?`,
+    execute: () => run(async () => {
+      await adminRequest(`/users/${user.id}`, { method: 'DELETE' })
+      if (user.id === auth.user?.id) auth.clearAuth()
+      else await load(pagination.value.page)
+    })
+  }
+}
+
+async function executeConfirmed() {
+  const action = confirmDialog.value?.execute
+  confirmDialog.value = null
+  if (action) await action()
 }
 
 onMounted(() => run(() => load()))
@@ -156,6 +170,17 @@ onMounted(() => run(() => load()))
         <span>Page {{ pagination.page }}</span>
         <button class="rounded px-3 py-2 enabled:hover:bg-gray-100 transition-colors" :disabled="busy || pagination.page * pagination.per_page >= pagination.total" @click="run(() => load(pagination.page + 1))">Suivant</button>
       </nav>
+
+      <div v-if="confirmDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-gray-900">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">Confirmation</h3>
+          <p class="text-gray-700 mb-6 text-sm">{{ confirmDialog.text }}</p>
+          <div class="flex justify-end space-x-3">
+            <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors" @click="confirmDialog = null">Annuler</button>
+            <button type="button" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark font-medium transition-colors" @click="executeConfirmed">Confirmer</button>
+          </div>
+        </div>
+      </div>
     </template>
   </main>
 </template>

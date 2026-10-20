@@ -26,6 +26,7 @@ const selectedFile = ref(null)
 const previewImageSrc = ref(null)
 
 const isDeleteModalOpen = ref(false)
+const isDeleteAvatarModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
 
@@ -237,8 +238,6 @@ const confirmDelete = async () => {
         closeDeleteModal()
         await authStore.logout()
         router.push('/')
-
-        alert("Votre compte a été supprimé avec succès.")
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
             closeDeleteModal()
@@ -346,15 +345,17 @@ onUnmounted(() => {
     }
 })
 
-const handleDeleteAvatar = async () => {
+const handleDeleteAvatar = () => {
     if (!navigator.onLine) {
-        alert("Impossible de supprimer l'avatar en mode hors ligne.")
+        avatarError.value = "Impossible de supprimer l'avatar en mode hors ligne."
         return
     }
-    if (!confirm("Êtes-vous sûr de vouloir supprimer votre avatar ?")) {
-        return
-    }
+    avatarError.value = ''
+    isDeleteAvatarModalOpen.value = true
+}
 
+const confirmDeleteAvatar = async () => {
+    isDeleteAvatarModalOpen.value = false
     try {
         const token = authStore.token
 
@@ -367,14 +368,14 @@ const handleDeleteAvatar = async () => {
 
         authStore.user.avatar_url = null
     } catch (err) {
-        alert(err.message)
+        avatarError.value = err.message
     }
 }
 
 const handleNewFile = (rawFile) => {
     const { isValid, error } = validateAvatar(rawFile)
     if (!isValid) {
-        alert(error)
+        avatarError.value = error
         return
     }
 
@@ -388,7 +389,7 @@ const saveAvatar = async () => {
     }
 
     if (!navigator.onLine) {
-        alert("Impossible d'enregistrer l'avatar en mode hors ligne.")
+        avatarError.value = "Impossible d'enregistrer l'avatar en mode hors ligne."
         return
     }
 
@@ -416,7 +417,7 @@ const saveAvatar = async () => {
 
         cancelEdit()
     } catch (err) {
-        alert(err.message || "Erreur lors de l'envoi de l'image.")
+        avatarError.value = err.message || "Erreur lors de l'envoi de l'image."
     } finally {
         isUploading.value = false
     }
@@ -775,6 +776,24 @@ const cancelEdit = () => {
                     </button>
                 </div>
             </form>
+        </div>
+
+        <div v-if="isDeleteAvatarModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" role="dialog" aria-modal="true">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-gray-900">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer l'avatar</h3>
+                <p class="text-gray-700 mb-6 text-sm">Êtes-vous sûr de vouloir supprimer votre avatar ?</p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="isDeleteAvatarModalOpen = false"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors">
+                        Annuler
+                    </button>
+                    <button type="button" @click="confirmDeleteAvatar"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
         </div>
 
     </main>
