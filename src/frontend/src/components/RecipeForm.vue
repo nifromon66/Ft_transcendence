@@ -222,10 +222,10 @@ onMounted(async () => {
             Description
           </label>
           <textarea id="recipe-description" name="description" v-model.trim="recipe.description" rows="2"
-            maxlength="100" @keydown.enter.prevent placeholder="Présente brièvement ta recette..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+            maxlength="150" @keydown.enter.prevent placeholder="Présente brièvement ta recette..." class="w-full resize-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
                     focus:outline-none focus:ring-2 focus:ring-blue-200" />
           <p class="mt-1 text-right text-sm text-gray-500">
-            {{ recipe.description.length }}/100 caractères
+            {{ recipe.description.length }}/150 caractères
           </p>
         </div>
         <div>
