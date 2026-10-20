@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from urllib.parse import quote
 
 from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
 from flask import Blueprint, jsonify, make_response, redirect, request
@@ -29,17 +30,16 @@ def login_42():
 
 @auth_oauth_bp.route("/auth/callback/42", methods=["GET"])
 def callback_42():
+    frontend_url = os.environ.get("VITE_API_URL") or ""
     try:
         client = oauth.create_client("42")
         token = client.authorize_access_token()
     except MismatchingStateError:
-        return jsonify(
-            {"error": "Session invalide ou expirée. Veuillez relancer la connexion."}
-        ), 400
+        msg = quote("Session invalide ou expirée. Veuillez relancer la connexion.")
+        return redirect(f"{frontend_url}/login?error={msg}")
     except OAuthError:
-        return jsonify(
-            {"error": "L'authentification auprès de l'intra 42 a échoué."}
-        ), 401
+        msg = quote("L'authentification auprès de l'intra 42 a échoué.")
+        return redirect(f"{frontend_url}/login?error={msg}")
 
     resp = client.get("me", token=token)
     profile = resp.json()
@@ -48,12 +48,10 @@ def callback_42():
     email = profile.get("email")
 
     if not email:
-        return jsonify(
-            {"error": "Impossible de récupérer l'email depuis l'intra 42"}
-        ), 400
+        msg = quote("Impossible de récupérer l'email depuis l'intra 42.")
+        return redirect(f"{frontend_url}/login?error={msg}")
 
     user = User.query.filter_by(email=email).first()
-    frontend_url = os.environ.get("VITE_API_URL")
 
     if not user:
         pending_token = create_access_token(
@@ -68,7 +66,8 @@ def callback_42():
         )
         return redirect(f"{frontend_url}/oauth-success?pending_token={pending_token}")
     if not user.is_active or user.deleted_at:
-        return jsonify(error="Compte désactivé."), 403
+        msg = quote("Votre compte a été désactivé.")
+        return redirect(f"{frontend_url}/login?error={msg}")
     if not user.oauth_id:
         user.oauth_provider = "42"
         user.oauth_id = oauth_id

@@ -1,14 +1,15 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authState'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const errorMessage = ref('')
+const errorMessage = ref(route.query.error ? String(route.query.error) : '')
 const isLoading = ref(false)
 
 const is2FaStep = ref(false)
@@ -228,7 +229,7 @@ const loginWith42 = () => {
         </form>
       </div>
 
-      <p class="mt-4 h-6 text-center text-red-600">
+      <p class="mt-4 min-h-6 text-center text-red-600">
         {{ errorMessage }}
       </p>
 
