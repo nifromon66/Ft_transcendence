@@ -1,24 +1,10 @@
 import uuid
 from datetime import datetime, timezone
 
-from flask import g
 from sqlalchemy import select
 
 from extensions import db, socketio
 from models import User
-from models.admin_audit import AdminAudit
-
-
-def audit(action, target_type, target_id, **details):
-    db.session.add(
-        AdminAudit(
-            actor_id=g.current_user.id,
-            action=action,
-            target_type=target_type,
-            target_id=target_id,
-            details=details,
-        )
-    )
 
 
 def lock_administrators():

@@ -435,7 +435,7 @@ const cancelEdit = () => {
 <template>
     <main class="flex-1 px-6 py-8">
         <div class="mx-auto mt-10 max-w-2xl rounded-xl bg-white p-8 shadow-lg">
-            <h1 class="mb-6 border-b pb-4 text-2xl font-bold text-gray-800">Profil Utilisateur</h1>
+            <h1 class="mb-6 border-b pb-4 text-2xl font-bold text-gray-800">Informations du compte</h1>
 
             <div v-if="isLoading" class="text-gray-500">Chargement des informations...</div>
 
