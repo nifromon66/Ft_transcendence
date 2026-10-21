@@ -1,14 +1,25 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchCategories, fetchDifficulties, } from '@/services/recipeService'
 
 const search = ref('')
+const route = useRoute()
 const router = useRouter()
 const difficulty = ref('')
 const category = ref('')
 const difficulties = ref(fetchDifficulties())
 const categories = ref([])
+
+watch(
+  () => [route.query.search, route.query.category, route.query.difficulty],
+  ([searchQuery, categoryQuery, difficultyQuery]) => {
+    search.value = searchQuery || ''
+    category.value = categoryQuery || ''
+    difficulty.value = difficultyQuery || ''
+  },
+  { immediate: true },
+)
 
 onMounted(async () => {
   categories.value = await fetchCategories()
