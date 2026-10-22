@@ -4,6 +4,7 @@ from pathlib import Path
 from config import UPLOAD_FOLDER
 from extensions import db
 from models import Ingredient, RecipeIngredient, Tag
+from models.category import CategoryType
 from models.recipe import Recipe
 from models.recipe_step import RecipeStep
 
@@ -21,7 +22,7 @@ def seed_recipes():
     recipes = [
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PATES,
             title="Carbonara classique",
             description="Un plat de pâtes italien traditionnel préparé avec des œufs, du parmesan et de la pancetta.",
             cooking_time=25,
@@ -72,7 +73,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.ENTREES,
             title="Bruschetta à la tomate",
             description="Une entrée italienne simple préparée avec des tomates fraîches, de l'ail, du basilic et du pain grillé.",
             cooking_time=15,
@@ -122,7 +123,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.DESSERTS,
             title="Crêpes faciles",
             description="De délicieuses crêpes moelleuses, parfaites pour le petit-déjeuner.",
             cooking_time=20,
@@ -178,7 +179,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PLATS_PRINCIPAUX,
             title="Poulet au curry vert",
             description="Un curry thaïlandais parfumé au lait de coco, piment vert et légumes frais.",
             cooking_time=35,
@@ -240,7 +241,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=2,
+            category_id=CategoryType.PATISSERIES,
             title="Tarte Tatin classique",
             description="Une tarte aux pommes caramélisées renversée, symbole de la pâtisserie française.",
             cooking_time=50,
@@ -291,7 +292,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=3,
+            category_id=CategoryType.SAUCES,
             title="Guacamole maison",
             description="Une sauce mexicaine fraîche à base d'avocats, de citron vert et de coriandre.",
             cooking_time=10,
@@ -345,7 +346,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PLATS_DE_RIZ,
             title="Risotto aux champignons",
             description="Un plat de riz crémeux réconfortant parfumé au parmesan et champignons de paris.",
             cooking_time=40,
@@ -404,7 +405,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=4,
+            category_id=CategoryType.SALADES,
             title="Salade Niçoise",
             description="Une salade estivale méditerranéenne complète au thon, œufs durs et olives.",
             cooking_time=20,
@@ -468,7 +469,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PLATS_PRINCIPAUX,
             title="Shakshuka",
             description="Un plat du Moyen-Orient composé d'œufs pochés dans une sauce tomate pimentée.",
             cooking_time=30,
@@ -531,7 +532,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=2,
+            category_id=CategoryType.DESSERTS,
             title="Mousse au chocolat",
             description="Un dessert classique gourmand, aérien et riche en chocolat noir.",
             cooking_time=15,
@@ -585,7 +586,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=5,
+            category_id=CategoryType.SOUPES,
             title="Soupe à l'oignon gratinée",
             description="Un grand classique français réconfortant surmonté de pain grillé et fromage fondu.",
             cooking_time=60,
@@ -642,7 +643,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PLATS_PRINCIPAUX,
             title="Tacos au bœuf",
             description="Des tortillas garnies de viande hachée épicée, de fromage et de condiments frais.",
             cooking_time=20,
@@ -696,7 +697,7 @@ def seed_recipes():
         ),
         Recipe(
             user_id=1,
-            category_id=1,
+            category_id=CategoryType.PLATS_PRINCIPAUX,
             title="Salmon Teriyaki",
             description="Pavé de saumon poêlé et nappé d'une sauce teriyaki sucrée-salée maison.",
             cooking_time=15,
