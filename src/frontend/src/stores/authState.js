@@ -3,6 +3,8 @@ import { fetchUserProfile } from '@/services/userService.js'
 import { connectSocket, disconnectSocket } from '@/services/socketService.js'
 import { refreshAccessToken, logoutUser } from '@/services/authService.js'
 
+let refreshPromise = null
+
 export const useAuthStore = defineStore('auth', {
     state: () => {
         const rawUser = localStorage.getItem('user')
@@ -48,6 +50,7 @@ export const useAuthStore = defineStore('auth', {
             this.token = token
             this.user = user
             localStorage.setItem('token', token)
+            localStorage.setItem('has_session', 'true')
 
             if (user) {
                 localStorage.setItem('user', JSON.stringify(user))
@@ -58,19 +61,32 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async silentRefresh() {
-            try {
-                const newToken = await refreshAccessToken()
-                this.token = newToken
-                localStorage.setItem('token', newToken)
-                if (!this.user) {
-                    await this.fetchUser()
-                } else {
-                    connectSocket(this.token)
-                }
-            } catch (error) {
-                this.clearAuth()
-                throw error
+            if (!this.token && !localStorage.getItem('has_session')) {
+                return null
             }
+            if (refreshPromise) {
+                return refreshPromise
+            }
+            refreshPromise = (async () => {
+                try {
+                    const newToken = await refreshAccessToken()
+                    this.token = newToken
+                    localStorage.setItem('token', newToken)
+                    localStorage.setItem('has_session', 'true')
+                    if (!this.user) {
+                        await this.fetchUser()
+                    } else {
+                        connectSocket(this.token)
+                    }
+                    return newToken
+                } catch (error) {
+                    this.clearAuth()
+                    throw error
+                } finally {
+                    refreshPromise = null
+                }
+            })()
+            return refreshPromise
         },
 
         async logout() {
@@ -83,6 +99,7 @@ export const useAuthStore = defineStore('auth', {
             this.user = null
             localStorage.removeItem('token')
             localStorage.removeItem('user')
+            localStorage.removeItem('has_session')
             disconnectSocket()
         },
 

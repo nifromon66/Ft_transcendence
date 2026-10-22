@@ -44,10 +44,12 @@ onMounted(async () => {
   })
 
   if (!authStore.isInitialized) {
-    try {
-      await authStore.silentRefresh()
-    } catch {
-      // Ignore initial silent refresh error
+    if (authStore.token || localStorage.getItem('has_session') === 'true') {
+      try {
+        await authStore.silentRefresh()
+      } catch {
+        // Ignore initial silent refresh error
+      }
     }
     authStore.isInitialized = true
   }

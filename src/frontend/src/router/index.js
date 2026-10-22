@@ -106,7 +106,7 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore()
   
   if (!authStore.isInitialized) {
-    if (!authStore.token) {
+    if (authStore.token || localStorage.getItem('has_session') === 'true') {
       try {
         await authStore.silentRefresh()
       } catch {
