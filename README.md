@@ -558,7 +558,7 @@ In accordance with the `ft_transcendence` subject (**Major Module = 2 pts**, **M
   - Developed the **recipe listing, advanced search bar, filtering (category, difficulty), multi-criteria sorting (rating, cooking time, update date), and pagination**.
   - Implemented the **recipe rating system** and the **achievement badges**.
 - **Challenges & Solutions:**
-  - 
+  - *Translating the recipe-list SQL query into SQLAlchemy ORM without breaking pagination:* Combining search across recipe fields, ingredients, and tags with filters and rating-based sorting made it easy for joins to duplicate recipes or skew the result count. I used ORM relationship predicates for ingredient and tag searches, a correlated AVG subquery for rating sort, and counted the filtered query before applying pagination.
 
 ---
 
