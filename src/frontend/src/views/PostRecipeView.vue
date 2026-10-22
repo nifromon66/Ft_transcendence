@@ -113,12 +113,10 @@ const handleCancel = () => {
     <div class="rounded-lg p-6 text-gray-800">
       <h1 class="mb-6 text-3xl font-bold">Publier une recette</h1>
 
-      <RecipeForm :is-submitting="isSubmitting" submit-label="Publier la recette" @submit="submitRecipe" @cancel="handleCancel" />
+      <RecipeForm :is-submitting="isSubmitting" submit-label="Publier la recette" @submit="submitRecipe"
+        @cancel="handleCancel" />
 
-      <RecipeErrorNotice
-        :message="errorMessage"
-        @close="errorMessage = ''"
-      />
+      <RecipeErrorNotice :message="errorMessage" @close="errorMessage = ''" />
       <p v-if="errorMessage" role="alert" class="mt-4 rounded-md bg-red-50 p-3 text-red-700">
         {{ errorMessage }}
       </p>
