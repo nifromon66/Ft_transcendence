@@ -27,8 +27,6 @@ class Category(db.Model):
         self.name = name.capitalize()
 
 
-# TODO
-# decide a set of categories
 class CategoryType(IntEnum):
     ENTREES = 1
     PLATS_PRINCIPAUX = 2
