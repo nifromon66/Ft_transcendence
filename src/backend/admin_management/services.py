@@ -44,6 +44,7 @@ def disconnect_account(user_id):
     # A user can have several tabs, hence several sockets in this room.
     if socketio.server is None:
         return
+    socketio.emit("force_logout", to=f"user_{user_id}")
     participants = list(
         socketio.server.manager.get_participants("/", f"user_{user_id}")
     )

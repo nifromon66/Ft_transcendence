@@ -1,15 +1,16 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import { useChatStore } from './stores/chatState.js'
 import { useAuthStore } from './stores/authState.js'
-import { connectSocket, disconnectSocket } from './services/socketService.js'
+import { socket, connectSocket, disconnectSocket } from './services/socketService.js'
 
 import SiteNavigation from './components/SiteNavigation.vue'
 import SideMenu from './components/SideMenu.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import OfflineBanner from './components/OfflineBanner.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
 const menuOpen = ref(false)
@@ -23,6 +24,25 @@ function closeMenu() {
 }
 
 onMounted(async () => {
+  socket.on('force_logout', () => {
+    authStore.clearAuth()
+    router.push({ name: 'login' })
+  })
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'token' || event.key === 'user' || event.key === null) {
+      const previousToken = authStore.token
+      authStore.initializeAuth()
+      if (authStore.token && authStore.token !== previousToken) {
+        disconnectSocket()
+        connectSocket(authStore.token)
+        chatStore.initializeSocketListeners()
+      } else if (!authStore.token) {
+        disconnectSocket()
+      }
+    }
+  })
+
   if (!authStore.isInitialized) {
     try {
       await authStore.silentRefresh()
@@ -37,17 +57,17 @@ onMounted(async () => {
   if (authStore.token) {
     connectSocket(authStore.token)
     chatStore.initializeSocketListeners()
-
-    setInterval(async () => {
-      if (authStore.token) {
-        try {
-          await authStore.silentRefresh()
-        } catch {
-          window.location.href = '/login'
-        }
-      }
-    }, 10 * 60 * 1000)
   }
+
+  setInterval(async () => {
+    if (authStore.token) {
+      try {
+        await authStore.silentRefresh()
+      } catch {
+        window.location.href = '/login'
+      }
+    }
+  }, 10 * 60 * 1000)
 })
 
 watch(() => authStore.token, (newToken) => {

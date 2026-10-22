@@ -16,6 +16,7 @@ const messagesContainer = ref(null)
 const showDocumentUpload = ref(false)
 const pendingDocument = ref(null)
 const uploadKey = ref(0)
+const messageToDelete = ref(null)
 
 const handleDocumentReady = (file) => {
     pendingDocument.value = file
@@ -65,13 +66,18 @@ const downloadFile = async (fileUrl, fileName) => {
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
     } catch {
-        alert('Impossible de télécharger le document.')
+        chatStore.chatError = 'Impossible de télécharger le document.'
     }
 }
 
 const deleteMessage = (messageId) => {
-    if (confirm('Voulez-vous vraiment supprimer ce message ?')) {
-        chatStore.deleteMessage(messageId)
+    messageToDelete.value = messageId
+}
+
+const confirmDeleteMessage = () => {
+    if (messageToDelete.value !== null) {
+        chatStore.deleteMessage(messageToDelete.value)
+        messageToDelete.value = null
     }
 }
 
@@ -214,6 +220,17 @@ watch(() => chatStore.messages.length, async () => {
                 <div class="text-center">
                     <div class="text-4xl mb-4">💬</div>
                     <p>Sélectionnez une conversation pour commencer</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="messageToDelete !== null" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" role="dialog" aria-modal="true">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-gray-900">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer le message</h3>
+                <p class="text-gray-700 mb-6 text-sm">Voulez-vous vraiment supprimer ce message ?</p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors" @click="messageToDelete = null">Annuler</button>
+                    <button type="button" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors" @click="confirmDeleteMessage">Supprimer</button>
                 </div>
             </div>
         </div>

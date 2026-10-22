@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import RecipeCard from '@/components/RecipeCard.vue'
+import SearchBar from '@/components/SearchBar.vue'
 import { useRecipes } from '@/composables/useRecipes'
 
 const route = useRoute()
@@ -17,6 +18,25 @@ const {
 } = useRecipes()
 
 const search = ref('')
+const searchCriteria = computed(() => {
+  const criteria = []
+  const searchTerm = search.value.trim()
+  const category = route.query.category
+  const difficulty = route.query.difficulty
+
+  if (searchTerm) criteria.push(`« ${searchTerm} »`)
+  if (category) criteria.push(`catégorie : ${category}`)
+  if (difficulty) {
+    const difficultyLabels = {
+      facile: 'Facile',
+      moyen: 'Moyen',
+      difficile: 'Difficile',
+    }
+    criteria.push(`difficulté : ${difficultyLabels[difficulty] || difficulty}`)
+  }
+
+  return criteria.join(' · ') || 'aucun filtre'
+})
 
 const perPage = 8
 const totalPages = computed(() => Math.ceil(total.value / perPage))
@@ -91,6 +111,10 @@ function applySort(sortBy, sortOrder = 'asc') {
 <template>
   <main class="flex-1 px-6 py-8">
     <div class="mx-auto max-w-7xl">
+      <section class="mb-6 flex justify-center">
+        <SearchBar />
+      </section>
+
       <div class="relative mb-6 flex justify-end">
         <button type="button"
           class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50"
@@ -143,9 +167,7 @@ function applySort(sortBy, sortOrder = 'asc') {
 
       <p class="mb-8 text-gray-600">
         Résultats pour :
-        <span class="font-semibold">
-          "{{ search }}"
-        </span>
+        <span class="font-semibold">{{ searchCriteria }}</span>
       </p>
 
       <p v-if="loading">

@@ -74,8 +74,8 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async logout() {
-            await logoutUser()
             this.clearAuth()
+            await logoutUser()
         },
 
         clearAuth() {

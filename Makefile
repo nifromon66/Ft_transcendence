@@ -44,4 +44,4 @@ fclean:
 
 re: fclean rebuild
 
-.PHONY: up rebuild down test-waf logs restart clean prune fclean re insert-secrets
+.PHONY: up rebuild down logs restart clean prune fclean re insert-secrets

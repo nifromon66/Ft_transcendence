@@ -141,7 +141,6 @@ def refresh():
 
 
 @auth_bp.route("/logout", methods=["POST"])
-@jwt_required(optional=True)
 def logout():
     """
     Logs out the user by clearing the HTTP-Only refresh token cookie.

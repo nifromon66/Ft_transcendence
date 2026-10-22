@@ -42,7 +42,7 @@ const handleFileSelect = (event) => {
 
 <template>
     <div class="w-full max-w-sm my-4">
-        <label class="block border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
+        <label for="avatar" class="block border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-300" :class="[
             disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
             isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
         ]" @dragenter.prevent @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"

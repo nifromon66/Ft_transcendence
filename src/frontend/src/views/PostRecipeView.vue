@@ -32,6 +32,12 @@ const submitRecipe = async (
   isSubmitting.value = true
 
   try {
+    try {
+      await authStore.silentRefresh()
+    } catch {
+      // Keep current token if silent refresh fails
+    }
+
     const createdRecipe = await createRecipe(authStore.token, recipeData)
 
     if (recipeImageFile) {

@@ -26,6 +26,7 @@ const selectedFile = ref(null)
 const previewImageSrc = ref(null)
 
 const isDeleteModalOpen = ref(false)
+const isDeleteAvatarModalOpen = ref(false)
 const deletePassword = ref('')
 const deleteError = ref('')
 
@@ -225,7 +226,7 @@ const closeDeleteModal = () => {
 }
 
 const confirmDelete = async () => {
-    if (!deletePassword.value) {
+    if (!authStore.user?.oauth_provider && !deletePassword.value) {
         deleteError.value = "Veuillez renseigner votre mot de passe."
         return
     }
@@ -237,8 +238,6 @@ const confirmDelete = async () => {
         closeDeleteModal()
         await authStore.logout()
         router.push('/')
-
-        alert("Votre compte a été supprimé avec succès.")
     } catch (err) {
         if (err.message === "SESSION_EXPIRED") {
             closeDeleteModal()
@@ -346,15 +345,17 @@ onUnmounted(() => {
     }
 })
 
-const handleDeleteAvatar = async () => {
+const handleDeleteAvatar = () => {
     if (!navigator.onLine) {
-        alert("Impossible de supprimer l'avatar en mode hors ligne.")
+        avatarError.value = "Impossible de supprimer l'avatar en mode hors ligne."
         return
     }
-    if (!confirm("Êtes-vous sûr de vouloir supprimer votre avatar ?")) {
-        return
-    }
+    avatarError.value = ''
+    isDeleteAvatarModalOpen.value = true
+}
 
+const confirmDeleteAvatar = async () => {
+    isDeleteAvatarModalOpen.value = false
     try {
         const token = authStore.token
 
@@ -367,14 +368,14 @@ const handleDeleteAvatar = async () => {
 
         authStore.user.avatar_url = null
     } catch (err) {
-        alert(err.message)
+        avatarError.value = err.message
     }
 }
 
 const handleNewFile = (rawFile) => {
     const { isValid, error } = validateAvatar(rawFile)
     if (!isValid) {
-        alert(error)
+        avatarError.value = error
         return
     }
 
@@ -388,7 +389,7 @@ const saveAvatar = async () => {
     }
 
     if (!navigator.onLine) {
-        alert("Impossible d'enregistrer l'avatar en mode hors ligne.")
+        avatarError.value = "Impossible d'enregistrer l'avatar en mode hors ligne."
         return
     }
 
@@ -416,7 +417,7 @@ const saveAvatar = async () => {
 
         cancelEdit()
     } catch (err) {
-        alert(err.message || "Erreur lors de l'envoi de l'image.")
+        avatarError.value = err.message || "Erreur lors de l'envoi de l'image."
     } finally {
         isUploading.value = false
     }
@@ -507,14 +508,14 @@ const cancelEdit = () => {
                             <h2 class="mb-4 text-lg font-semibold text-gray-700">Modifier mes informations</h2>
                             <form @submit.prevent="saveProfileInfo" class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
+                                    <label for="edit-username" class="block text-sm font-medium text-gray-700 mb-1">Pseudo</label>
                                     <input id="edit-username" name="username" autocomplete="username" v-model="editForm.username" type="text" required
-                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <label for="edit-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <input id="edit-email" name="email" autocomplete="email" v-model="editForm.email" type="email" required
-                                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
 
                                 <div class="flex space-x-3 pt-2">
@@ -633,7 +634,8 @@ const cancelEdit = () => {
                     contributions seront conservées, mais anonymisées.
                 </p>
 
-                <div class="mb-6">
+                <div v-if="!authStore.user?.oauth_provider" class="mb-6">
+                    <input id="delete-account-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
                     <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-1">
                         Entrez votre mot de passe pour supprimer votre compte :
                     </label>
@@ -642,6 +644,7 @@ const cancelEdit = () => {
                         class="w-full rounded border p-2 bg-gray-50 text-black focus:outline-none focus:ring-2 focus:ring-red-500">
                     <p v-if="deleteError" class="text-red-500 text-xs mt-1">{{ deleteError }}</p>
                 </div>
+                <p v-else-if="deleteError" class="text-red-500 text-xs mb-4">{{ deleteError }}</p>
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" @click="closeDeleteModal"
@@ -664,8 +667,9 @@ const cancelEdit = () => {
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Activer le 2FA</h3>
                     <p class="text-gray-600 mb-4 text-sm">Veuillez confirmer votre mot de passe pour activer le 2FA.
                     </p>
+                    <input id="enable-2fa-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly>
                     <input id="enable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="twoFaPassword" placeholder="Votre mot de passe"
-                        class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
+                        class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
@@ -692,7 +696,7 @@ const cancelEdit = () => {
                     </div>
 
                     <input id="enable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="twoFaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
+                        class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2">
                     <p v-if="twoFaError" class="text-red-500 text-xs mb-4 text-center">{{ twoFaError }}</p>
 
                     <div class="flex justify-end space-x-3 mt-4">
@@ -752,11 +756,12 @@ const cancelEdit = () => {
                     continuer.
                 </p>
 
+                <input id="disable-2fa-username" type="text" name="username" autocomplete="username" :value="authStore.user?.username || ''" class="hidden" aria-hidden="true" tabindex="-1" readonly />
                 <input id="disable-2fa-password" name="password" autocomplete="current-password" type="password" v-model="disable2FaPassword" placeholder="Votre mot de passe"
-                    class="w-full rounded border p-2 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
+                    class="w-full rounded border p-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-4" />
 
                 <input id="disable-2fa-code" name="twofa-code" autocomplete="one-time-code" type="text" v-model="disable2FaCode" placeholder="Code à 6 chiffres" maxlength="6"
-                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
+                    class="w-full text-center tracking-widest text-xl font-mono rounded border p-3 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-800 mb-2" />
 
                 <p v-if="disable2FaError" class="text-red-500 text-xs mb-4 text-center">{{ disable2FaError }}</p>
 
@@ -771,6 +776,24 @@ const cancelEdit = () => {
                     </button>
                 </div>
             </form>
+        </div>
+
+        <div v-if="isDeleteAvatarModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4" role="dialog" aria-modal="true">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-gray-900">
+                <h3 class="text-xl font-bold text-red-600 mb-4">Supprimer l'avatar</h3>
+                <p class="text-gray-700 mb-6 text-sm">Êtes-vous sûr de vouloir supprimer votre avatar ?</p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="isDeleteAvatarModalOpen = false"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium transition-colors">
+                        Annuler
+                    </button>
+                    <button type="button" @click="confirmDeleteAvatar"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium transition-colors">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
         </div>
 
     </main>

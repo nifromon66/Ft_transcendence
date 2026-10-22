@@ -144,7 +144,7 @@ const handleDeleteRating = async () => {
 const isDeleteModalOpen = ref(false)
 
 const openDeleteModal = () => {
-  if (!isAuthor.value || isDeleting.value)
+  if (!canDelete.value || isDeleting.value)
     return
   deleteError.value = ''
   isDeleteModalOpen.value = true
@@ -157,7 +157,7 @@ const closeDeleteModal = () => {
 }
 
 const confirmDeleteRecipe = async () => {
-  if (!isAuthor.value || isDeleting.value)
+  if (!canDelete.value || isDeleting.value)
     return
   isDeleting.value = true
   deleteError.value = ''
@@ -316,7 +316,7 @@ const formatDate = (date) => {
                     font-semibold text-white hover:bg-primary-dark">
                 Modifier
               </RouterLink>
-              <button type="button" :disabled="isDeleting" @click="openDeleteModal" class="rounded-md bg-red-600 px-4 py-2
+              <button v-if="canDelete" type="button" :disabled="isDeleting" @click="openDeleteModal" class="rounded-md bg-red-600 px-4 py-2
                   font-semibold text-white hover:bg-red-700
                   disabled:cursor-not-allowed disabled:opacity-50">
                 Supprimer

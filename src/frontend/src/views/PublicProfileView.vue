@@ -120,7 +120,7 @@ const handleFriendAction = async (apiFunction, newStatus) => {
             await authStore.logout()
             errorMessage.value = "Votre session a expiré. Veuillez vous reconnecter."
         } else {
-            alert(err.message)
+            errorMessage.value = err.message
         }
     } finally {
         isActionLoading.value = false

@@ -208,24 +208,25 @@ def delete_my_account():
             }
         ), 404
 
-    data = request.get_json()
-    password = data.get("password", "") if data else ""
+    if not user.oauth_provider:
+        data = request.get_json(silent=True)
+        password = data.get("password", "") if data else ""
 
-    if not password:
-        return jsonify(
-            {
-                "success": False,
-                "error": "Le mot de passe est requis.",
-            }
-        ), 400
+        if not password:
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Le mot de passe est requis.",
+                }
+            ), 400
 
-    if not user.check_password(password):
-        return jsonify(
-            {
-                "success": False,
-                "error": "Mot de passe incorrect.",
-            }
-        ), 403
+        if not user.check_password(password):
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "Mot de passe incorrect.",
+                }
+            ), 403
 
     administrators = lock_administrators()
     db.session.refresh(user, with_for_update=True)

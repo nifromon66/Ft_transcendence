@@ -35,7 +35,7 @@ function selectReward(event, reward) {
                 @mouseenter="hovered = reward.id; dismissed = false" @mouseleave="hovered = null"
                 @focusin="focused = reward.id; dismissed = false" @focusout="focused = null"
                 @keydown.esc.stop="dismissed = true">
-                <label class="flex items-center justify-center gap-4"
+                <label :for="`reward-${reward.id}`" class="flex items-center justify-center gap-4"
                     :class="editable && reward.unlocked && !saving ? 'cursor-pointer' : 'cursor-default'">
                     <span class="relative m-1 inline-flex h-12 w-12 shrink-0 rounded-full bg-white">
                         <AvatarFrame :frame="reward.id" :locked="!reward.unlocked" />
